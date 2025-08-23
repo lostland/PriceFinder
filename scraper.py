@@ -4,15 +4,16 @@ import logging
 import requests
 import time
 
-def scrape_all_urls_batch(url_list):
+def scrape_prices(url):
     """
-    배치 처리: Selenium 한 번만 시작해서 모든 URL 처리 (8개 CID 모두 완료)
+    완전 독립적인 가격 스크래핑 - 매번 새로운 Selenium 인스턴스 사용
     """
     driver = None
     try:
-        logging.info(f"Starting batch processing for {len(url_list)} URLs")
+        logging.info(f"Independent scraping: {url}")
+        start_time = time.time()
         
-        # 초고속 Selenium 설정 (한 번만)
+        # 매번 새로운 Selenium 인스턴스 (완전 독립)
         from selenium import webdriver
         from selenium.webdriver.chrome.options import Options
         
@@ -27,7 +28,7 @@ def scrape_all_urls_batch(url_list):
         chrome_options.add_argument('--window-size=800,600')
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
         
-        # 이미지 로딩 완전 차단 (추가 설정)
+        # 이미지 로딩 완전 차단
         chrome_options.add_argument('--blink-settings=imagesEnabled=false')
         chrome_options.add_argument('--disable-background-timer-throttling')
         chrome_options.add_argument('--disable-renderer-backgrounding')
@@ -41,97 +42,59 @@ def scrape_all_urls_batch(url_list):
         }
         chrome_options.add_experimental_option("prefs", prefs)
         
+        # 새로운 드라이버 인스턴스 생성
         driver = webdriver.Chrome(options=chrome_options)
         
-        for i, url_info in enumerate(url_list):
-            start_time = time.time()
-            cid = url_info['cid']
-            url = url_info['url']
-            
-            logging.info(f"Batch step {i+1}/{len(url_list)}: Processing CID {cid}")
-            
-            # 진행 상태 전송
-            yield {'type': 'progress', 'step': i+1, 'total': len(url_list), 'cid': cid}
-            
-            try:
-                # URL 로드 
-                driver.get(url)
-                time.sleep(0.4)  # 최소 대기 (가격 로딩 위함)
-                
-                # 페이지 소스 가져오기
-                page_source = driver.page_source
-                soup = BeautifulSoup(page_source, 'html.parser')
-                
-                # 안정적인 가격 검색 (실제 가격 확보)
-                prices_found = []
-                seen_prices = set()
-                text_content = soup.get_text()[:15000]  # 충분한 텍스트
-                
-                price_patterns = [
-                    r'(USD\s*[\d,]+)',  # USD 가격
-                    r'(\$[\d,]{2,})',   # 달러 가격  
-                    r'([₩]\s*[\d,]{3,})', # 원화
-                ]
-                
-                for pattern in price_patterns:
-                    if len(prices_found) >= 3:
-                        break
-                    matches = re.finditer(pattern, text_content, re.IGNORECASE)
-                    for match in list(matches)[:3]:
-                        price_text = match.group(1).strip()
-                        if price_text not in seen_prices and len(price_text) >= 4:
-                            context = text_content[max(0, match.start()-40):match.end()+40][:100]
-                            seen_prices.add(price_text)
-                            prices_found.append({
-                                'price': price_text,
-                                'context': context.strip()
-                            })
-                            if len(prices_found) >= 3:
-                                break
-                
-                processing_time = time.time() - start_time
-                logging.info(f"✅ CID {cid}: Found {len(prices_found)} prices in {processing_time:.1f}s")
-                
-                # 결과 즉시 전송
-                result = {
-                    'cid': cid,
-                    'url': url, 
-                    'prices': prices_found,
-                    'status': 'success' if prices_found else 'no_prices'
-                }
-                yield {'type': 'result', 'data': result}
-                
-            except Exception as e:
-                logging.error(f"Error processing CID {cid}: {str(e)}")
-                result = {
-                    'cid': cid,
-                    'url': url,
-                    'prices': [],
-                    'status': 'error',
-                    'error': str(e)
-                }
-                yield {'type': 'result', 'data': result}
+        # URL 로드 (대기 없음)
+        driver.get(url)
+        # 대기 완전 제거 (최대 속도 달성)
         
-        # 완료 메시지
-        total_processed = len(url_list)
-        yield {'type': 'complete', 'total_results': total_processed, 'message': f'All {total_processed} CIDs processed'}
+        # 페이지 소스 가져오기
+        page_source = driver.page_source
+        soup = BeautifulSoup(page_source, 'html.parser')
+        
+        # 고속 가격 검색 (최대 속도)
+        prices_found = []
+        seen_prices = set()
+        text_content = soup.get_text()[:8000]  # 텍스트 크기 제한
+        
+        # 가장 빠른 패턴만 사용
+        price_patterns = [
+            r'(USD\s*[\d,]+)',  # USD 가격만 우선
+        ]
+        
+        for pattern in price_patterns:
+            if len(prices_found) >= 2:  # 2개만 찾으면 충분
+                break
+            matches = re.finditer(pattern, text_content, re.IGNORECASE)
+            for match in list(matches)[:2]:  # 최대 2개
+                price_text = match.group(1).strip()
+                if price_text not in seen_prices and len(price_text) >= 4:
+                    context = f"CID price: {price_text}"  # 간단한 컨텍스트
+                    seen_prices.add(price_text)
+                    prices_found.append({
+                        'price': price_text,
+                        'context': context
+                    })
+                    if len(prices_found) >= 2:
+                        break
+        
+        processing_time = time.time() - start_time
+        logging.info(f"✅ Independent processing completed in {processing_time:.1f}s: Found {len(prices_found)} prices")
+        
+        return prices_found
         
     except Exception as e:
-        logging.error(f"Batch processing failed: {e}")
-        yield {'type': 'error', 'message': str(e)}
+        logging.error(f"Independent scraping error: {e}")
+        return []
     finally:
+        # 완전히 종료 (누적 방지)
         if driver:
             try:
                 driver.quit()
-                logging.info("Driver closed successfully")
+                logging.info("Driver closed independently")
             except:
                 pass
-
-def scrape_prices(url):
-    """
-    Legacy function - kept for compatibility
-    """
-    return []
 
 def replace_cid_and_scrape(base_url, cid_list):
     """
