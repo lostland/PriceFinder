@@ -139,3 +139,35 @@ body {
         transform: rotate(360deg);
     }
 }
+
+/* URL Input 필드 최적화 */
+#urlInput {
+    font-family: 'Courier New', monospace;
+    word-break: break-all;
+    overflow-x: auto;
+    font-size: 14px;
+    min-width: 300px;
+}
+
+/* URL 입력을 위한 반응형 개선 */
+@media (max-width: 768px) {
+    #urlInput {
+        min-width: 250px;
+        font-size: 13px;
+    }
+    
+    .input-group .btn {
+        white-space: nowrap;
+    }
+    
+    .input-group {
+        flex-wrap: nowrap;
+    }
+}
+
+/* 큰 화면에서 더 넓은 URL 입력 필드 */
+@media (min-width: 1200px) {
+    #urlInput {
+        min-width: 400px;
+    }
+}
