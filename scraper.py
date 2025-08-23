@@ -6,61 +6,141 @@ import time
 
 def scrape_prices(url):
     """
-    Ultra-fast demo scraper - returns simulated results instantly for testing
+    Real Agoda price scraper using optimized Selenium
     """
+    driver = None
     try:
-        logging.info(f"Ultra-fast demo scraping: {url}")
-        
+        logging.info(f"Real Agoda scraping: {url}")
         start_time = time.time()
         
-        # 초고속 requests (1초 내 완료)
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
+        # 초고속 Selenium 설정
+        from selenium import webdriver
+        from selenium.webdriver.chrome.options import Options
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
         
-        response = requests.get(url, headers=headers, timeout=1)
-        page_source = response.text
+        chrome_options = Options()
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--disable-images')
+        chrome_options.add_argument('--disable-extensions')
+        chrome_options.add_argument('--disable-plugins')
+        chrome_options.add_argument('--disable-javascript')  # JS 비활성화로 속도 향상
+        chrome_options.add_argument('--window-size=800,600')  # 더 작은 창
+        chrome_options.add_argument('--disable-web-security')  # 보안 체크 비활성화
+        chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+        
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get(url)
+        
+        # 최소 대기 + 빠른 가격 확인
+        time.sleep(0.8)  # 더 짧은 대기
+        try:
+            WebDriverWait(driver, 1.5).until(  # 더 짧은 타임아웃
+                EC.presence_of_element_located((By.CSS_SELECTOR, '[class*="price"]'))
+            )
+        except:
+            pass
+        
+        page_source = driver.page_source
         load_time = time.time() - start_time
-        logging.info(f"Page loaded in {load_time:.1f}s")
+        logging.info(f"Selenium loaded in {load_time:.1f}s")
         
-        # Parse the HTML
+        # BeautifulSoup로 파싱
         soup = BeautifulSoup(page_source, 'html.parser')
         
-        # Remove script and style elements
-        for script in soup(["script", "style"]):
-            script.decompose()
+        # 실제 가격 검색
+        prices_found = []
+        seen_prices = set()
         
-        # 초고속 데모 가격 생성 (즉시 결과 반환)
-        import hashlib
-        url_hash = int(hashlib.md5(url.encode()).hexdigest()[:8], 16)
+        # 1. 텍스트에서 가격 패턴 검색
+        text_content = soup.get_text()
+        price_patterns = [
+            r'([₩]\s*[\d,]{3,})',  # 원화 (한국 사이트)
+            r'([\d,]{3,}\s*[원₩])',  # 원화 변형
+            r'(\$[\d,]{2,}(?:\.\d{2})?)',  # 달러
+            r'(USD\s*[\d,]+(?:\.\d{2})?)',  # USD
+            r'([\d,]{3,}(?:\.\d{2})?\s*USD)',  # 숫자 USD
+        ]
         
-        # CID별로 다른 가격 생성 (시뮬레이션)
-        base_prices = [299, 359, 419, 489, 529, 599, 649]
-        price_index = url_hash % len(base_prices)
-        base_price = base_prices[price_index]
+        for pattern in price_patterns:
+            matches = re.finditer(pattern, text_content, re.IGNORECASE)
+            for match in list(matches)[:10]:  # 최대 10개
+                price_text = match.group(1).strip()
+                
+                if price_text in seen_prices or len(price_text) < 3:
+                    continue
+                
+                # 컨텍스트 추출
+                start_pos = max(0, match.start() - 50)
+                end_pos = min(len(text_content), match.end() + 50)
+                context = text_content[start_pos:end_pos].strip()
+                context = re.sub(r'\s+', ' ', context)[:200]
+                
+                seen_prices.add(price_text)
+                prices_found.append({
+                    'price': price_text,
+                    'context': context
+                })
+                
+                if len(prices_found) >= 5:
+                    break
         
-        # 1-3개의 가격 생성
-        num_prices = (url_hash % 3) + 1
-        demo_prices = []
-        
-        for i in range(num_prices):
-            price_value = base_price + (i * 30) + (url_hash % 50)
-            demo_prices.append({
-                'price': f'${price_value}',
-                'context': f'Room rate starting from ${price_value} per night'
-            })
+        # 2. CSS 선택자로 가격 요소 직접 검색
+        if len(prices_found) < 3:
+            price_selectors = [
+                '[class*="PropertyCardPrice"]',
+                '[class*="price"]',
+                '[data-price]',
+                '.price',
+                '[class*="rate"]',
+                '[class*="cost"]'
+            ]
+            
+            for selector in price_selectors:
+                try:
+                    elements = driver.find_elements(By.CSS_SELECTOR, selector)
+                    for element in elements[:5]:
+                        element_text = element.text or element.get_attribute('textContent') or ""
+                        if element_text and len(element_text) < 100:
+                            # 가격 패턴 찾기
+                            for pattern in price_patterns:
+                                price_match = re.search(pattern, element_text, re.IGNORECASE)
+                                if price_match:
+                                    price_text = price_match.group(1).strip()
+                                    if price_text not in seen_prices and len(price_text) >= 3:
+                                        seen_prices.add(price_text)
+                                        prices_found.append({
+                                            'price': price_text,
+                                            'context': f"Price element: {element_text[:100]}"
+                                        })
+                                        break
+                        
+                        if len(prices_found) >= 5:
+                            break
+                except:
+                    continue
+                
+                if len(prices_found) >= 5:
+                    break
         
         load_time = time.time() - start_time
-        logging.info(f"Demo prices generated in {load_time:.2f}s: {[p['price'] for p in demo_prices]}")
+        logging.info(f"Found {len(prices_found)} real prices in {load_time:.1f}s: {[p['price'] for p in prices_found]}")
         
-        return demo_prices
+        return prices_found[:5]  # 최대 5개 반환
         
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Request error: {e}")
-        return []
     except Exception as e:
-        logging.error(f"Scraping error: {e}")
+        logging.error(f"Real scraping error: {e}")
         return []
+    finally:
+        if driver:
+            try:
+                driver.quit()
+            except:
+                pass
 
 def replace_cid_and_scrape(base_url, cid_list):
     """
