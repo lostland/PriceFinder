@@ -37,50 +37,43 @@ def scrape_prices(url):
         # Load the page
         driver.get(url)
         
-        # Wait for page to load and JavaScript to execute
-        time.sleep(5)
-        
-        # Try to wait for common price elements to load
+        # Optimized waiting strategy
         try:
-            WebDriverWait(driver, 15).until(
+            # Wait for page to load completely
+            WebDriverWait(driver, 10).until(
                 lambda d: d.execute_script("return document.readyState") == "complete"
             )
             
-            # Try to wait for specific price elements
-            common_price_selectors = [
-                '[class*="price"]', '[class*="가격"]', '[data-price]', 
-                '.price', '[class*="amount"]', '[class*="cost"]',
-                '[class*="PropertyCardPrice"]', '[class*="rate"]'
+            # Wait for price elements to appear (much faster)
+            price_selectors_priority = [
+                '[class*="PropertyCardPrice"]',  # Agoda specific
+                '[class*="price"]',
+                '[data-price]',
+                '.price'
             ]
             
-            for selector in common_price_selectors:
+            price_found = False
+            for selector in price_selectors_priority:
                 try:
-                    WebDriverWait(driver, 3).until(
+                    WebDriverWait(driver, 2).until(
                         EC.presence_of_element_located((By.CSS_SELECTOR, selector))
                     )
-                    logging.info(f"Found price elements with selector: {selector}")
+                    logging.info(f"Price elements loaded: {selector}")
+                    price_found = True
                     break
                 except:
                     continue
-                    
-        except Exception as e:
-            logging.warning(f"Timeout waiting for page elements: {e}")
             
-        # Additional wait for dynamic content to fully render
-        time.sleep(3)
-        
-        # Try to scroll down to trigger lazy loading (if any)
-        try:
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight/3);")
-            time.sleep(1)
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight/2);")
-            time.sleep(1)
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(2)
-            driver.execute_script("window.scrollTo(0, 0);")
-            time.sleep(1)
+            # Short additional wait only if prices found
+            if price_found:
+                time.sleep(2)
+            else:
+                # Fallback wait
+                time.sleep(3)
+                
         except Exception as e:
-            logging.warning(f"Error during scrolling: {e}")
+            logging.warning(f"Wait timeout, proceeding: {e}")
+            time.sleep(3)  # Minimal fallback wait
         
         # Get the page source after JavaScript execution
         page_source = driver.page_source
@@ -92,57 +85,24 @@ def scrape_prices(url):
         for script in soup(["script", "style"]):
             script.decompose()
         
-        # Enhanced price patterns for different currencies and formats
+        # Optimized price patterns - focused on most common formats
         price_patterns = [
-            # Korean Won - comprehensive patterns
-            r'₩\s*[\d,]+(?:\.\d{2})?',
-            r'[₩]\s*[\d,]+',
-            r'[\d,]+\s*원',
-            r'KRW\s*[\d,]+(?:\.\d{2})?',
-            r'[\d,]+\s*KRW',
+            # Primary currency patterns (most likely to be prices)
+            r'[₩$€£¥]\s*[\d,]{3,}(?:\.\d{2})?',  # Currency symbols with 3+ digits
+            r'[\d,]{4,}(?:\.\d{2})?\s*[₩원]',     # Korean Won
+            r'[\d,]{2,}(?:\.\d{2})?\s*(?:USD|EUR|GBP|JPY|KRW)\b',  # Currency codes
             
-            # US Dollar - various formats
-            r'\$\s*[\d,]+(?:\.\d{2})?',
-            r'USD\s*[\d,]+(?:\.\d{2})?',
-            r'[\d,]+(?:\.\d{2})?\s*USD',
-            r'US\$\s*[\d,]+(?:\.\d{2})?',
+            # High precision patterns (most reliable)
+            r'(?:price|가격|cost|amount)[\s:]+[₩$€£¥]?\s*[\d,]+(?:\.\d{2})?',
+            r'[₩$€£¥]\s*[\d]{1,3}(?:,\d{3})+(?:\.\d{2})?',  # Properly formatted numbers
             
-            # Euro
-            r'€\s*[\d,]+(?:\.\d{2})?',
-            r'EUR\s*[\d,]+(?:\.\d{2})?',
-            r'[\d,]+(?:\.\d{2})?\s*EUR',
-            r'[\d,]+(?:\.\d{2})?\s*€',
-            
-            # British Pound
-            r'£\s*[\d,]+(?:\.\d{2})?',
-            r'GBP\s*[\d,]+(?:\.\d{2})?',
-            r'[\d,]+(?:\.\d{2})?\s*GBP',
-            
-            # Japanese Yen
-            r'¥\s*[\d,]+',
-            r'JPY\s*[\d,]+',
-            r'[\d,]+\s*JPY',
-            r'[\d,]+\s*¥',
-            
-            # Common price indicators with numbers
-            r'(?:가격|price|cost|amount|총액|합계|Price|Cost|Amount|Total)[\s:]*[₩$€£¥]?\s*[\d,]+(?:\.\d{2})?',
-            r'[₩$€£¥]\s*[\d,]+(?:\.\d{2})?(?:\s*(?:USD|EUR|GBP|KRW|JPY|원|won|dollars?|euros?|pounds?))?',
-            
-            # Numbers followed by currency words
-            r'[\d,]+(?:\.\d{2})?\s*(?:USD|EUR|GBP|KRW|JPY|원|won|dollars?|euros?|pounds?)',
-            
-            # Decimal prices (common in e-commerce)
-            r'[\d,]+\.\d{2}\s*[₩$€£¥]?',
-            
-            # Large numbers with commas (likely prices)
-            r'[₩$€£¥]\s*[\d]{1,3}(?:,\d{3})+(?:\.\d{2})?',
-            
-            # Korean specific patterns
-            r'[\d,]+\s*천원',
+            # Hotel/booking specific patterns
+            r'[\d,]+\s*원\s*부터',
             r'[\d,]+\s*만원',
             
-            # Common price range patterns
-            r'[₩$€£¥]?\s*[\d,]+(?:\.\d{2})?\s*[-~]\s*[₩$€£¥]?\s*[\d,]+(?:\.\d{2})?'
+            # Fallback patterns for edge cases
+            r'[\d,]{3,}\s*(?:원|won)\b',
+            r'(?:총|합계|total)[\s:]*[₩$€£¥]?\s*[\d,]+(?:\.\d{2})?'
         ]
         
         prices_found = []
@@ -177,66 +137,35 @@ def scrape_prices(url):
                     'position': match.start()
                 })
         
-        # Enhanced selectors for price elements on modern e-commerce sites
-        price_selectors = [
-            # Generic price-related selectors
-            '[class*="price"]',
-            '[class*="cost"]',
-            '[class*="amount"]',
-            '[class*="total"]',
-            '[id*="price"]',
-            '[id*="cost"]',
-            '[data-testid*="price"]',
+        # Optimized selectors - focus on most effective ones
+        priority_selectors = [
+            # High priority - most reliable
+            '[class*="PropertyCardPrice"]',  # Agoda specific
+            '[class*="price-display"]',
             '[data-price]',
+            '[data-price-value]',
             
-            # Common class patterns
+            # Medium priority - common patterns
+            '[class*="price"]',
             '.price',
-            '.cost',
-            '.amount',
-            '.total-price',
             '.final-price',
             '.current-price',
-            '.sale-price',
-            '.regular-price',
-            '.list-price',
             
-            # Element type with price-related classes
-            'span[class*="price"]',
-            'div[class*="price"]',
-            'p[class*="price"]',
-            'strong[class*="price"]',
-            'b[class*="price"]',
-            'em[class*="price"]',
-            'h1[class*="price"]',
-            'h2[class*="price"]',
-            'h3[class*="price"]',
-            
-            # Korean e-commerce specific patterns
+            # Korean specific
             '[class*="가격"]',
-            '[class*="금액"]',
             '[class*="원"]',
             
-            # Common data attributes
-            '[data-price-value]',
-            '[data-original-price]',
-            '[data-sale-price]',
-            '[data-current-price]',
+            # Generic but effective
+            'span[class*="price"]',
+            'div[class*="price"]',
+            'strong[class*="price"]',
             
-            # Agoda and hotel booking specific
-            '[class*="PropertyCardPrice"]',
-            '[class*="price-display"]',
-            '[class*="rate"]',
-            '[class*="booking-price"]',
-            '[data-selenium*="price"]',
-            
-            # Amazon and marketplace specific
-            '[class*="a-price"]',
-            '[class*="price-current"]',
-            '[class*="price-now"]',
-            '[class*="price-range"]'
+            # Fallback selectors
+            '[class*="amount"]',
+            '[class*="cost"]'
         ]
         
-        for selector in price_selectors:
+        for selector in priority_selectors:
             elements = soup.select(selector)
             for element in elements:
                 element_text = element.get_text().strip()
@@ -264,16 +193,30 @@ def scrape_prices(url):
         # Sort by position to maintain order from the page
         prices_found.sort(key=lambda x: x['position'])
         
-        # Remove duplicates while preserving order
+        # Improved duplicate removal and filtering
         unique_prices = []
+        seen_prices = set()
         seen_contexts = set()
         
         for price_info in prices_found:
-            # Create a key based on price and simplified context
-            key = (price_info['price'], price_info['context'][:100])
-            if key not in seen_contexts:
+            price = price_info['price']
+            context = price_info['context'][:200]  # More context for better deduplication
+            
+            # Skip if price is too small (likely not real prices)
+            price_numbers = re.findall(r'[\d,]+', price)
+            if price_numbers and len(price_numbers[0].replace(',', '')) < 3:
+                continue
+                
+            # Create unique key
+            key = (price, context)
+            if key not in seen_contexts and price not in seen_prices:
                 seen_contexts.add(key)
+                seen_prices.add(price)
                 unique_prices.append(price_info)
+                
+                # Limit early to improve performance
+                if len(unique_prices) >= 20:  # Stop after finding 20 good prices
+                    break
         
         logging.info(f"Found {len(unique_prices)} unique prices")
         return unique_prices
