@@ -106,31 +106,32 @@ def scrape_prices(url):
         text_content = soup.get_text()
         logging.info(f"Text content length: {len(text_content)}")
         
-        def is_excluded_context(context_text):
-            """평균 가격이나 비교 가격 컨텍스트인지 확인"""
-            exclude_keywords = ['average', '평균', 'compared to', 'compare', 'stands at']
-            return any(keyword in context_text.lower() for keyword in exclude_keywords)
+        def is_average_price_context(context_text):
+            """평균 가격 컨텍스트인지 확인 (이제 우선적으로 찾기 위함)"""
+            average_keywords = ['average', '평균', 'compared to', 'compare', 'stands at']
+            return any(keyword in context_text.lower() for keyword in average_keywords)
         
-        # 1단계: 최우선 시작가 패턴 검색
-        priority_found = False
-        for pattern in priority_patterns:
-            matches = re.finditer(pattern, text_content, re.IGNORECASE)
-            for match in matches:
-                price_text = match.group(1).strip() if match.groups() else match.group().strip()
-                
-                if price_text in seen_prices:
-                    continue
-                
-                # 컨텍스트 확인
-                start_pos = max(0, match.start() - 100)
-                end_pos = min(len(text_content), match.end() + 100)
-                context = text_content[start_pos:end_pos].strip()
-                context = re.sub(r'\s+', ' ', context)
-                
-                # 평균 가격 컨텍스트 제외
-                if is_excluded_context(context):
-                    continue
-                
+        # 1단계: 평균 가격 우선 검색 (찾으면 즉시 반환)
+        average_found = False
+        
+        # 간단한 가격 패턴으로 평균값 찾기
+        basic_price_pattern = r'([₩$€£¥]\s*[\d,]+(?:\.\d{2})?)'
+        matches = re.finditer(basic_price_pattern, text_content, re.IGNORECASE)
+        
+        for match in matches:
+            price_text = match.group(1).strip()
+            
+            if price_text in seen_prices:
+                continue
+            
+            # 컨텍스트 확인
+            start_pos = max(0, match.start() - 100)
+            end_pos = min(len(text_content), match.end() + 100)
+            context = text_content[start_pos:end_pos].strip()
+            context = re.sub(r'\s+', ' ', context)
+            
+            # 평균 가격 컨텍스트 찾기 (이제 우선적으로 선택)
+            if is_average_price_context(context):
                 seen_prices.add(price_text)
                 clean_price = price_text.rstrip(',').strip()
                 
@@ -139,21 +140,17 @@ def scrape_prices(url):
                     'context': context,
                     'position': match.start(),
                     'priority': True,
-                    'type': 'starting_price'  # 시작가 타입 표시
+                    'type': 'average_price'  # 평균 가격 타입
                 })
                 
-                priority_found = True
-                logging.info(f"Found priority price: {clean_price}")
-                
-                # 시작가를 찾았으면 최대 2개까지
-                if len(prices_found) >= 2:
-                    break
-            
-            if len(prices_found) >= 2:
-                break
+                average_found = True
+                logging.info(f"Found average price: {clean_price} - stopping search immediately")
+                break  # 평균 가격 찾으면 즉시 중단
         
-        # 2단계: 시작가를 못 찾은 경우 일반 패턴 검색 (임시로 필터링 완화)
-        if not priority_found:
+        # 평균 가격을 찾았으면 여기서 검색 완전 중단
+        
+        # 2단계: 평균 가격을 못 찾은 경우에만 일반 패턴 검색
+        if not average_found:
             logging.info("No starting price found, searching general patterns...")
             
             # 개선된 호텔 방값 패턴 (실제 예약 가격 위주)
@@ -188,9 +185,9 @@ def scrape_prices(url):
                     
                     logging.info(f"Pattern {i+1} match: {price_text} | Context: {context[:120]}...")
                     
-                    # 스마트 필터링: 평균 가격과 잘못된 컨텍스트 제외
-                    if is_excluded_context(context):
-                        logging.info(f"Excluded (average price context): {price_text}")
+                    # 평균 가격 컨텍스트는 이미 1단계에서 처리했으므로 여기서는 제외
+                    if is_average_price_context(context):
+                        logging.info(f"Skipped (already processed average price): {price_text}")
                         continue
                     
                     # 제목이나 메타데이터에서 나오는 가격 제외
@@ -335,10 +332,8 @@ def scrape_prices(url):
                 logging.info(f"  -> Skipped: duplicate price")
                 continue
             
-            # 평균 가격 제외 (가장 중요한 필터)
-            if any(word in context.lower() for word in ['average', '평균', 'compared to']):
-                logging.info(f"  -> Skipped: average price context")
-                continue
+            # 평균 가격은 이미 1단계에서 처리했으므로 여기서는 제외하지 않음
+            # (평균 가격을 찾지 못한 경우에만 이 단계가 실행됨)
             
             # 성공적으로 추가
             seen_prices.add(price)
