@@ -74,57 +74,21 @@ def scrape():
             all_urls_to_check.append({'cid': cid_value, 'url': new_url})
         
         def generate_streaming_results():
-            """스트리밍으로 결과를 하나씩 전송"""
+            """스트리밍으로 결과를 하나씩 전송 - 배치 처리 방식"""
             import json
+            from scraper import scrape_all_urls_batch
             
             # 시작 메시지
             yield f"data: {json.dumps({'type': 'start', 'total_cids': len(all_urls_to_check)})}\n\n"
             
-            results = []
-            # 순차적으로 하나씩 모든 CID를 검색
-            for i, url_info in enumerate(all_urls_to_check):
-                app.logger.info(f"Step {i+1}/{len(all_urls_to_check)}: Searching with CID: {url_info['cid']}")
-                
-                # 진행 상태 전송
-                yield f"data: {json.dumps({'type': 'progress', 'step': i+1, 'total': len(all_urls_to_check), 'cid': url_info['cid']})}\n\n"
-                
-                try:
-                    prices = scrape_prices(url_info['url'])
+            try:
+                # 모든 URL을 한 번에 배치 처리 (Selenium 1번만 사용)
+                for result in scrape_all_urls_batch(all_urls_to_check):
+                    yield f"data: {json.dumps(result)}\n\n"
                     
-                    result = {
-                        'cid': url_info['cid'],
-                        'url': url_info['url'],
-                        'prices': prices if prices else [],
-                        'status': 'success' if prices else 'no_prices'
-                    }
-                    
-                    results.append(result)
-                    
-                    # 결과 즉시 전송
-                    yield f"data: {json.dumps({'type': 'result', 'data': result})}\n\n"
-                    
-                    if prices:
-                        app.logger.info(f"✅ Found {len(prices)} prices with CID: {url_info['cid']}")
-                    else:
-                        app.logger.info(f"❌ No prices found with CID: {url_info['cid']}")
-                        
-                except Exception as e:
-                    app.logger.error(f"Error with CID {url_info['cid']}: {str(e)}")
-                    result = {
-                        'cid': url_info['cid'],
-                        'url': url_info['url'],
-                        'prices': [],
-                        'status': 'error',
-                        'error': str(e)
-                    }
-                    results.append(result)
-                    
-                    # 오류 결과도 즉시 전송
-                    yield f"data: {json.dumps({'type': 'result', 'data': result})}\n\n"
-            
-            # 완료 메시지
-            total_prices_found = sum(len(result.get('prices', [])) for result in results)
-            yield f"data: {json.dumps({'type': 'complete', 'total_results': len(results), 'total_prices_found': total_prices_found})}\n\n"
+            except Exception as e:
+                app.logger.error(f"Batch processing error: {str(e)}")
+                yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
         
         # 스트리밍 응답 반환
         from flask import Response

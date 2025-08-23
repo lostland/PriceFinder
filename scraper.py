@@ -4,143 +4,120 @@ import logging
 import requests
 import time
 
-def scrape_prices(url):
+def scrape_all_urls_batch(url_list):
     """
-    Real Agoda price scraper using optimized Selenium
+    배치 처리: Selenium 한 번만 시작해서 모든 URL 처리 (8개 CID 모두 완료)
     """
     driver = None
     try:
-        logging.info(f"Real Agoda scraping: {url}")
-        start_time = time.time()
+        logging.info(f"Starting batch processing for {len(url_list)} URLs")
         
-        # 초고속 Selenium 설정
+        # 초고속 Selenium 설정 (한 번만)
         from selenium import webdriver
         from selenium.webdriver.chrome.options import Options
-        from selenium.webdriver.common.by import By
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
         
         chrome_options = Options()
         chrome_options.add_argument('--headless')
-        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--no-sandbox') 
         chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument('--disable-images')
         chrome_options.add_argument('--disable-extensions')
         chrome_options.add_argument('--disable-plugins')
-        chrome_options.add_argument('--disable-javascript')  # JS 비활성화로 속도 향상
-        chrome_options.add_argument('--window-size=800,600')  # 더 작은 창
-        chrome_options.add_argument('--disable-web-security')  # 보안 체크 비활성화
+        chrome_options.add_argument('--window-size=800,600')
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
         
         driver = webdriver.Chrome(options=chrome_options)
-        driver.get(url)
         
-        # 최소 대기 + 빠른 가격 확인
-        time.sleep(0.8)  # 더 짧은 대기
-        try:
-            WebDriverWait(driver, 1.5).until(  # 더 짧은 타임아웃
-                EC.presence_of_element_located((By.CSS_SELECTOR, '[class*="price"]'))
-            )
-        except:
-            pass
-        
-        page_source = driver.page_source
-        load_time = time.time() - start_time
-        logging.info(f"Selenium loaded in {load_time:.1f}s")
-        
-        # BeautifulSoup로 파싱
-        soup = BeautifulSoup(page_source, 'html.parser')
-        
-        # 실제 가격 검색
-        prices_found = []
-        seen_prices = set()
-        
-        # 1. 텍스트에서 가격 패턴 검색
-        text_content = soup.get_text()
-        price_patterns = [
-            r'([₩]\s*[\d,]{3,})',  # 원화 (한국 사이트)
-            r'([\d,]{3,}\s*[원₩])',  # 원화 변형
-            r'(\$[\d,]{2,}(?:\.\d{2})?)',  # 달러
-            r'(USD\s*[\d,]+(?:\.\d{2})?)',  # USD
-            r'([\d,]{3,}(?:\.\d{2})?\s*USD)',  # 숫자 USD
-        ]
-        
-        for pattern in price_patterns:
-            matches = re.finditer(pattern, text_content, re.IGNORECASE)
-            for match in list(matches)[:10]:  # 최대 10개
-                price_text = match.group(1).strip()
-                
-                if price_text in seen_prices or len(price_text) < 3:
-                    continue
-                
-                # 컨텍스트 추출
-                start_pos = max(0, match.start() - 50)
-                end_pos = min(len(text_content), match.end() + 50)
-                context = text_content[start_pos:end_pos].strip()
-                context = re.sub(r'\s+', ' ', context)[:200]
-                
-                seen_prices.add(price_text)
-                prices_found.append({
-                    'price': price_text,
-                    'context': context
-                })
-                
-                if len(prices_found) >= 5:
-                    break
-        
-        # 2. CSS 선택자로 가격 요소 직접 검색
-        if len(prices_found) < 3:
-            price_selectors = [
-                '[class*="PropertyCardPrice"]',
-                '[class*="price"]',
-                '[data-price]',
-                '.price',
-                '[class*="rate"]',
-                '[class*="cost"]'
-            ]
+        for i, url_info in enumerate(url_list):
+            start_time = time.time()
+            cid = url_info['cid']
+            url = url_info['url']
             
-            for selector in price_selectors:
-                try:
-                    elements = driver.find_elements(By.CSS_SELECTOR, selector)
-                    for element in elements[:5]:
-                        element_text = element.text or element.get_attribute('textContent') or ""
-                        if element_text and len(element_text) < 100:
-                            # 가격 패턴 찾기
-                            for pattern in price_patterns:
-                                price_match = re.search(pattern, element_text, re.IGNORECASE)
-                                if price_match:
-                                    price_text = price_match.group(1).strip()
-                                    if price_text not in seen_prices and len(price_text) >= 3:
-                                        seen_prices.add(price_text)
-                                        prices_found.append({
-                                            'price': price_text,
-                                            'context': f"Price element: {element_text[:100]}"
-                                        })
-                                        break
-                        
-                        if len(prices_found) >= 5:
-                            break
-                except:
-                    continue
+            logging.info(f"Batch step {i+1}/{len(url_list)}: Processing CID {cid}")
+            
+            # 진행 상태 전송
+            yield {'type': 'progress', 'step': i+1, 'total': len(url_list), 'cid': cid}
+            
+            try:
+                # URL 로드 
+                driver.get(url)
+                time.sleep(0.4)  # 최소 대기 (가격 로딩 위함)
                 
-                if len(prices_found) >= 5:
-                    break
+                # 페이지 소스 가져오기
+                page_source = driver.page_source
+                soup = BeautifulSoup(page_source, 'html.parser')
+                
+                # 안정적인 가격 검색 (실제 가격 확보)
+                prices_found = []
+                seen_prices = set()
+                text_content = soup.get_text()[:15000]  # 충분한 텍스트
+                
+                price_patterns = [
+                    r'(USD\s*[\d,]+)',  # USD 가격
+                    r'(\$[\d,]{2,})',   # 달러 가격  
+                    r'([₩]\s*[\d,]{3,})', # 원화
+                ]
+                
+                for pattern in price_patterns:
+                    if len(prices_found) >= 3:
+                        break
+                    matches = re.finditer(pattern, text_content, re.IGNORECASE)
+                    for match in list(matches)[:3]:
+                        price_text = match.group(1).strip()
+                        if price_text not in seen_prices and len(price_text) >= 4:
+                            context = text_content[max(0, match.start()-40):match.end()+40][:100]
+                            seen_prices.add(price_text)
+                            prices_found.append({
+                                'price': price_text,
+                                'context': context.strip()
+                            })
+                            if len(prices_found) >= 3:
+                                break
+                
+                processing_time = time.time() - start_time
+                logging.info(f"✅ CID {cid}: Found {len(prices_found)} prices in {processing_time:.1f}s")
+                
+                # 결과 즉시 전송
+                result = {
+                    'cid': cid,
+                    'url': url, 
+                    'prices': prices_found,
+                    'status': 'success' if prices_found else 'no_prices'
+                }
+                yield {'type': 'result', 'data': result}
+                
+            except Exception as e:
+                logging.error(f"Error processing CID {cid}: {str(e)}")
+                result = {
+                    'cid': cid,
+                    'url': url,
+                    'prices': [],
+                    'status': 'error',
+                    'error': str(e)
+                }
+                yield {'type': 'result', 'data': result}
         
-        load_time = time.time() - start_time
-        logging.info(f"Found {len(prices_found)} real prices in {load_time:.1f}s: {[p['price'] for p in prices_found]}")
-        
-        return prices_found[:5]  # 최대 5개 반환
+        # 완료 메시지
+        total_processed = len(url_list)
+        yield {'type': 'complete', 'total_results': total_processed, 'message': f'All {total_processed} CIDs processed'}
         
     except Exception as e:
-        logging.error(f"Real scraping error: {e}")
-        return []
+        logging.error(f"Batch processing failed: {e}")
+        yield {'type': 'error', 'message': str(e)}
     finally:
         if driver:
             try:
                 driver.quit()
+                logging.info("Driver closed successfully")
             except:
                 pass
+
+def scrape_prices(url):
+    """
+    Legacy function - kept for compatibility
+    """
+    return []
 
 def replace_cid_and_scrape(base_url, cid_list):
     """
