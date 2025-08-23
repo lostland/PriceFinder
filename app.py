@@ -74,22 +74,21 @@ def scrape():
             all_urls_to_check.append({'cid': cid_value, 'url': new_url})
         
         def generate_streaming_results():
-            """스트리밍으로 결과를 하나씩 전송 - 완전 독립 처리"""
+            """스트리밍으로 결과를 하나씩 전송"""
             import json
             
             # 시작 메시지
             yield f"data: {json.dumps({'type': 'start', 'total_cids': len(all_urls_to_check)})}\n\n"
             
             results = []
-            # 각 CID를 완전히 독립적으로 처리 (누적 없음)
+            # 순차적으로 하나씩 모든 CID를 검색
             for i, url_info in enumerate(all_urls_to_check):
-                app.logger.info(f"Step {i+1}/{len(all_urls_to_check)}: Independent processing of CID: {url_info['cid']}")
+                app.logger.info(f"Step {i+1}/{len(all_urls_to_check)}: Searching with CID: {url_info['cid']}")
                 
                 # 진행 상태 전송
                 yield f"data: {json.dumps({'type': 'progress', 'step': i+1, 'total': len(all_urls_to_check), 'cid': url_info['cid']})}\n\n"
                 
                 try:
-                    # 완전히 독립적으로 1개씩 처리 (Selenium 매번 새로 시작/종료)
                     prices = scrape_prices(url_info['url'])
                     
                     result = {
