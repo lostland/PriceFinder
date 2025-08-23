@@ -56,7 +56,7 @@ def scrape_prices_simple(url):
         # 텍스트 추출
         text_content = soup.get_text()
         
-        # 가격 패턴 검색
+        # 가격 패턴 검색 (일단 모든 가격 수집)
         prices_found = []
         seen_prices = set()
         
@@ -82,6 +82,17 @@ def scrape_prices_simple(url):
                 start_pos = max(0, match.start() - 50)
                 end_pos = min(len(text_content), match.end() + 50)
                 context = text_content[start_pos:end_pos].strip()
+                context_lower = context.lower()
+                
+                # 명확한 평균가격 문구 제외
+                is_average_price = (
+                    'with an average room price of' in context_lower or
+                    'which stands at' in context_lower
+                )
+                
+                if is_average_price:
+                    continue  # 평균가격이면 건너뛰기
+                
                 context = re.sub(r'\s+', ' ', context)[:150]
                 
                 seen_prices.add(price_text)
