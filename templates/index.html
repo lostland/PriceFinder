@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Scraper - Extract Price Information from Websites</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container py-5">
+        <!-- Header -->
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h1 class="display-4 mb-3">
+                    <i class="fas fa-search text-info"></i>
+                    Price Scraper
+                </h1>
+                <p class="lead text-muted">
+                    Extract price information from any website. Simply enter a URL and we'll find the top 5 prices for you.
+                </p>
+            </div>
+        </div>
+
+        <!-- URL Input Form -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-link text-info"></i>
+                            Enter Website URL
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="scrapeForm">
+                            <div class="mb-3">
+                                <label for="urlInput" class="form-label">Website URL</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-globe"></i>
+                                    </span>
+                                    <input type="url" 
+                                           class="form-control" 
+                                           id="urlInput" 
+                                           placeholder="https://example.com or example.com"
+                                           required>
+                                    <button type="submit" class="btn btn-info" id="scrapeBtn">
+                                        <i class="fas fa-search"></i>
+                                        Find Prices
+                                    </button>
+                                </div>
+                                <div class="form-text">
+                                    Enter any website URL to extract price information. Protocol (https://) is optional.
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="row justify-content-center mb-4" style="display: none;">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body text-center py-4">
+                        <div class="spinner-border text-info mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h5>Analyzing Website...</h5>
+                        <p class="text-muted mb-0">Please wait while we extract price information from the webpage.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="row justify-content-center mb-4" style="display: none;">
+            <div class="col-lg-8">
+                <div class="alert alert-danger" role="alert">
+                    <h5 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Error
+                    </h5>
+                    <p id="errorText" class="mb-0"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="row justify-content-center" style="display: none;">
+            <div class="col-lg-10">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-tag text-success"></i>
+                            Price Information Found
+                        </h5>
+                        <span id="resultsCount" class="badge bg-info"></span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="fas fa-link"></i>
+                                Source: <span id="sourceUrl" class="text-break"></span>
+                            </small>
+                        </div>
+                        <div id="pricesList">
+                            <!-- Price items will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle text-info"></i>
+                            How it Works
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center mb-3">
+                                    <i class="fas fa-link fa-2x text-info mb-2"></i>
+                                    <h6>1. Enter URL</h6>
+                                    <p class="text-muted small">Paste any website URL where you want to find prices</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center mb-3">
+                                    <i class="fas fa-cogs fa-2x text-info mb-2"></i>
+                                    <h6>2. We Analyze</h6>
+                                    <p class="text-muted small">Our scraper analyzes the page for price patterns in multiple currencies</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center mb-3">
+                                    <i class="fas fa-list fa-2x text-info mb-2"></i>
+                                    <h6>3. See Results</h6>
+                                    <p class="text-muted small">Get the top 5 prices found with their context</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-info">
+                            <strong>Supported Currencies:</strong> 
+                            USD ($), EUR (€), GBP (£), KRW (₩), JPY (¥) and more
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
