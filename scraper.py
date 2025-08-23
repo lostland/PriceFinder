@@ -21,11 +21,25 @@ def scrape_all_urls_batch(url_list):
         chrome_options.add_argument('--no-sandbox') 
         chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument('--disable-gpu')
-        chrome_options.add_argument('--disable-images')
+        chrome_options.add_argument('--disable-images')  # 이미지 완전 차단
         chrome_options.add_argument('--disable-extensions')
         chrome_options.add_argument('--disable-plugins')
         chrome_options.add_argument('--window-size=800,600')
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+        
+        # 이미지 로딩 완전 차단 (추가 설정)
+        chrome_options.add_argument('--blink-settings=imagesEnabled=false')
+        chrome_options.add_argument('--disable-background-timer-throttling')
+        chrome_options.add_argument('--disable-renderer-backgrounding')
+        chrome_options.add_argument('--disable-backgrounding-occluded-windows')
+        
+        # 프리페치 설정으로 이미지/미디어 차단
+        prefs = {
+            "profile.managed_default_content_settings.images": 2,
+            "profile.default_content_setting_values.notifications": 2,
+            "profile.managed_default_content_settings.media_stream": 2,
+        }
+        chrome_options.add_experimental_option("prefs", prefs)
         
         driver = webdriver.Chrome(options=chrome_options)
         
