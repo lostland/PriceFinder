@@ -10,8 +10,6 @@ def scrape_prices_simple(url):
     Returns a list of dictionaries containing price and context information
     """
     try:
-        logging.info(f"Processing URL: {url}")
-        
         # Selenium 사용 - 간단한 설정
         from selenium import webdriver
         from selenium.webdriver.chrome.options import Options
@@ -25,6 +23,8 @@ def scrape_prices_simple(url):
         chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument('--window-size=1024,768')
+        chrome_options.add_argument('--disable-logging')  # 로깅 비활성화
+        chrome_options.add_argument('--log-level=3')  # 에러만 표시
         
         driver = webdriver.Chrome(options=chrome_options)
         
@@ -32,20 +32,16 @@ def scrape_prices_simple(url):
         try:
             driver.get(url)
             
-            # 초고속 대기 전략 (최적화)
-            time.sleep(2)  # 2초로 단축
+            # 극한 최적화 대기 전략
+            time.sleep(1)  # 1초로 극한 단축
             
-            # 빠른 페이지 로딩 확인
+            # 빠른 확인
             try:
-                WebDriverWait(driver, 3).until(
-                    lambda d: d.execute_script("return document.readyState") == "complete"
-                )
+                WebDriverWait(driver, 2).until(lambda d: d.find_elements(By.TAG_NAME, "body"))
             except:
                 pass
             
             page_source = driver.page_source
-            load_time = time.time() - start_time
-            logging.info(f"Page loaded in {load_time:.1f}s")
             
         finally:
             driver.quit()
@@ -59,7 +55,6 @@ def scrape_prices_simple(url):
         
         # 텍스트 추출
         text_content = soup.get_text()
-        logging.info(f"Text content length: {len(text_content)}")
         
         # 가격 패턴 검색
         prices_found = []
@@ -95,8 +90,6 @@ def scrape_prices_simple(url):
                     'context': context
                 })
                 
-                logging.info(f"Found price: {price_text}")
-                
                 # 최대 5개로 제한
                 if len(prices_found) >= 5:
                     break
@@ -104,11 +97,9 @@ def scrape_prices_simple(url):
             if len(prices_found) >= 5:
                 break
         
-        logging.info(f"Total prices found: {len(prices_found)}")
         return prices_found
         
     except Exception as e:
-        logging.error(f"Scraping error: {e}")
         return []
 
 def process_all_cids_sequential(base_url, cid_list):
@@ -118,8 +109,6 @@ def process_all_cids_sequential(base_url, cid_list):
     """
     original_cid = extract_cid_from_url(base_url)
     total_cids = len(cid_list)
-    
-    logging.info(f"Starting sequential processing of {total_cids} CIDs")
     
     # 시작 신호
     yield {
@@ -151,8 +140,6 @@ def process_all_cids_sequential(base_url, cid_list):
                 'cid': cid_label
             }
             
-            logging.info(f"Step {i}/{total_cids}: Processing CID {cid_label}")
-            
             # 스크래핑 실행
             start_time = time.time()
             prices = scrape_prices_simple(new_url)
@@ -170,15 +157,9 @@ def process_all_cids_sequential(base_url, cid_list):
                 'process_time': round(process_time, 1)
             }
             
-            if len(prices) > 0:
-                logging.info(f"✅ Found {len(prices)} prices for CID: {cid_label}")
-            else:
-                logging.info(f"❌ No prices found for CID: {cid_label}")
-            
             yield result
             
         except Exception as e:
-            logging.error(f"Error processing CID {new_cid}: {e}")
             yield {
                 'type': 'error',
                 'step': i,

@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, jsonify, Response
 from werkzeug.middleware.proxy_fix import ProxyFix
 from scraper import process_all_cids_sequential
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 # create the app
 app = Flask(__name__)
