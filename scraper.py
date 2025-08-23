@@ -148,77 +148,94 @@ def scrape_prices(url):
         
         # 평균 가격을 찾았어도 계속 검색 (모든 패턴을 확인)
         
-        # 2단계: 평균 가격을 찾았어도 추가 패턴 검색 (더 많은 가격 정보 수집)
+        # 2단계: 평균 가격을 못 찾은 경우에만 빠른 패턴 검색 (최적화됨)
         if not average_found:
-            logging.info("No starting price found, searching general patterns...")
+            logging.info("No average price found, quick pattern search...")
             
-            # 개선된 호텔 방값 패턴 (실제 예약 가격 위주)
-            improved_patterns = [
-                r'(?:from|starting)\s+(?:USD|usd)\s+([₩$€£¥]?\s*[\d,]+(?:\.\d{2})?)',  # "from USD 322" 패턴
-                r'(?:USD|usd)\s+([₩$€£¥]?\s*[\d,]+(?:\.\d{2})?)(?:\s*(?:VIEW|DEAL|Book))',  # 예약 관련 USD 가격
-                r'([₩$€£¥]\s*[\d,]{3,}(?:\.\d{2})?)\s*(?:per\s+night|1박|nightly)',  # 1박 가격
-                r'([₩$€£¥]\s*[\d,]{3,}(?:\.\d{2})?)'  # 기본 통화 패턴
+            # 최적화된 핵심 패턴만 사용 (속도 우선)
+            key_patterns = [
+                r'([₩$€£¥]\s*[\d,]{3,}(?:\.\d{2})?)\s*(?:per\s+night|1박|nightly)',  # 1박 가격 (최우선)
+                r'([₩$€£¥]\s*[\d,]{3,}(?:\.\d{2})?)'  # 기본 통화 패턴 (빠른 검색)
             ]
             
-            for i, pattern in enumerate(improved_patterns):
-                matches = re.finditer(pattern, text_content, re.IGNORECASE)
-                match_count = 0
-                for match in matches:
-                    match_count += 1
+            for pattern in key_patterns:
+                matches = re.finditer(pattern, text_content[:10000], re.IGNORECASE)  # 첫 10KB만 검색
+                
+                for match in list(matches)[:5]:  # 패턴당 최대 5개만 처리
+                    price_text = match.group(1).strip()
                     
-                    # 가격 텍스트 추출
-                    if match.groups():
-                        price_text = match.group(1).strip()
-                    else:
-                        price_text = match.group().strip()
-                        
-                    # 잘못된 패턴 필터링 (Updated, Stars 등)
-                    if any(word in price_text for word in ['Updated', 'U', 'S', 'out', 'of']):
+                    if price_text in seen_prices or len(price_text) < 2:
                         continue
-                    
-                    # 컨텍스트 확인
-                    start_pos = max(0, match.start() - 100)
-                    end_pos = min(len(text_content), match.end() + 100)
+                        
+                    # 간단한 컨텍스트 확인
+                    start_pos = max(0, match.start() - 50)
+                    end_pos = min(len(text_content), match.end() + 50)
                     context = text_content[start_pos:end_pos].strip()
-                    context = re.sub(r'\s+', ' ', context)
+                    context = re.sub(r'\s+', ' ', context)[:150]  # 컨텍스트 크기 제한
                     
-                    logging.info(f"Pattern {i+1} match: {price_text} | Context: {context[:120]}...")
-                    
-                    # 평균 가격 컨텍스트는 이미 1단계에서 처리했으므로 여기서는 제외
+                    # 이미 처리된 평균 가격 제외
                     if is_average_price_context(context):
-                        logging.info(f"Skipped (already processed average price): {price_text}")
                         continue
                     
-                    # 제목이나 메타데이터에서 나오는 가격 제외
-                    if any(word in context.lower() for word in ['updated', 'deals', 'booking.com', 'agoda']):
-                        logging.info(f"Excluded (metadata context): {price_text}")
-                        continue
+                    seen_prices.add(price_text)
+                    clean_price = price_text.rstrip(',').strip()
                     
-                    if price_text not in seen_prices and len(price_text) >= 2:
-                        seen_prices.add(price_text)
-                        clean_price = price_text.rstrip(',').strip()
-                        
-                        prices_found.append({
-                            'price': clean_price,
-                            'context': context,
-                            'position': match.start(),
-                            'priority': i < 2,  # 처음 2개 패턴이 우선순위
-                            'type': 'booking_price'
-                        })
-                        
-                        logging.info(f"✓ Added hotel price: {clean_price}")
-                        
-                        # 우선순위 패턴에서 가격을 찾으면 2개까지, 일반은 1개 추가
-                        max_prices = 2 if i < 2 else 3
-                        if len(prices_found) >= max_prices:
-                            break
+                    prices_found.append({
+                        'price': clean_price,
+                        'context': context,
+                        'position': match.start(),
+                        'priority': False,
+                        'type': 'quick_search'
+                    })
+                    
+                    logging.info(f"✓ Quick find: {clean_price}")
+                    
+                    # 빠른 검색 - 1개 찾으면 바로 다음 패턴으로
+                    if len(prices_found) >= 2:
+                        break
                 
-                logging.info(f"Pattern '{pattern[:50]}...' found {match_count} total matches")
-                
-                if len(prices_found) >= 3:
+                if len(prices_found) >= 2:
                     break
         
-        # 호텔 방값에 특화된 CSS 선택자 (우선순위별)
+        # 빠른 CSS 선택자 검색 (평균가 없을 때만, 최소한)
+        if not average_found and len(prices_found) == 0:
+            logging.info("Quick CSS selector search...")
+            
+            # 핵심 선택자만 사용 (속도 최적화)
+            key_selectors = [
+                '[class*="price"]',
+                '.price'
+            ]
+            
+            for selector in key_selectors:
+                try:
+                    elements = driver.find_elements(By.CSS_SELECTOR, selector)[:2]  # 최대 2개만
+                    
+                    for element in elements:
+                        element_text = element.get_attribute('textContent') or element.text
+                        if element_text and len(element_text) < 500:  # 너무 긴 텍스트는 제외
+                            price_matches = re.findall(r'([₩$€£¥]\s*[\d,]+(?:\.\d{2})?)', element_text)
+                            if price_matches:
+                                clean_price = price_matches[0].strip()
+                                if clean_price not in seen_prices:
+                                    seen_prices.add(clean_price)
+                                    prices_found.append({
+                                        'price': clean_price,
+                                        'context': element_text[:100],
+                                        'position': 0,
+                                        'priority': False,
+                                        'type': 'css_quick'
+                                    })
+                                    logging.info(f"✓ CSS quick find: {clean_price}")
+                                    break
+                    
+                    if len(prices_found) >= 1:
+                        break
+                        
+                except Exception:
+                    continue
+
+        # 구식 CSS 선택자 섹션 제거 (성능 최적화)
         priority_selectors = [
             # 최우선 - 호텔 예약 사이트 특화
             '[class*="PropertyCardPrice"]',      # Agoda 

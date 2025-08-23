@@ -33,16 +33,15 @@ def scrape():
         
         app.logger.info(f"Scraping URL: {url}")
         
-        # 7개의 cid 값 리스트 (테스트를 위해 처음 3개만 사용)
+        # 7개의 cid 값 리스트 (전체 활성화)
         cid_values = [
             '1833981',
             '1917614', 
-            '1829968'
-            # 추후 안정화 후 전체 활성화
-            # '1908612',
-            # '1922868',
-            # '1776688',
-            # '1729890'
+            '1829968',
+            '1908612',
+            '1922868',
+            '1776688',
+            '1729890'
         ]
         
         # URL 파싱하여 cid 파라미터 교체
@@ -74,45 +73,70 @@ def scrape():
             ))
             all_urls_to_check.append({'cid': cid_value, 'url': new_url})
         
-        # 순차적으로 하나씩 모든 CID를 검색
-        for i, url_info in enumerate(all_urls_to_check):
-            app.logger.info(f"Step {i+1}/{len(all_urls_to_check)}: Searching with CID: {url_info['cid']}")
+        def generate_streaming_results():
+            """스트리밍으로 결과를 하나씩 전송"""
+            import json
             
-            try:
-                prices = scrape_prices(url_info['url'])
+            # 시작 메시지
+            yield f"data: {json.dumps({'type': 'start', 'total_cids': len(all_urls_to_check)})}\n\n"
+            
+            results = []
+            # 순차적으로 하나씩 모든 CID를 검색
+            for i, url_info in enumerate(all_urls_to_check):
+                app.logger.info(f"Step {i+1}/{len(all_urls_to_check)}: Searching with CID: {url_info['cid']}")
                 
-                results.append({
-                    'cid': url_info['cid'],
-                    'url': url_info['url'],
-                    'prices': prices if prices else [],
-                    'status': 'success' if prices else 'no_prices'
-                })
+                # 진행 상태 전송
+                yield f"data: {json.dumps({'type': 'progress', 'step': i+1, 'total': len(all_urls_to_check), 'cid': url_info['cid']})}\n\n"
                 
-                if prices:
-                    app.logger.info(f"✅ Found {len(prices)} prices with CID: {url_info['cid']}")
-                else:
-                    app.logger.info(f"❌ No prices found with CID: {url_info['cid']}")
+                try:
+                    prices = scrape_prices(url_info['url'])
                     
-            except Exception as e:
-                app.logger.error(f"Error with CID {url_info['cid']}: {str(e)}")
-                results.append({
-                    'cid': url_info['cid'],
-                    'url': url_info['url'],
-                    'prices': [],
-                    'status': 'error',
-                    'error': str(e)
-                })
+                    result = {
+                        'cid': url_info['cid'],
+                        'url': url_info['url'],
+                        'prices': prices if prices else [],
+                        'status': 'success' if prices else 'no_prices'
+                    }
+                    
+                    results.append(result)
+                    
+                    # 결과 즉시 전송
+                    yield f"data: {json.dumps({'type': 'result', 'data': result})}\n\n"
+                    
+                    if prices:
+                        app.logger.info(f"✅ Found {len(prices)} prices with CID: {url_info['cid']}")
+                    else:
+                        app.logger.info(f"❌ No prices found with CID: {url_info['cid']}")
+                        
+                except Exception as e:
+                    app.logger.error(f"Error with CID {url_info['cid']}: {str(e)}")
+                    result = {
+                        'cid': url_info['cid'],
+                        'url': url_info['url'],
+                        'prices': [],
+                        'status': 'error',
+                        'error': str(e)
+                    }
+                    results.append(result)
+                    
+                    # 오류 결과도 즉시 전송
+                    yield f"data: {json.dumps({'type': 'result', 'data': result})}\n\n"
+            
+            # 완료 메시지
+            total_prices_found = sum(len(result.get('prices', [])) for result in results)
+            yield f"data: {json.dumps({'type': 'complete', 'total_results': len(results), 'total_prices_found': total_prices_found})}\n\n"
         
-        # 총 발견된 가격 수 계산
-        total_prices_found = sum(len(result.get('prices', [])) for result in results)
-        
-        return jsonify({
-            'success': True,
-            'results': results,
-            'total_results': len(results),
-            'total_prices_found': total_prices_found,
-            'original_url': url
-        })
+        # 스트리밍 응답 반환
+        from flask import Response
+        return Response(
+            generate_streaming_results(),
+            mimetype='text/plain',
+            headers={
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive',
+                'Content-Type': 'text/plain; charset=utf-8'
+            }
+        )
         
     except Exception as e:
         app.logger.error(f"Error scraping URL: {str(e)}")
