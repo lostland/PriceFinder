@@ -214,123 +214,72 @@ def scrape_prices_simple(url):
             if matches:
                 debug_info[pattern] = matches[:10]  # 처음 10개만
         
-        # 호텔 방 가격 전용 검색 (약 $200-$500 범위)
-        room_price_patterns = [
-            # 호텔 방 가격 패턴들
-            r'(\$[2-5]\d{2}(?:\.\d{2})?)\s*(?:per night|night|/night)',  # $200-599 per night
-            r'(\$[2-5]\d{2}(?:\.\d{2})?)\s*(?:total|Total)',  # $200-599 total
-            r'(?:from|From)\s*(\$[2-5]\d{2}(?:\.\d{2})?)',  # from $200-599
-            r'(\$[2-5]\d{2}(?:\.\d{2})?)',  # $200-599
-            r'([2-5]\d{2}(?:\.\d{2})?)\s*USD',  # 200-599 USD
-            r'USD\s*([2-5]\d{2}(?:\.\d{2})?)',  # USD 200-599
+        # 모든 가격 패턴 검색 (범위 제한 없음)
+        all_price_patterns = [
+            r'(\$[1-9]\d{2,4}(?:\.\d{2})?)',  # $100-99999.99
+            r'([1-9]\d{2,4}(?:\.\d{2})?\s*USD)',  # 100-9999.99 USD
+            r'USD\s*([1-9]\d{2,4}(?:\.\d{2})?)',  # USD 100-9999.99
+            r'(\$[1-9]\d{1,2})',  # $10-999
         ]
         
-        room_prices = []
-        room_seen = set()
+        all_prices = []
         
-        for pattern in room_price_patterns:
+        for pattern in all_price_patterns:
             matches = re.finditer(pattern, all_text, re.IGNORECASE)
             for match in matches:
                 price_text = match.group(1).strip()
-                price_num = int(re.sub(r'[^\d]', '', price_text))
                 
-                # $200-$500 범위의 가격만
-                if 200 <= price_num <= 500 and price_text not in room_seen:
-                    context_start = max(0, match.start() - 80)
-                    context_end = min(len(all_text), match.end() + 80)
+                if price_text not in seen_prices:
+                    context_start = max(0, match.start() - 60)
+                    context_end = min(len(all_text), match.end() + 60)
                     context = all_text[context_start:context_end].strip()
                     context_lower = context.lower()
                     context = re.sub(r'\s+', ' ', context)[:150]
                     
-                    # 평균가격 제외
+                    # 평균가격만 제외 (핵심)
                     is_average_price = (
                         'with an average room price of' in context_lower or
-                        'which stands at' in context_lower or
-                        'average room price' in context_lower
+                        'which stands at' in context_lower
                     )
                     
-                    # 핵심 부대 서비스만 제외 (더 관대하게)
+                    # 부대 서비스 더 강화된 필터링
                     service_keywords = [
-                        'attraction tickets', 'hop on hop off', 'esim', 'sim card', 
-                        'wifi', 'internet data', 'mobile phone', 'skywalk',
-                        'flow house', 'king power', 'combo deal'
+                        'attraction tickets', 'hop on hop off', 'esim', 'sim card',
+                        'skywalk', 'flow house', 'king power', 'bts skytrain',
+                        'transportation', 'transport', 'skytrain', 'ticket',
+                        'attraction', 'wifi', 'internet', 'mobile'
                     ]
                     is_service_price = any(service in context_lower for service in service_keywords)
                     
-                    if not is_average_price and not is_service_price:
-                        # 호텔 방 관련 키워드 우선 점수
-                        room_keywords = ['room', 'suite', 'night', 'nightly', 'stay', 
-                                       'accommodation', 'hotel', 'booking', 'reserve']
-                        room_score = sum(1 for keyword in room_keywords if keyword in context_lower)
-                        
-                        room_seen.add(price_text)
-                        room_prices.append({
+                    # 날짜, ID, 매우 큰 숫자 제외
+                    is_not_price = (
+                        any(year in context for year in ['2024', '2025', '2026']) or
+                        (price_text.isdigit() and len(price_text) > 4) or  # 긴 ID 제외
+                        (price_text.isdigit() and int(price_text) > 1000)  # $1000 이상은 보통 부대 서비스
+                    )
+                    
+                    if not is_average_price and not is_service_price and not is_not_price:
+                        seen_prices.add(price_text)
+                        all_prices.append({
                             'price': f"${price_text}" if not price_text.startswith('$') else price_text,
                             'context': context,
-                            'source': 'room_price_search',
-                            'room_score': room_score,
-                            'price_num': price_num
+                            'source': 'all_price_search'
                         })
                         
-                        if len(room_prices) >= 10:
+                        # 충분히 수집
+                        if len(all_prices) >= 10:
                             break
             
-            if len(room_prices) >= 10:
+            if len(all_prices) >= 10:
                 break
         
-        # 호텔 방 가격을 우선적으로 추가
-        if room_prices:
-            # 호텔 방 관련 점수와 가격 적절성으로 정렬
-            room_prices.sort(key=lambda x: (-x['room_score'], abs(x['price_num'] - 300)))  # $300 근처 우선
-            
-            for room_price in room_prices[:5]:  # 상위 5개만
-                room_price.pop('room_score', None)
-                room_price.pop('price_num', None)
-                prices_found.append(room_price)
-        
-        # 호텔 방 가격을 못 찾으면 일반 가격 검색 (하지만 부대 서비스는 제외)
-        if len(prices_found) < 2:
-            general_patterns = [
-                r'(\$[1-9]\d{2,3}(?:\.\d{2})?)',  # $100-9999
-                r'([1-9]\d{2,3}(?:\.\d{2})?)\s*USD',  # 100-9999 USD
-            ]
-            
-            for pattern in general_patterns:
-                matches = re.finditer(pattern, all_text, re.IGNORECASE)
-                for match in matches:
-                    price_text = match.group(1).strip()
-                    if price_text not in seen_prices:
-                        context_start = max(0, match.start() - 60)
-                        context_end = min(len(all_text), match.end() + 60)
-                        context = all_text[context_start:context_end].strip()
-                        context_lower = context.lower()
-                        context = re.sub(r'\s+', ' ', context)[:120]
-                        
-                        # 평균가격과 부대 서비스 제외
-                        skip_conditions = [
-                            'average room price of' in context_lower,
-                            'which stands at' in context_lower,
-                            any(service in context_lower for service in [
-                                'attraction', 'ticket', 'breakfast', 'spa', 'tour',
-                                'transport', 'skywalk', 'flow house', 'king power'
-                            ]),
-                            any(year in context for year in ['2024', '2025', '2026']),
-                            price_text.isdigit() and len(price_text) > 4
-                        ]
-                        
-                        if not any(skip_conditions):
-                            seen_prices.add(price_text)
-                            prices_found.append({
-                                'price': f"${price_text}" if not price_text.startswith('$') else price_text,
-                                'context': context,
-                                'source': 'general_search'
-                            })
-                            
-                            if len(prices_found) >= 5:
-                                break
-                
-                if len(prices_found) >= 5:
-                    break
+        # 두 번째 가격만 반환 (사용자 요구사항)
+        if len(all_prices) >= 2:
+            prices_found = [all_prices[1]]  # 두 번째 가격만
+        elif len(all_prices) >= 1:
+            prices_found = [all_prices[0]]  # 첫 번째라도 반환
+        else:
+            prices_found = all_prices  # 없으면 빈 리스트
         
         return prices_found
         
