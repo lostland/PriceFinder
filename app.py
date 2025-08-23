@@ -24,7 +24,7 @@ def scrape():
         url = data.get('url', '').strip()
         
         if not url:
-            return jsonify({'error': 'URL is required'}), 400
+            return jsonify({'error': 'URL을 입력해주세요'}), 400
         
         # Add protocol if missing
         if not url.startswith(('http://', 'https://')):
@@ -37,7 +37,7 @@ def scrape():
         
         if not prices:
             return jsonify({
-                'error': 'No price information found on this page',
+                'error': '이 페이지에서 호텔 방값 정보를 찾을 수 없습니다',
                 'prices': []
             }), 404
         
@@ -54,7 +54,7 @@ def scrape():
     except Exception as e:
         app.logger.error(f"Error scraping URL: {str(e)}")
         return jsonify({
-            'error': f'Failed to scrape the website: {str(e)}'
+            'error': f'웹사이트 분석 실패: {str(e)}'
         }), 500
 
 if __name__ == '__main__':

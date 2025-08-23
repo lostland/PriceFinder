@@ -85,24 +85,23 @@ def scrape_prices(url):
         for script in soup(["script", "style"]):
             script.decompose()
         
-        # Optimized price patterns - focused on most common formats
+        # 호텔 방값 패턴 (균형잡힌 접근)
         price_patterns = [
-            # Primary currency patterns (most likely to be prices)
-            r'[₩$€£¥]\s*[\d,]{3,}(?:\.\d{2})?',  # Currency symbols with 3+ digits
-            r'[\d,]{4,}(?:\.\d{2})?\s*[₩원]',     # Korean Won
-            r'[\d,]{2,}(?:\.\d{2})?\s*(?:USD|EUR|GBP|JPY|KRW)\b',  # Currency codes
+            # 기본 통화 패턴 (가장 흔한 형태)
+            r'[₩$€£¥]\s*[\d,]{2,}(?:\.\d{2})?',
+            r'[\d,]{3,}(?:\.\d{2})?\s*[₩원KRW]',
             
-            # High precision patterns (most reliable)
-            r'(?:price|가격|cost|amount)[\s:]+[₩$€£¥]?\s*[\d,]+(?:\.\d{2})?',
-            r'[₩$€£¥]\s*[\d]{1,3}(?:,\d{3})+(?:\.\d{2})?',  # Properly formatted numbers
-            
-            # Hotel/booking specific patterns
-            r'[\d,]+\s*원\s*부터',
+            # 호텔 특화 패턴 (한글)
+            r'[\d,]+\s*원\s*(?:부터|~|에서|시작)',
             r'[\d,]+\s*만원',
+            r'(?:1박|박당|per\s+night)[\s:]*[₩$€£¥]?\s*[\d,]+(?:\.\d{2})?',
             
-            # Fallback patterns for edge cases
-            r'[\d,]{3,}\s*(?:원|won)\b',
-            r'(?:총|합계|total)[\s:]*[₩$€£¥]?\s*[\d,]+(?:\.\d{2})?'
+            # 호텔 특화 패턴 (영어)
+            r'(?:from|starting)[\s:]*[₩$€£¥]\s*[\d,]+(?:\.\d{2})?',
+            r'(?:room|rate|price)[\s:]*[₩$€£¥]?\s*[\d,]+(?:\.\d{2})?',
+            
+            # 예약 사이트 패턴
+            r'(?:total|final)[\s:]*[₩$€£¥]\s*[\d,]+(?:\.\d{2})?'
         ]
         
         prices_found = []
@@ -131,38 +130,48 @@ def scrape_prices(url):
                 context = re.sub(r'\s+', ' ', context)
                 context = context.replace('\n', ' ').replace('\t', ' ')
                 
+                # 가격 포맷 정리
+                clean_price = price_text.rstrip(',').strip()
+                
                 prices_found.append({
-                    'price': price_text,
+                    'price': clean_price,
                     'context': context,
                     'position': match.start()
                 })
         
-        # Optimized selectors - focus on most effective ones
+        # 호텔 방값에 특화된 CSS 선택자 (우선순위별)
         priority_selectors = [
-            # High priority - most reliable
-            '[class*="PropertyCardPrice"]',  # Agoda specific
-            '[class*="price-display"]',
+            # 최우선 - 호텔 예약 사이트 특화
+            '[class*="PropertyCardPrice"]',      # Agoda 
+            '[class*="price-display"]',          # 일반적인 가격 표시
+            '[class*="room-price"]',             # 룸 가격
+            '[class*="rate"]',                   # 요금
+            '[class*="nightly"]',                # 1박 요금
+            
+            # 높은 우선순위 - 확실한 가격 요소
             '[data-price]',
             '[data-price-value]',
-            
-            # Medium priority - common patterns
-            '[class*="price"]',
+            '[data-room-price]',
             '.price',
             '.final-price',
-            '.current-price',
+            '.room-rate',
             
-            # Korean specific
+            # 중간 우선순위 - 한글 지원
             '[class*="가격"]',
+            '[class*="요금"]',
             '[class*="원"]',
+            '[class*="할인"]',
             
-            # Generic but effective
+            # 일반적인 패턴
             'span[class*="price"]',
             'div[class*="price"]',
             'strong[class*="price"]',
+            'b[class*="price"]',
             
-            # Fallback selectors
-            '[class*="amount"]',
-            '[class*="cost"]'
+            # 예약 사이트별 특화
+            '[class*="booking-price"]',
+            '[class*="hotel-price"]',
+            '[class*="accommodation-price"]'
         ]
         
         for selector in priority_selectors:
@@ -184,8 +193,11 @@ def scrape_prices(url):
                         context = element_text
                         context = re.sub(r'\s+', ' ', context)
                         
+                        # 가격 포맷 정리
+                        clean_price = price_text.rstrip(',').strip()
+                        
                         prices_found.append({
-                            'price': price_text,
+                            'price': clean_price,
                             'context': context,
                             'position': 0  # HTML element based, no specific position
                         })
@@ -202,10 +214,24 @@ def scrape_prices(url):
             price = price_info['price']
             context = price_info['context'][:200]  # More context for better deduplication
             
-            # Skip if price is too small (likely not real prices)
+            # 간단한 방값 필터링
             price_numbers = re.findall(r'[\d,]+', price)
-            if price_numbers and len(price_numbers[0].replace(',', '')) < 3:
+            if price_numbers:
+                num_str = price_numbers[0].replace(',', '')
+                # 합리적인 방값 범위만 허용
+                if len(num_str) < 2 or len(num_str) > 8:
+                    continue
+                    
+            # 리뷰 관련 더 정확하게 제외
+            if price.lower().endswith(' r') or price.lower().endswith('r'):
                 continue
+            if 'review' in context.lower() and re.search(r'\b\d+\s*r\b', price.lower()):
+                continue
+            if 'out of' in context.lower():
+                continue
+                
+            # 가격 포맷 정리 (쉼표가 끝에 있는 경우 제거)
+            price = price.rstrip(',').strip()
                 
             # Create unique key
             key = (price, context)
@@ -214,8 +240,8 @@ def scrape_prices(url):
                 seen_prices.add(price)
                 unique_prices.append(price_info)
                 
-                # Limit early to improve performance
-                if len(unique_prices) >= 20:  # Stop after finding 20 good prices
+                # 호텔 방값은 2-3개만 찾기
+                if len(unique_prices) >= 5:  # 최대 5개까지만 수집
                     break
         
         logging.info(f"Found {len(unique_prices)} unique prices")

@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const url = urlInput.value.trim();
         if (!url) {
-            showError('Please enter a valid URL');
+            showError('올바른 URL을 입력해주세요');
             return;
         }
 
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
         hideResults();
         
         // Set button to loading state
-        scrapeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+        scrapeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 분석 중...';
         scrapeBtn.disabled = true;
         scrapeBtn.classList.add('btn-loading');
 
@@ -65,14 +65,14 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (data.success) {
                 showResults(data.url, data.prices, data.total_found);
             } else {
-                showError('Unexpected response from server');
+                showError('서버에서 예상치 못한 응답이 왔습니다');
             }
         })
         .catch(error => {
             console.error('Error:', error);
             hideLoading();
             resetButton();
-            showError('Failed to connect to the server. Please try again.');
+            showError('서버 연결에 실패했습니다. 다시 시도해주세요.');
         });
     }
 
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sourceUrl.textContent = url;
         
         // Update results count
-        resultsCount.textContent = `${prices.length} of ${totalFound} found`;
+        resultsCount.textContent = `${totalFound}개 중 ${prices.length}개 발견`;
         
         // Clear previous results
         pricesList.innerHTML = '';
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
         item.className = 'price-item';
         
         const price = priceInfo.price || 'N/A';
-        const context = priceInfo.context || 'No context available';
+        const context = priceInfo.context || '컨텍스트 정보가 없습니다';
         
         // Highlight the price within the context
         let highlightedContext = context;
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span class="badge bg-secondary">#${index}</span>
             </div>
             <div class="price-context">
-                <strong>Context:</strong> ${highlightedContext}
+                <strong>상세정보:</strong> ${highlightedContext}
             </div>
         `;
         
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function resetButton() {
-        scrapeBtn.innerHTML = '<i class="fas fa-search"></i> Find Prices';
+        scrapeBtn.innerHTML = '<i class="fas fa-search"></i> 방값 찾기';
         scrapeBtn.disabled = false;
         scrapeBtn.classList.remove('btn-loading');
     }
@@ -178,19 +178,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Auto-focus on URL input
     urlInput.focus();
 
-    // Sample URLs for testing (can be removed in production)
+    // 호텔 예약 사이트 샘플 URL
     const sampleUrls = [
-        'amazon.com',
-        'ebay.com',
-        'walmart.com',
-        'target.com'
+        'agoda.com',
+        'booking.com',
+        'expedia.co.kr',
+        'hotels.com'
     ];
 
     // Add placeholder with rotating sample URLs
     let placeholderIndex = 0;
     setInterval(() => {
         if (document.activeElement !== urlInput) {
-            urlInput.placeholder = `Try: ${sampleUrls[placeholderIndex]} or enter any website URL`;
+            urlInput.placeholder = `예시: ${sampleUrls[placeholderIndex]} 또는 다른 호텔 예약 사이트 URL`;
             placeholderIndex = (placeholderIndex + 1) % sampleUrls.length;
         }
     }, 3000);
