@@ -18,7 +18,7 @@
                     아고다 Magic Price
                 </h1>
                 <p class="lead text-muted">
-                    아고다 URL 을 입력하시면, 최저 가격을 자동으로 찾아 드립니다.
+                    아고다 URL을 입력하시면, 최저 가격을 자동으로 찾아 드립니다.
                 </p>
             </div>
         </div>
@@ -49,7 +49,7 @@
                                            required>
                                     <button type="submit" class="btn btn-info" id="scrapeBtn">
                                         <i class="fas fa-search"></i>
-                                        방값 찾기
+                                        분석 시작
                                     </button>
                                 </div>
                                 <div class="form-text">
@@ -57,6 +57,27 @@
                                 </div>
                             </div>
                         </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div id="progressSection" class="row justify-content-center mb-4" style="display: none;">
+            <div class="col-lg-10">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0">진행 상황</h6>
+                            <span id="progressText" class="text-muted">1 / 7</span>
+                        </div>
+                        <div class="progress mb-3">
+                            <div id="progressBar" class="progress-bar bg-info" role="progressbar" style="width: 14%"></div>
+                        </div>
+                        <div id="currentStatus" class="text-center">
+                            <span id="currentCid" class="badge bg-secondary">원본(1833981)</span>
+                            <span class="ms-2">분석 중...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -70,7 +91,7 @@
                         <div class="spinner-border text-info mb-3" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
-                        <h5>웹사이트 분석 중...</h5>
+                        <h5>CID <span id="loadingCid"></span> 분석 중...</h5>
                         <p class="text-muted mb-0">웹페이지에서 가격 정보를 추출하는 중입니다. 잠시만 기다려주세요.</p>
                     </div>
                 </div>
@@ -91,26 +112,41 @@
         </div>
 
         <!-- Results Section -->
-        <div id="resultsSection" class="row justify-content-center" style="display: none;">
+        <div id="resultsSection" class="row justify-content-center mb-4" style="display: none;">
             <div class="col-lg-10">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-tag text-success"></i>
-                            가격 정보 발견
-                        </h5>
-                        <span id="resultsCount" class="badge bg-info"></span>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <small class="text-muted">
-                                <i class="fas fa-link"></i>
-                                출처: <span id="sourceUrl" class="text-break"></span>
-                            </small>
-                        </div>
-                        <div id="pricesList">
-                            <!-- Price items will be inserted here -->
-                        </div>
+                <div id="resultsContainer">
+                    <!-- 결과들이 여기에 동적으로 추가됩니다 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Continue Button -->
+        <div id="continueSection" class="row justify-content-center mb-4" style="display: none;">
+            <div class="col-lg-10 text-center">
+                <button id="continueBtn" class="btn btn-success btn-lg">
+                    <i class="fas fa-arrow-right"></i>
+                    다음 CID 분석 계속
+                </button>
+                <div class="mt-2">
+                    <small class="text-muted">
+                        다음: <span id="nextCidInfo" class="text-info"></span>
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complete Section -->
+        <div id="completeSection" class="row justify-content-center mb-4" style="display: none;">
+            <div class="col-lg-10">
+                <div class="card border-success">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                        <h4>모든 CID 분석 완료!</h4>
+                        <p class="text-muted">총 <span id="totalResults" class="text-info">0</span>개의 결과를 찾았습니다.</p>
+                        <button id="newSearchBtn" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            새로운 검색
+                        </button>
                     </div>
                 </div>
             </div>
@@ -137,9 +173,9 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="text-center mb-3">
-                                    <i class="fas fa-cogs fa-2x text-info mb-2"></i>
-                                    <h6>2. 자동 분석</h6>
-                                    <p class="text-muted small">AI가 페이지를 분석하여 정확한 호텔 방값을 찾아냅니다</p>
+                                    <i class="fas fa-step-forward fa-2x text-info mb-2"></i>
+                                    <h6>2. 단계별 분석</h6>
+                                    <p class="text-muted small">각 CID별로 하나씩 분석하며 "분석 계속" 버튼으로 진행</p>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -151,8 +187,8 @@
                             </div>
                         </div>
                         <div class="alert alert-info">
-                            <strong>지원 통화:</strong> 
-                            한국 원화(₩), 미국 달러($), 유로(€), 영국 파운드(£), 일본 엔(¥) 등
+                            <strong>분석 방식:</strong> 
+                            7개의 다른 CID로 하나씩 분석하여 다양한 가격을 찾아냅니다.
                         </div>
                     </div>
                 </div>

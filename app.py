@@ -19,10 +19,11 @@ def index():
 
 @app.route('/scrape', methods=['POST'])
 def scrape():
-    """Handle URL scraping request with sequential CID processing"""
+    """Handle single CID scraping request"""
     try:
         data = request.get_json()
         url = data.get('url', '').strip()
+        step = data.get('step', 0)  # 현재 단계 (0부터 시작)
         
         if not url:
             return jsonify({'error': 'URL을 입력해주세요'}), 400
@@ -31,9 +32,7 @@ def scrape():
         if not url.startswith(('http://', 'https://')):
             url = 'https://' + url
         
-        app.logger.info(f"Starting sequential scraping for URL: {url}")
-        
-        # 7개의 CID 값 리스트 - 모든 CID 처리
+        # 7개의 CID 값 리스트
         cid_values = [
             '1833981',  # 원본
             '1917614', 
@@ -44,70 +43,51 @@ def scrape():
             '1729890'
         ]
         
-        def generate_streaming_results():
-            """순차적 처리 결과를 실시간 스트리밍"""
-            import json
-            
-            results = []
-            total_prices_found = 0
-            
-            # 새로운 순차 처리 시스템 사용
-            for stream_data in process_all_cids_sequential(url, cid_values):
-                
-                if stream_data['type'] == 'start':
-                    yield f"data: {json.dumps(stream_data)}\n\n"
-                
-                elif stream_data['type'] == 'progress':
-                    yield f"data: {json.dumps(stream_data)}\n\n"
-                
-                elif stream_data['type'] == 'result':
-                    # 결과 데이터 포맷팅
-                    result_data = {
-                        'cid': stream_data['cid'],
-                        'url': stream_data['url'],
-                        'prices': stream_data['prices'],
-                        'status': 'success' if stream_data['found_count'] > 0 else 'no_prices',
-                        'process_time': stream_data.get('process_time', 0)
-                    }
-                    
-                    results.append(result_data)
-                    total_prices_found += stream_data['found_count']
-                    
-                    # 즉시 결과 전송
-                    yield f"data: {json.dumps({'type': 'result', 'data': result_data})}\n\n"
-                
-                elif stream_data['type'] == 'error':
-                    error_data = {
-                        'cid': stream_data['cid'],
-                        'url': url,
-                        'prices': [],
-                        'status': 'error',
-                        'error': stream_data['error']
-                    }
-                    results.append(error_data)
-                    
-                    # 오류 결과 전송
-                    yield f"data: {json.dumps({'type': 'result', 'data': error_data})}\n\n"
-                
-                elif stream_data['type'] == 'complete':
-                    # 완료 메시지
-                    completion_data = {
-                        'type': 'complete', 
-                        'total_results': len(results), 
-                        'total_prices_found': total_prices_found
-                    }
-                    yield f"data: {json.dumps(completion_data)}\n\n"
+        # 유효한 단계인지 확인
+        if step >= len(cid_values):
+            return jsonify({'error': '모든 CID 처리가 완료되었습니다'}), 400
         
-        # 스트리밍 응답 반환
-        return Response(
-            generate_streaming_results(),
-            mimetype='text/plain',
-            headers={
-                'Cache-Control': 'no-cache',
-                'Connection': 'keep-alive',
-                'Content-Type': 'text/plain; charset=utf-8'
-            }
-        )
+        current_cid = cid_values[step]
+        
+        # URL에서 CID 교체
+        from scraper import extract_cid_from_url, scrape_prices_simple
+        from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+        
+        original_cid = extract_cid_from_url(url)
+        if original_cid:
+            new_url = url.replace(f"cid={original_cid}", f"cid={current_cid}")
+        else:
+            separator = "&" if "?" in url else "?"
+            new_url = f"{url}{separator}cid={current_cid}"
+        
+        # CID 라벨 생성
+        if step == 0:
+            cid_label = f"원본({current_cid})"
+        else:
+            cid_label = str(current_cid)
+        
+        app.logger.info(f"Processing step {step+1}/{len(cid_values)}: CID {cid_label}")
+        
+        # 스크래핑 실행
+        import time
+        start_time = time.time()
+        prices = scrape_prices_simple(new_url)
+        process_time = time.time() - start_time
+        
+        # 결과 반환
+        result = {
+            'step': step + 1,
+            'total_steps': len(cid_values),
+            'cid': cid_label,
+            'url': new_url,
+            'prices': prices,
+            'found_count': len(prices),
+            'process_time': round(process_time, 1),
+            'has_next': step + 1 < len(cid_values),  # 다음 단계가 있는지
+            'next_step': step + 1 if step + 1 < len(cid_values) else None
+        }
+        
+        return jsonify(result)
         
     except Exception as e:
         app.logger.error(f"Error in scraping: {str(e)}")
