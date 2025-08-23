@@ -269,11 +269,6 @@ def scrape_prices_simple(url):
             if len(all_prices) >= 20:
                 break
         
-        # 디버깅: 수집된 가격들을 확인해보기
-        print(f"DEBUG: Total prices found: {len(all_prices)}")
-        for i, price in enumerate(all_prices[:5]):  # 처음 5개만 출력
-            print(f"DEBUG: Price {i+1}: {price['price']} - {price['context'][:50]}")
-        
         # 두 번째 가격만 반환 (사용자 요구사항)
         if len(all_prices) >= 2:
             prices_found = [all_prices[1]]  # 두 번째 가격만
