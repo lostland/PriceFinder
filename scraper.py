@@ -242,10 +242,15 @@ def scrape_prices_simple(url):
                     context_lower = context.lower()
                     context = re.sub(r'\s+', ' ', context)[:150]
                     
-                    # 매우 기본적인 필터링만 (평균가격과 명백한 오류만)
+                    # 평균가격 강화 필터링 
                     is_average_price = (
                         'with an average room price of' in context_lower or
-                        'which stands at' in context_lower
+                        'which stands at' in context_lower or
+                        '평균 객실 가격은' in context_lower or
+                        'average room price' in context_lower or
+                        '평균 가격' in context_lower or
+                        '평균 객실' in context_lower or
+                        '방콕의 평균' in context_lower
                     )
                     
                     # 명백한 ID나 날짜만 제외
