@@ -33,19 +33,18 @@ def scrape():
         
         app.logger.info(f"Scraping URL: {url}")
         
-        # 7개의 cid 값 리스트 (테스트를 위해 처음 3개만 사용)
+        # 7개의 cid 값 리스트
         cid_values = [
             '1833981',
             '1917614', 
-            '1829968'
-            # '1908612',
-            # '1922868',
-            # '1776688',
-            # '1729890'
+            '1829968',
+            '1908612',
+            '1922868',
+            '1776688',
+            '1729890'
         ]
         
         # URL 파싱하여 cid 파라미터 교체
-        
         parsed_url = urlparse(url)
         query_params = parse_qs(parsed_url.query)
         
@@ -53,31 +52,15 @@ def scrape():
         original_cid = query_params.get('cid', ['원본'])[0]
         
         results = []
+        found_average_price = False
         
-        # 1. 먼저 원본 URL로 검색
-        app.logger.info(f"Searching with original CID: {original_cid}")
-        try:
-            prices = scrape_prices(url)
-            results.append({
-                'cid': f"원본({original_cid})",
-                'url': url,
-                'prices': prices if prices else [],
-                'status': 'success' if prices else 'no_prices'
-            })
-        except Exception as e:
-            results.append({
-                'cid': f"원본({original_cid})",
-                'url': url,
-                'prices': [],
-                'status': 'error',
-                'error': str(e)
-            })
+        # 순차적 검색 시작: 원본 URL + 7개 CID를 하나씩 처리
+        all_urls_to_check = [
+            {'cid': f"원본({original_cid})", 'url': url}
+        ]
         
-        # 2. 각 cid 값으로 URL 생성하고 검색
+        # 각 CID별 URL 생성
         for cid_value in cid_values:
-            app.logger.info(f"Searching with CID: {cid_value}")
-            
-            # cid 파라미터 교체
             query_params_copy = query_params.copy()
             query_params_copy['cid'] = [cid_value]
             new_query = urlencode(query_params_copy, doseq=True)
@@ -89,19 +72,39 @@ def scrape():
                 new_query,
                 parsed_url.fragment
             ))
+            all_urls_to_check.append({'cid': cid_value, 'url': new_url})
+        
+        # 순차적으로 하나씩 검색 (평균 가격 찾으면 즉시 중단)
+        for i, url_info in enumerate(all_urls_to_check):
+            if found_average_price:
+                break
+                
+            app.logger.info(f"Step {i+1}/8: Searching with CID: {url_info['cid']}")
             
             try:
-                prices = scrape_prices(new_url)
+                prices = scrape_prices(url_info['url'])
+                
+                # 평균 가격을 찾았는지 확인
+                if prices and any(price.get('type') == 'average_price' for price in prices):
+                    found_average_price = True
+                    app.logger.info(f"✅ Average price found with CID: {url_info['cid']} - stopping search!")
+                
                 results.append({
-                    'cid': cid_value,
-                    'url': new_url,
+                    'cid': url_info['cid'],
+                    'url': url_info['url'],
                     'prices': prices if prices else [],
                     'status': 'success' if prices else 'no_prices'
                 })
+                
+                # 평균 가격을 찾았으면 즉시 중단
+                if found_average_price:
+                    break
+                    
             except Exception as e:
+                app.logger.error(f"Error with CID {url_info['cid']}: {str(e)}")
                 results.append({
-                    'cid': cid_value,
-                    'url': new_url,
+                    'cid': url_info['cid'],
+                    'url': url_info['url'],
                     'prices': [],
                     'status': 'error',
                     'error': str(e)
@@ -111,7 +114,8 @@ def scrape():
             'success': True,
             'results': results,
             'total_results': len(results),
-            'original_url': url
+            'original_url': url,
+            'found_average_price': found_average_price
         })
         
     except Exception as e:
