@@ -85,59 +85,142 @@ def scrape_prices(url):
         for script in soup(["script", "style"]):
             script.decompose()
         
-        # 호텔 방값 패턴 (균형잡힌 접근)
-        price_patterns = [
-            # 기본 통화 패턴 (가장 흔한 형태)
-            r'[₩$€£¥]\s*[\d,]{2,}(?:\.\d{2})?',
-            r'[\d,]{3,}(?:\.\d{2})?\s*[₩원KRW]',
-            
-            # 호텔 특화 패턴 (한글)
-            r'[\d,]+\s*원\s*(?:부터|~|에서|시작)',
-            r'[\d,]+\s*만원',
-            r'(?:1박|박당|per\s+night)[\s:]*[₩$€£¥]?\s*[\d,]+(?:\.\d{2})?',
-            
-            # 호텔 특화 패턴 (영어)
-            r'(?:from|starting)[\s:]*[₩$€£¥]\s*[\d,]+(?:\.\d{2})?',
-            r'(?:room|rate|price)[\s:]*[₩$€£¥]?\s*[\d,]+(?:\.\d{2})?',
-            
-            # 예약 사이트 패턴
-            r'(?:total|final)[\s:]*[₩$€£¥]\s*[\d,]+(?:\.\d{2})?'
+        # 스마트한 호텔 방값 검색 전략
+        # 1단계: 최우선 - 확실한 시작가 키워드
+        priority_patterns = [
+            r'(?:시작가|from|starting\s+from|starts\s+at|부터)[\s:]*([₩$€£¥]\s*[\d,]+(?:\.\d{2})?)',
+            r'([₩$€£¥]\s*[\d,]+(?:\.\d{2})?)\s*(?:부터|~|from|starting)'
+        ]
+        
+        # 2단계: 일반 가격 패턴 (평균 가격 컨텍스트 제외)
+        general_patterns = [
+            r'(?:1박|per\s+night|nightly)[\s:]*([₩$€£¥]\s*[\d,]+(?:\.\d{2})?)',
+            r'([₩$€£¥]\s*[\d,]{3,}(?:\.\d{2})?)',
+            r'([\d,]{4,}(?:\.\d{2})?\s*[₩원])'
         ]
         
         prices_found = []
         seen_prices = set()
         
-        # Search for prices in the text
+        # 단계별 스마트 검색
         text_content = soup.get_text()
+        logging.info(f"Text content length: {len(text_content)}")
         
-        for pattern in price_patterns:
+        def is_excluded_context(context_text):
+            """평균 가격이나 비교 가격 컨텍스트인지 확인"""
+            exclude_keywords = ['average', '평균', 'compared to', 'compare', 'stands at']
+            return any(keyword in context_text.lower() for keyword in exclude_keywords)
+        
+        # 1단계: 최우선 시작가 패턴 검색
+        priority_found = False
+        for pattern in priority_patterns:
             matches = re.finditer(pattern, text_content, re.IGNORECASE)
             for match in matches:
-                price_text = match.group().strip()
+                price_text = match.group(1).strip() if match.groups() else match.group().strip()
                 
-                # Skip if we've already found this exact price
                 if price_text in seen_prices:
                     continue
                 
-                seen_prices.add(price_text)
-                
-                # Get context around the price
-                start_pos = max(0, match.start() - 50)
-                end_pos = min(len(text_content), match.end() + 50)
+                # 컨텍스트 확인
+                start_pos = max(0, match.start() - 100)
+                end_pos = min(len(text_content), match.end() + 100)
                 context = text_content[start_pos:end_pos].strip()
-                
-                # Clean up context
                 context = re.sub(r'\s+', ' ', context)
-                context = context.replace('\n', ' ').replace('\t', ' ')
                 
-                # 가격 포맷 정리
+                # 평균 가격 컨텍스트 제외
+                if is_excluded_context(context):
+                    continue
+                
+                seen_prices.add(price_text)
                 clean_price = price_text.rstrip(',').strip()
                 
                 prices_found.append({
                     'price': clean_price,
                     'context': context,
-                    'position': match.start()
+                    'position': match.start(),
+                    'priority': True,
+                    'type': 'starting_price'  # 시작가 타입 표시
                 })
+                
+                priority_found = True
+                logging.info(f"Found priority price: {clean_price}")
+                
+                # 시작가를 찾았으면 최대 2개까지
+                if len(prices_found) >= 2:
+                    break
+            
+            if len(prices_found) >= 2:
+                break
+        
+        # 2단계: 시작가를 못 찾은 경우 일반 패턴 검색 (임시로 필터링 완화)
+        if not priority_found:
+            logging.info("No starting price found, searching general patterns...")
+            
+            # 개선된 호텔 방값 패턴 (실제 예약 가격 위주)
+            improved_patterns = [
+                r'(?:from|starting)\s+(?:USD|usd)\s+([₩$€£¥]?\s*[\d,]+(?:\.\d{2})?)',  # "from USD 322" 패턴
+                r'(?:USD|usd)\s+([₩$€£¥]?\s*[\d,]+(?:\.\d{2})?)(?:\s*(?:VIEW|DEAL|Book))',  # 예약 관련 USD 가격
+                r'([₩$€£¥]\s*[\d,]{3,}(?:\.\d{2})?)\s*(?:per\s+night|1박|nightly)',  # 1박 가격
+                r'([₩$€£¥]\s*[\d,]{3,}(?:\.\d{2})?)'  # 기본 통화 패턴
+            ]
+            
+            for i, pattern in enumerate(improved_patterns):
+                matches = re.finditer(pattern, text_content, re.IGNORECASE)
+                match_count = 0
+                for match in matches:
+                    match_count += 1
+                    
+                    # 가격 텍스트 추출
+                    if match.groups():
+                        price_text = match.group(1).strip()
+                    else:
+                        price_text = match.group().strip()
+                        
+                    # 잘못된 패턴 필터링 (Updated, Stars 등)
+                    if any(word in price_text for word in ['Updated', 'U', 'S', 'out', 'of']):
+                        continue
+                    
+                    # 컨텍스트 확인
+                    start_pos = max(0, match.start() - 100)
+                    end_pos = min(len(text_content), match.end() + 100)
+                    context = text_content[start_pos:end_pos].strip()
+                    context = re.sub(r'\s+', ' ', context)
+                    
+                    logging.info(f"Pattern {i+1} match: {price_text} | Context: {context[:120]}...")
+                    
+                    # 스마트 필터링: 평균 가격과 잘못된 컨텍스트 제외
+                    if is_excluded_context(context):
+                        logging.info(f"Excluded (average price context): {price_text}")
+                        continue
+                    
+                    # 제목이나 메타데이터에서 나오는 가격 제외
+                    if any(word in context.lower() for word in ['updated', 'deals', 'booking.com', 'agoda']):
+                        logging.info(f"Excluded (metadata context): {price_text}")
+                        continue
+                    
+                    if price_text not in seen_prices and len(price_text) >= 2:
+                        seen_prices.add(price_text)
+                        clean_price = price_text.rstrip(',').strip()
+                        
+                        prices_found.append({
+                            'price': clean_price,
+                            'context': context,
+                            'position': match.start(),
+                            'priority': i < 2,  # 처음 2개 패턴이 우선순위
+                            'type': 'booking_price'
+                        })
+                        
+                        logging.info(f"✓ Added hotel price: {clean_price}")
+                        
+                        # 우선순위 패턴에서 가격을 찾으면 2개까지, 일반은 1개 추가
+                        max_prices = 2 if i < 2 else 3
+                        if len(prices_found) >= max_prices:
+                            break
+                
+                logging.info(f"Pattern '{pattern[:50]}...' found {match_count} total matches")
+                
+                if len(prices_found) >= 3:
+                    break
         
         # 호텔 방값에 특화된 CSS 선택자 (우선순위별)
         priority_selectors = [
@@ -174,75 +257,109 @@ def scrape_prices(url):
             '[class*="accommodation-price"]'
         ]
         
-        for selector in priority_selectors:
-            elements = soup.select(selector)
-            for element in elements:
-                element_text = element.get_text().strip()
+        # CSS 선택자로 추가 검색 (부족한 경우에만)
+        if len(prices_found) < 2:
+            logging.info("Searching with CSS selectors...")
+            
+            for selector in priority_selectors[:5]:  # 상위 5개 선택자만 사용
+                elements = soup.select(selector)
+                logging.info(f"Selector '{selector}' found {len(elements)} elements")
                 
-                for pattern in price_patterns:
-                    matches = re.finditer(pattern, element_text, re.IGNORECASE)
-                    for match in matches:
-                        price_text = match.group().strip()
+                for element in elements:
+                    element_text = element.get_text().strip()
+                    if len(element_text) < 5:  # 너무 짧은 텍스트 제외
+                        continue
+                    
+                    # 간단한 가격 패턴으로 검색
+                    simple_patterns = [
+                        r'[₩$€£¥]\s*[\d,]{3,}(?:\.\d{2})?',
+                        r'[\d,]{4,}\s*[₩원]'
+                    ]
+                    
+                    for pattern in simple_patterns:
+                        matches = re.finditer(pattern, element_text, re.IGNORECASE)
+                        for match in matches:
+                            price_text = match.group().strip()
+                            clean_price = price_text.rstrip(',').strip()
+                            
+                            if clean_price in seen_prices:
+                                continue
+                            
+                            seen_prices.add(clean_price)
+                            context = element_text[:200]  # 컨텍스트 제한
+                            context = re.sub(r'\s+', ' ', context)
+                            
+                            prices_found.append({
+                                'price': clean_price,
+                                'context': context,
+                                'position': 0,
+                                'priority': False
+                            })
+                            
+                            logging.info(f"Found price via selector: {clean_price}")
+                            
+                            if len(prices_found) >= 3:
+                                break
                         
-                        if price_text in seen_prices:
-                            continue
-                        
-                        seen_prices.add(price_text)
-                        
-                        # Use the entire element text as context
-                        context = element_text
-                        context = re.sub(r'\s+', ' ', context)
-                        
-                        # 가격 포맷 정리
-                        clean_price = price_text.rstrip(',').strip()
-                        
-                        prices_found.append({
-                            'price': clean_price,
-                            'context': context,
-                            'position': 0  # HTML element based, no specific position
-                        })
+                        if len(prices_found) >= 3:
+                            break
+                    
+                    if len(prices_found) >= 3:
+                        break
+                
+                if len(prices_found) >= 3:
+                    break
         
         # Sort by position to maintain order from the page
         prices_found.sort(key=lambda x: x['position'])
         
-        # Improved duplicate removal and filtering
+        # 간단하고 직접적인 가격 처리 (디버깅용)
         unique_prices = []
         seen_prices = set()
-        seen_contexts = set()
         
-        for price_info in prices_found:
+        logging.info(f"Processing {len(prices_found)} found prices for final selection...")
+        
+        for i, price_info in enumerate(prices_found):
             price = price_info['price']
-            context = price_info['context'][:200]  # More context for better deduplication
+            context = price_info['context']
             
-            # 간단한 방값 필터링
-            price_numbers = re.findall(r'[\d,]+', price)
-            if price_numbers:
-                num_str = price_numbers[0].replace(',', '')
-                # 합리적인 방값 범위만 허용
-                if len(num_str) < 2 or len(num_str) > 8:
-                    continue
-                    
-            # 리뷰 관련 더 정확하게 제외
-            if price.lower().endswith(' r') or price.lower().endswith('r'):
-                continue
-            if 'review' in context.lower() and re.search(r'\b\d+\s*r\b', price.lower()):
-                continue
-            if 'out of' in context.lower():
+            logging.info(f"Examining price {i+1}: '{price}' from context: {context[:100]}...")
+            
+            # 기본 검증: 숫자 포함 확인
+            if not re.search(r'\d{2,}', price):
+                logging.info(f"  -> Skipped: no sufficient numbers")
                 continue
                 
-            # 가격 포맷 정리 (쉼표가 끝에 있는 경우 제거)
-            price = price.rstrip(',').strip()
-                
-            # Create unique key
-            key = (price, context)
-            if key not in seen_contexts and price not in seen_prices:
-                seen_contexts.add(key)
-                seen_prices.add(price)
-                unique_prices.append(price_info)
-                
-                # 호텔 방값은 2-3개만 찾기
-                if len(unique_prices) >= 5:  # 최대 5개까지만 수집
-                    break
+            # 중복 확인
+            if price in seen_prices:
+                logging.info(f"  -> Skipped: duplicate price")
+                continue
+            
+            # 평균 가격 제외 (가장 중요한 필터)
+            if any(word in context.lower() for word in ['average', '평균', 'compared to']):
+                logging.info(f"  -> Skipped: average price context")
+                continue
+            
+            # 성공적으로 추가
+            seen_prices.add(price)
+            
+            # 우선순위 설정
+            is_priority = price_info.get('type') in ['starting_price', 'booking_price']
+            
+            final_price = {
+                'price': price,
+                'context': context[:150],  # 컨텍스트 길이 제한
+                'priority': is_priority,
+                'type': price_info.get('type', 'general')
+            }
+            
+            unique_prices.append(final_price)
+            logging.info(f"  -> ✅ ADDED: {price} (type: {price_info.get('type', 'general')}, priority: {is_priority})")
+            
+            # 최대 3개
+            if len(unique_prices) >= 3:
+                logging.info("Reached maximum price limit (3)")
+                break
         
         logging.info(f"Found {len(unique_prices)} unique prices")
         return unique_prices
