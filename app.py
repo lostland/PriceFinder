@@ -33,15 +33,16 @@ def scrape():
         
         app.logger.info(f"Scraping URL: {url}")
         
-        # 7개의 cid 값 리스트
+        # 7개의 cid 값 리스트 (테스트를 위해 처음 3개만 사용)
         cid_values = [
             '1833981',
             '1917614', 
-            '1829968',
-            '1908612',
-            '1922868',
-            '1776688',
-            '1729890'
+            '1829968'
+            # 추후 안정화 후 전체 활성화
+            # '1908612',
+            # '1922868',
+            # '1776688',
+            # '1729890'
         ]
         
         # URL 파싱하여 cid 파라미터 교체
@@ -52,9 +53,8 @@ def scrape():
         original_cid = query_params.get('cid', ['원본'])[0]
         
         results = []
-        found_average_price = False
         
-        # 순차적 검색 시작: 원본 URL + 7개 CID를 하나씩 처리
+        # 순차적 검색 시작: 원본 URL + 7개 CID를 모두 처리
         all_urls_to_check = [
             {'cid': f"원본({original_cid})", 'url': url}
         ]
@@ -74,20 +74,12 @@ def scrape():
             ))
             all_urls_to_check.append({'cid': cid_value, 'url': new_url})
         
-        # 순차적으로 하나씩 검색 (평균 가격 찾으면 즉시 중단)
+        # 순차적으로 하나씩 모든 CID를 검색
         for i, url_info in enumerate(all_urls_to_check):
-            if found_average_price:
-                break
-                
-            app.logger.info(f"Step {i+1}/8: Searching with CID: {url_info['cid']}")
+            app.logger.info(f"Step {i+1}/{len(all_urls_to_check)}: Searching with CID: {url_info['cid']}")
             
             try:
                 prices = scrape_prices(url_info['url'])
-                
-                # 평균 가격을 찾았는지 확인
-                if prices and any(price.get('type') == 'average_price' for price in prices):
-                    found_average_price = True
-                    app.logger.info(f"✅ Average price found with CID: {url_info['cid']} - stopping search!")
                 
                 results.append({
                     'cid': url_info['cid'],
@@ -96,9 +88,10 @@ def scrape():
                     'status': 'success' if prices else 'no_prices'
                 })
                 
-                # 평균 가격을 찾았으면 즉시 중단
-                if found_average_price:
-                    break
+                if prices:
+                    app.logger.info(f"✅ Found {len(prices)} prices with CID: {url_info['cid']}")
+                else:
+                    app.logger.info(f"❌ No prices found with CID: {url_info['cid']}")
                     
             except Exception as e:
                 app.logger.error(f"Error with CID {url_info['cid']}: {str(e)}")
@@ -110,12 +103,15 @@ def scrape():
                     'error': str(e)
                 })
         
+        # 총 발견된 가격 수 계산
+        total_prices_found = sum(len(result.get('prices', [])) for result in results)
+        
         return jsonify({
             'success': True,
             'results': results,
             'total_results': len(results),
-            'original_url': url,
-            'found_average_price': found_average_price
+            'total_prices_found': total_prices_found,
+            'original_url': url
         })
         
     except Exception as e:
