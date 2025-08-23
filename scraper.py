@@ -214,12 +214,18 @@ def scrape_prices_simple(url):
             if matches:
                 debug_info[pattern] = matches[:10]  # 처음 10개만
         
-        # 모든 가격 패턴 검색 (범위 제한 없음)
+        # 더 광범위한 가격 패턴 검색
         all_price_patterns = [
+            # 달러 패턴
             r'(\$[1-9]\d{2,4}(?:\.\d{2})?)',  # $100-99999.99
+            r'(\$[1-9]\d{1,2})',  # $10-999
+            # USD 패턴
             r'([1-9]\d{2,4}(?:\.\d{2})?\s*USD)',  # 100-9999.99 USD
             r'USD\s*([1-9]\d{2,4}(?:\.\d{2})?)',  # USD 100-9999.99
-            r'(\$[1-9]\d{1,2})',  # $10-999
+            r'USD\s*([1-9]\d{1,2})',  # USD 10-999
+            # 순수 숫자 패턴 (가격일 가능성)
+            r'\b([2-9]\d{2})\b',  # 200-999 (3자리)
+            r'\b([1-9]\d{3})\b',  # 1000-9999 (4자리)
         ]
         
         all_prices = []
@@ -236,29 +242,19 @@ def scrape_prices_simple(url):
                     context_lower = context.lower()
                     context = re.sub(r'\s+', ' ', context)[:150]
                     
-                    # 평균가격만 제외 (핵심)
+                    # 매우 기본적인 필터링만 (평균가격과 명백한 오류만)
                     is_average_price = (
                         'with an average room price of' in context_lower or
                         'which stands at' in context_lower
                     )
                     
-                    # 부대 서비스 더 강화된 필터링
-                    service_keywords = [
-                        'attraction tickets', 'hop on hop off', 'esim', 'sim card',
-                        'skywalk', 'flow house', 'king power', 'bts skytrain',
-                        'transportation', 'transport', 'skytrain', 'ticket',
-                        'attraction', 'wifi', 'internet', 'mobile'
-                    ]
-                    is_service_price = any(service in context_lower for service in service_keywords)
-                    
-                    # 날짜, ID, 매우 큰 숫자 제외
+                    # 명백한 ID나 날짜만 제외
                     is_not_price = (
                         any(year in context for year in ['2024', '2025', '2026']) or
-                        (price_text.isdigit() and len(price_text) > 4) or  # 긴 ID 제외
-                        (price_text.isdigit() and int(price_text) > 1000)  # $1000 이상은 보통 부대 서비스
+                        (price_text.isdigit() and len(price_text) > 4)  # 긴 ID만 제외
                     )
                     
-                    if not is_average_price and not is_service_price and not is_not_price:
+                    if not is_average_price and not is_not_price:
                         seen_prices.add(price_text)
                         all_prices.append({
                             'price': f"${price_text}" if not price_text.startswith('$') else price_text,
@@ -266,12 +262,17 @@ def scrape_prices_simple(url):
                             'source': 'all_price_search'
                         })
                         
-                        # 충분히 수집
-                        if len(all_prices) >= 10:
+                        # 더 많이 수집 (두 번째 가격을 찾기 위해)
+                        if len(all_prices) >= 20:
                             break
             
-            if len(all_prices) >= 10:
+            if len(all_prices) >= 20:
                 break
+        
+        # 디버깅: 수집된 가격들을 확인해보기
+        print(f"DEBUG: Total prices found: {len(all_prices)}")
+        for i, price in enumerate(all_prices[:5]):  # 처음 5개만 출력
+            print(f"DEBUG: Price {i+1}: {price['price']} - {price['context'][:50]}")
         
         # 두 번째 가격만 반환 (사용자 요구사항)
         if len(all_prices) >= 2:
