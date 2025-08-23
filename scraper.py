@@ -148,6 +148,9 @@ def scrape_prices(url):
                 break  # 평균 가격 찾으면 즉시 중단
         
         # 평균 가격을 찾았으면 여기서 검색 완전 중단
+        if average_found:
+            logging.info("Average price found, skipping all other searches")
+            return prices_found[:1]  # 평균 가격만 반환
         
         # 2단계: 평균 가격을 못 찾은 경우에만 일반 패턴 검색
         if not average_found:

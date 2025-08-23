@@ -1,5 +1,6 @@
 import os
 import logging
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from flask import Flask, render_template, request, jsonify, flash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from scraper import scrape_prices
@@ -18,7 +19,7 @@ def index():
 
 @app.route('/scrape', methods=['POST'])
 def scrape():
-    """Handle URL scraping request"""
+    """Handle URL scraping request with multiple CID values"""
     try:
         data = request.get_json()
         url = data.get('url', '').strip()
@@ -32,23 +33,85 @@ def scrape():
         
         app.logger.info(f"Scraping URL: {url}")
         
-        # Scrape prices from the URL
-        prices = scrape_prices(url)
+        # 7개의 cid 값 리스트 (테스트를 위해 처음 3개만 사용)
+        cid_values = [
+            '1833981',
+            '1917614', 
+            '1829968'
+            # '1908612',
+            # '1922868',
+            # '1776688',
+            # '1729890'
+        ]
         
-        if not prices:
-            return jsonify({
-                'error': '이 페이지에서 호텔 방값 정보를 찾을 수 없습니다',
-                'prices': []
-            }), 404
+        # URL 파싱하여 cid 파라미터 교체
         
-        # Return top 5 prices
-        top_prices = prices[:5]
+        parsed_url = urlparse(url)
+        query_params = parse_qs(parsed_url.query)
+        
+        # 원본 URL의 cid 값도 확인
+        original_cid = query_params.get('cid', ['원본'])[0]
+        
+        results = []
+        
+        # 1. 먼저 원본 URL로 검색
+        app.logger.info(f"Searching with original CID: {original_cid}")
+        try:
+            prices = scrape_prices(url)
+            results.append({
+                'cid': f"원본({original_cid})",
+                'url': url,
+                'prices': prices if prices else [],
+                'status': 'success' if prices else 'no_prices'
+            })
+        except Exception as e:
+            results.append({
+                'cid': f"원본({original_cid})",
+                'url': url,
+                'prices': [],
+                'status': 'error',
+                'error': str(e)
+            })
+        
+        # 2. 각 cid 값으로 URL 생성하고 검색
+        for cid_value in cid_values:
+            app.logger.info(f"Searching with CID: {cid_value}")
+            
+            # cid 파라미터 교체
+            query_params_copy = query_params.copy()
+            query_params_copy['cid'] = [cid_value]
+            new_query = urlencode(query_params_copy, doseq=True)
+            new_url = urlunparse((
+                parsed_url.scheme,
+                parsed_url.netloc,
+                parsed_url.path,
+                parsed_url.params,
+                new_query,
+                parsed_url.fragment
+            ))
+            
+            try:
+                prices = scrape_prices(new_url)
+                results.append({
+                    'cid': cid_value,
+                    'url': new_url,
+                    'prices': prices if prices else [],
+                    'status': 'success' if prices else 'no_prices'
+                })
+            except Exception as e:
+                results.append({
+                    'cid': cid_value,
+                    'url': new_url,
+                    'prices': [],
+                    'status': 'error',
+                    'error': str(e)
+                })
         
         return jsonify({
             'success': True,
-            'url': url,
-            'prices': top_prices,
-            'total_found': len(prices)
+            'results': results,
+            'total_results': len(results),
+            'original_url': url
         })
         
     except Exception as e:

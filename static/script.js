@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     showResults(data.url || url, data.prices, data.total_found || data.prices.length);
                 }
             } else if (data.success) {
-                showResults(data.url, data.prices, data.total_found);
+                showResults(data.original_url, data.results, data.total_results);
             } else {
                 showError('서버에서 예상치 못한 응답이 왔습니다');
             }
@@ -95,20 +95,21 @@ document.addEventListener('DOMContentLoaded', function() {
         errorMessage.style.display = 'none';
     }
 
-    function showResults(url, prices, totalFound) {
+    function showResults(url, results, totalFound) {
         // Update source URL
         sourceUrl.textContent = url;
         
-        // Update results count
-        resultsCount.textContent = `${totalFound}개 중 ${prices.length}개 발견`;
+        // Update results count - count total prices found across all results
+        let totalPricesFound = results.reduce((total, result) => total + (result.prices ? result.prices.length : 0), 0);
+        resultsCount.textContent = `${totalFound}개 CID 검색 결과, 총 ${totalPricesFound}개 가격 발견`;
         
         // Clear previous results
         pricesList.innerHTML = '';
         
-        // Add price items
-        prices.forEach((priceInfo, index) => {
-            const priceItem = createPriceItem(priceInfo, index + 1);
-            pricesList.appendChild(priceItem);
+        // Add results grouped by CID
+        results.forEach((result, index) => {
+            const cidSection = createCIDSection(result, index + 1);
+            pricesList.appendChild(cidSection);
         });
         
         // Show results section
@@ -126,36 +127,94 @@ document.addEventListener('DOMContentLoaded', function() {
         resultsSection.style.display = 'none';
     }
 
-    function createPriceItem(priceInfo, index) {
-        const item = document.createElement('div');
-        item.className = 'price-item';
+    function createCIDSection(result, index) {
+        const section = document.createElement('div');
+        section.className = 'cid-section mb-4';
         
-        const price = priceInfo.price || 'N/A';
-        const context = priceInfo.context || '컨텍스트 정보가 없습니다';
-        
-        // Highlight the price within the context
-        let highlightedContext = context;
-        if (context.includes(price)) {
-            highlightedContext = context.replace(
-                new RegExp(`(${escapeRegExp(price)})`, 'gi'),
-                '<mark class="bg-warning text-dark">$1</mark>'
-            );
+        // Status badge color based on result status
+        let statusBadge = '';
+        let statusIcon = '';
+        if (result.status === 'success' && result.prices && result.prices.length > 0) {
+            statusBadge = 'bg-success';
+            statusIcon = 'fas fa-check-circle';
+        } else if (result.status === 'no_prices') {
+            statusBadge = 'bg-warning';
+            statusIcon = 'fas fa-exclamation-triangle';
+        } else {
+            statusBadge = 'bg-danger';
+            statusIcon = 'fas fa-times-circle';
         }
         
-        item.innerHTML = `
-            <div class="d-flex justify-content-between align-items-start mb-2">
-                <div class="price-value">
-                    <i class="fas fa-tag text-success me-2"></i>
-                    ${escapeHtml(price)}
+        let content = `
+            <div class="card border-start border-info border-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="fas fa-hashtag text-info me-2"></i>
+                            CID: ${escapeHtml(result.cid)}
+                        </h6>
+                        <span class="badge ${statusBadge}">
+                            <i class="${statusIcon} me-1"></i>
+                            ${result.status === 'success' && result.prices && result.prices.length > 0 ? '가격 발견' : 
+                              result.status === 'no_prices' ? '가격 없음' : '오류'}
+                        </span>
+                    </div>
                 </div>
-                <span class="badge bg-secondary">#${index}</span>
-            </div>
-            <div class="price-context">
-                <strong>상세정보:</strong> ${highlightedContext}
+                <div class="card-body">
+        `;
+        
+        if (result.prices && result.prices.length > 0) {
+            result.prices.forEach((priceInfo, priceIndex) => {
+                const price = priceInfo.price || 'N/A';
+                const context = priceInfo.context || '컨텍스트 정보가 없습니다';
+                
+                // Highlight the price within the context
+                let highlightedContext = context;
+                if (context.includes(price)) {
+                    highlightedContext = context.replace(
+                        new RegExp(`(${escapeRegExp(price)})`, 'gi'),
+                        '<mark class="bg-warning text-dark">$1</mark>'
+                    );
+                }
+                
+                content += `
+                    <div class="price-item mb-3 p-3 border rounded">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="price-value h5">
+                                <i class="fas fa-tag text-success me-2"></i>
+                                ${escapeHtml(price)}
+                            </div>
+                            <span class="badge bg-secondary">#${priceIndex + 1}</span>
+                        </div>
+                        <div class="price-context">
+                            <strong>상세정보:</strong> ${highlightedContext}
+                        </div>
+                    </div>
+                `;
+            });
+        } else if (result.status === 'error') {
+            content += `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>오류:</strong> ${escapeHtml(result.error || '알 수 없는 오류가 발생했습니다')}
+                </div>
+            `;
+        } else {
+            content += `
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle me-2"></i>
+                    이 CID에서는 평균 가격을 찾을 수 없었습니다.
+                </div>
+            `;
+        }
+        
+        content += `
+                </div>
             </div>
         `;
         
-        return item;
+        section.innerHTML = content;
+        return section;
     }
 
     function resetButton() {
