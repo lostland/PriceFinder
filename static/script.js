@@ -481,7 +481,7 @@ function extractNumericPrice(priceString) {
 
 // 가격 포맷팅
 function formatPrice(numericPrice) {
-    return numericPrice.toLocaleString();
+    return '₩ ' + numericPrice.toLocaleString();
 }
 
 // UI 표시/숨기기 함수들
