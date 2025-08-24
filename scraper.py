@@ -527,8 +527,11 @@ def reorder_url_parameters(url):
                 # parse_qs는 리스트로 반환하므로 첫 번째 값 사용
                 reordered_params[param] = query_params[param][0]
         
-        # 새로운 쿼리 스트링 생성
-        new_query = urlencode(reordered_params, doseq=False)
+        # 새로운 쿼리 스트링 생성 (수동으로 구성하여 인코딩 문제 방지)
+        query_parts = []
+        for key, value in reordered_params.items():
+            query_parts.append(f"{key}={value}")
+        new_query = "&".join(query_parts)
         
         # 새로운 URL 구성
         new_url = urlunparse((
