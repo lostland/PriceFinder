@@ -496,6 +496,9 @@ function showInvalidLinkModal(message) {
             <p class="mb-2">${message.replace('\n', '<br>')}</p>
             <hr>
             <p class="mb-0">
+                <button type="button" class="btn btn-primary btn-sm me-2 modal-ok-btn">
+                    <i class="fas fa-check"></i> OK
+                </button>
                 <a href="/guide" target="_blank" class="btn btn-outline-primary btn-sm">
                     <i class="fas fa-question-circle"></i> 사용법 보기
                 </a>
@@ -512,6 +515,17 @@ function showInvalidLinkModal(message) {
     
     // 새 alert 추가
     document.body.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // OK 버튼 이벤트 추가
+    const okBtn = document.querySelector('.modal-ok-btn');
+    if (okBtn) {
+        okBtn.addEventListener('click', function() {
+            const alert = document.querySelector('.alert-warning');
+            if (alert) {
+                alert.remove();
+            }
+        });
+    }
     
     // 입력창 초기화
     urlInput.value = '';
