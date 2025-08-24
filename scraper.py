@@ -209,6 +209,46 @@ def scrape_prices_simple(url):
         debug_info = {}
         all_text = soup.get_text()
         
+        # 5KB 제한: 텍스트가 5KB를 넘으면 5KB까지만 자르고 즉시 종료
+        text_size_bytes = len(all_text.encode('utf-8'))
+        if text_size_bytes > 5 * 1024:  # 5KB = 5 * 1024 bytes
+            # UTF-8 기준 5KB까지만 자르기 (안전하게)
+            truncated_text = all_text
+            while len(truncated_text.encode('utf-8')) > 5 * 1024:
+                truncated_text = truncated_text[:-100]  # 100글자씩 줄이기
+            all_text = truncated_text + "... [5KB 제한으로 텍스트 일부만 수집됨]"
+            
+            # 즉시 파일 저장하고 가격 분석 건너뛰기
+            try:
+                import os
+                if not os.path.exists('downloads'):
+                    os.makedirs('downloads')
+                
+                # CID 정보 추출
+                cid_match = re.search(r'cid=([^&]+)', url)
+                cid_value = cid_match.group(1) if cid_match else 'unknown'
+                
+                # 파일명 생성
+                filename = f"page_text_cid_{cid_value}.txt"
+                filepath = os.path.join('downloads', filename)
+                
+                # 전체 텍스트 저장
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    f.write(f"URL: {url}\n")
+                    f.write(f"CID: {cid_value}\n")
+                    f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                    f.write(f"파일 크기: 5KB 제한 적용\n")
+                    f.write("="*50 + "\n\n")
+                    f.write(all_text)
+                
+                print(f"5KB 제한 - 텍스트 파일 저장됨: {filepath}")
+                
+            except Exception as save_error:
+                print(f"텍스트 파일 저장 오류: {save_error}")
+            
+            # 가격 분석 없이 빈 결과 반환 (다운로드 링크만 제공)
+            return []
+        
         for pattern in debug_patterns:
             matches = re.findall(pattern, all_text, re.IGNORECASE)
             if matches:
