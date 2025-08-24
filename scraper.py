@@ -496,6 +496,7 @@ def reorder_url_parameters(url):
         'travellerType',
         'showReviewSubmissionEntry',
         'currencyCode',
+        'currency',
         'isFreeOccSearch',
         'los',
         'searchrequestid',
