@@ -92,22 +92,11 @@ def scrape_prices_simple(url, original_currency_code=None):
                 for element in elements:
                     text = element.get_text(strip=True)
                     
-                    # 가격 패턴 찾기 (USD, KRW, EUR, GBP, JPY 지원)
+                    # 가격 패턴 찾기
                     price_patterns = [
-                        # 한국원화 패턴
-                        r'(₩\s*[1-9]\d{2,6}(?:,\d{3})*)',  # ₩ 123,456
-                        r'([1-9]\d{2,6}(?:,\d{3})*\s*원)',  # 123,456 원
-                        r'([1-9]\d{2,6}(?:,\d{3})*\s*KRW)',  # 123,456 KRW
-                        
-                        # USD 패턴
                         r'(\$[1-9]\d{2,4}(?:\.\d{2})?)',  # $100-99999.99
                         r'([1-9]\d{2,4}(?:\.\d{2})?\s*USD)',  # 123.45 USD
                         r'(\$[1-9]\d{1,2})',  # $10-999
-                        
-                        # 기타 통화
-                        r'(€[1-9]\d{1,4}(?:\.\d{2})?)',  # €123.45
-                        r'(£[1-9]\d{1,4}(?:\.\d{2})?)',  # £123.45
-                        r'(¥[1-9]\d{2,6})',  # ¥12345
                     ]
                     
                     for pattern in price_patterns:
@@ -155,27 +144,14 @@ def scrape_prices_simple(url, original_currency_code=None):
             # 텍스트 추출
             text_content = soup.get_text()
             
-            # 더 적극적인 가격 패턴 검색 (다양한 통화 지원)
+            # 더 적극적인 가격 패턴 검색
             price_patterns = [
-                # 한국원화 패턴
-                r'(₩\s*[1-9]\d{2,6}(?:,\d{3})*)\s*(?:per night|night|/night|박|밤)',  # ₩ 123,456 per night
-                r'(₩\s*[1-9]\d{2,6}(?:,\d{3})*)\s*(?:total|Total|전체|총)',  # ₩ 123,456 total
-                r'(?:from|From|시작|부터)\s*(₩\s*[1-9]\d{2,6}(?:,\d{3})*)',  # from ₩ 123,456
-                r'(₩\s*[1-9]\d{2,6}(?:,\d{3})*)',  # 일반 ₩ 123,456
-                r'([1-9]\d{2,6}(?:,\d{3})*\s*원)',  # 123,456 원
-                r'([1-9]\d{2,6}(?:,\d{3})*\s*KRW)',  # 123,456 KRW
-                
-                # USD 패턴
+                # 실제 예약 가격이 나올 가능성이 높은 패턴들
                 r'(\$[1-9]\d{2,4}(?:\.\d{2})?)\s*(?:per night|night|/night)',  # $123 per night
                 r'(\$[1-9]\d{2,4}(?:\.\d{2})?)\s*(?:total|Total)',  # $123 total
                 r'(?:from|From)\s*(\$[1-9]\d{2,4}(?:\.\d{2})?)',  # from $123
                 r'(\$[1-9]\d{2,4}(?:\.\d{2})?)',  # 일반 $123
                 r'([1-9]\d{2,4}(?:\.\d{2})?\s*USD)',  # 123 USD
-                
-                # 기타 통화
-                r'(€[1-9]\d{1,4}(?:\.\d{2})?)',  # €123.45
-                r'(£[1-9]\d{1,4}(?:\.\d{2})?)',  # £123.45
-                r'(¥[1-9]\d{2,6}(?:,\d{3})*)',  # ¥12,345
             ]
             
             for pattern in price_patterns:
