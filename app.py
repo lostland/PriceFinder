@@ -32,22 +32,38 @@ def scrape():
         if not url.startswith(('http://', 'https://')):
             url = 'https://' + url
         
-        # 7개의 CID 값 리스트
-        cid_values = [
-            '1833981',  # 원본
-            '1917614', 
-            '1829968',
-            '1908612',
-            '1922868',
-            '1776688',
-            '1729890'
+        # [검색창리스트] CID 값들
+        search_cids = [
+            ('-1', '시크릿창'),
+            ('1829968', '구글지도A'),
+            ('1917614', '구글지도B'),
+            ('1833981', '구글지도C'),
+            ('1776688', '구글 검색A'),
+            ('1922868', '구글 검색B'),
+            ('1908612', '구글 검색C'),
+            ('1729890', '네이버 검색')
         ]
         
+        # [카드리스트] CID 값들
+        card_cids = [
+            ('1942636', '카카오페이'),
+            ('1895693', '현대카드'),
+            ('1563295', '국민카드'),
+            ('1654104', '우리카드'),
+            ('1748498', 'BC카드'),
+            ('1760133', '신한카드'),
+            ('1729471', '하나카드'),
+            ('1917334', '토스')
+        ]
+        
+        # 모든 CID를 합친 리스트
+        all_cids = search_cids + card_cids
+        
         # 유효한 단계인지 확인
-        if step >= len(cid_values):
+        if step >= len(all_cids):
             return jsonify({'error': '모든 CID 처리가 완료되었습니다'}), 400
         
-        current_cid = cid_values[step]
+        current_cid, current_name = all_cids[step]
         
         # URL에서 CID 교체하고 currencyCode 유지
         from scraper import extract_cid_from_url, scrape_prices_simple, reorder_url_parameters
@@ -87,13 +103,11 @@ def scrape():
         new_url = reorder_url_parameters(new_url)
         app.logger.info(f"재정렬 후 URL: {new_url}")
         
-        # CID 라벨 생성
-        if step == 0:
-            cid_label = f"원본({current_cid})"
-        else:
-            cid_label = str(current_cid)
+        # 진행 단계 정보
+        is_search_phase = step < len(search_cids)
+        phase_name = "검색창리스트" if is_search_phase else "카드리스트"
         
-        app.logger.info(f"Processing step {step+1}/{len(cid_values)}: CID {cid_label}")
+        app.logger.info(f"Processing step {step+1}/{len(all_cids)}: CID {current_name}({current_cid})")
         
         # 스크래핑 실행 (원본 currencyCode 전달)
         import time
@@ -108,15 +122,19 @@ def scrape():
         # 결과 반환
         result = {
             'step': step + 1,
-            'total_steps': len(cid_values),
-            'cid': cid_label,
+            'total_steps': len(all_cids),
+            'cid': current_cid,
+            'cid_name': current_name,
             'url': new_url,
             'prices': prices,
             'found_count': len(prices),
             'process_time': round(process_time, 1),
-            'has_next': step + 1 < len(cid_values),  # 다음 단계가 있는지
-            'next_step': step + 1 if step + 1 < len(cid_values) else None,
-            'download_link': download_link,  # 텍스트 파일 다운로드 링크
+            'has_next': step + 1 < len(all_cids),
+            'next_step': step + 1 if step + 1 < len(all_cids) else None,
+            'is_search_phase': is_search_phase,
+            'phase_name': phase_name,
+            'search_phase_completed': step + 1 == len(search_cids),
+            'download_link': download_link,
             'download_filename': download_filename
         }
         

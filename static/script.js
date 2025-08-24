@@ -2,7 +2,37 @@
 let currentUrl = '';
 let currentStep = 0;
 let allResults = [];
-const totalSteps = 7;
+let searchResults = [];
+let cardResults = [];
+let lowestPrice = null;
+let lowestPriceUrl = '';
+let lowestPriceCidName = '';
+const totalSteps = 16; // 검색창리스트(8) + 카드리스트(8)
+
+// CID 정보 배열
+const searchCids = [
+    { name: '시크릿창', cid: '-1' },
+    { name: '구글지도A', cid: '1829968' },
+    { name: '구글지도B', cid: '1917614' },
+    { name: '구글지도C', cid: '1833981' },
+    { name: '구글 검색A', cid: '1776688' },
+    { name: '구글 검색B', cid: '1922868' },
+    { name: '구글 검색C', cid: '1908612' },
+    { name: '네이버 검색', cid: '1729890' }
+];
+
+const cardCids = [
+    { name: '카카오페이', cid: '1942636' },
+    { name: '현대카드', cid: '1895693' },
+    { name: '국민카드', cid: '1563295' },
+    { name: '우리카드', cid: '1654104' },
+    { name: 'BC카드', cid: '1748498' },
+    { name: '신한카드', cid: '1760133' },
+    { name: '하나카드', cid: '1729471' },
+    { name: '토스', cid: '1917334' }
+];
+
+const allCids = [...searchCids, ...cardCids];
 
 // DOM 요소들
 const scrapeForm = document.getElementById('scrapeForm');
@@ -11,7 +41,9 @@ const scrapeBtn = document.getElementById('scrapeBtn');
 const progressSection = document.getElementById('progressSection');
 const loadingIndicator = document.getElementById('loadingIndicator');
 const errorMessage = document.getElementById('errorMessage');
-const resultsSection = document.getElementById('resultsSection');
+const lowestPriceSection = document.getElementById('lowestPriceSection');
+const cardResultsSection = document.getElementById('cardResultsSection');
+const debugResultsSection = document.getElementById('debugResultsSection');
 const continueSection = document.getElementById('continueSection');
 const completeSection = document.getElementById('completeSection');
 const continueBtn = document.getElementById('continueBtn');
@@ -22,6 +54,16 @@ document.addEventListener('DOMContentLoaded', function() {
     scrapeForm.addEventListener('submit', handleFormSubmit);
     continueBtn.addEventListener('click', continueAnalysis);
     newSearchBtn.addEventListener('click', startNewSearch);
+    
+    // 최저가 창열기 버튼
+    const openLowestPriceBtn = document.getElementById('openLowestPriceBtn');
+    if (openLowestPriceBtn) {
+        openLowestPriceBtn.addEventListener('click', function() {
+            if (lowestPriceUrl) {
+                window.open(lowestPriceUrl, '_blank');
+            }
+        });
+    }
 });
 
 // 폼 제출 처리
@@ -38,6 +80,11 @@ function handleFormSubmit(e) {
     currentUrl = url;
     currentStep = 0;
     allResults = [];
+    searchResults = [];
+    cardResults = [];
+    lowestPrice = null;
+    lowestPriceUrl = '';
+    lowestPriceCidName = '';
     
     // UI 초기화
     hideAllSections();
@@ -79,9 +126,8 @@ function analyzeCid() {
             return;
         }
         
-        // 결과 추가
-        allResults.push(data);
-        displayResult(data);
+        // 결과 처리
+        processResult(data);
         
         // 다음 단계가 있는지 확인
         if (data.has_next) {
@@ -96,41 +142,113 @@ function analyzeCid() {
     });
 }
 
-// 계속 분석 버튼 처리
-function continueAnalysis() {
-    currentStep++;
-    hideContinueButton();
-    analyzeCid();
+// 결과 처리
+function processResult(data) {
+    allResults.push(data);
+    
+    // 검색창리스트 단계인지 카드리스트 단계인지 확인
+    if (data.is_search_phase) {
+        processSearchResult(data);
+    } else {
+        processCardResult(data);
+    }
+    
+    // 검색창리스트가 완료되면 카드 결과 섹션 표시
+    if (data.search_phase_completed) {
+        showCardResultsSection();
+    }
+    
+    // 디버그용 결과도 표시
+    displayDebugResult(data);
 }
 
-// 진행률 업데이트
-function updateProgress() {
-    const progressText = document.getElementById('progressText');
-    const progressBar = document.getElementById('progressBar');
-    const currentCid = document.getElementById('currentCid');
-    const loadingCid = document.getElementById('loadingCid');
+// 검색창리스트 결과 처리
+function processSearchResult(data) {
+    searchResults.push(data);
     
-    const step = currentStep + 1;
-    const percentage = (step / totalSteps) * 100;
+    // 가격이 있는 경우 최저가 업데이트
+    if (data.prices && data.prices.length > 0) {
+        const price = data.prices[0];  // 첫 번째 가격 사용
+        const numericPrice = extractNumericPrice(price.price);
+        
+        if (numericPrice && (lowestPrice === null || numericPrice < lowestPrice)) {
+            lowestPrice = numericPrice;
+            lowestPriceUrl = data.url;
+            lowestPriceCidName = data.cid_name;
+            updateLowestPriceDisplay();
+        }
+    }
     
-    progressText.textContent = `${step} / ${totalSteps}`;
-    progressBar.style.width = `${percentage}%`;
+    // 최저가 섹션 표시
+    showLowestPriceSection();
+}
+
+// 카드리스트 결과 처리
+function processCardResult(data) {
+    cardResults.push(data);
+    displayCardResult(data);
+}
+
+// 최저가 표시 업데이트
+function updateLowestPriceDisplay() {
+    const lowestPriceEl = document.getElementById('lowestPrice');
+    const lowestCidNameEl = document.getElementById('lowestCidName');
+    const openLowestPriceBtnEl = document.getElementById('openLowestPriceBtn');
     
-    // CID 정보 업데이트
-    const cidLabels = [
-        '원본(1833981)', '1917614', '1829968', '1908612', 
-        '1922868', '1776688', '1729890'
-    ];
-    
-    if (currentStep < cidLabels.length) {
-        currentCid.textContent = cidLabels[currentStep];
-        loadingCid.textContent = cidLabels[currentStep];
+    if (lowestPrice !== null) {
+        lowestPriceEl.textContent = formatPrice(lowestPrice);
+        lowestCidNameEl.textContent = lowestPriceCidName;
+        openLowestPriceBtnEl.disabled = false;
     }
 }
 
-// 결과 표시
-function displayResult(data) {
-    const resultsContainer = document.getElementById('resultsContainer');
+// 카드 결과 표시
+function displayCardResult(data) {
+    const container = document.getElementById('cardResultsContainer');
+    
+    const cardCol = document.createElement('div');
+    cardCol.className = 'col-md-6 col-lg-4 mb-3';
+    
+    const hasPrice = data.prices && data.prices.length > 0;
+    const price = hasPrice ? data.prices[0].price : '가격 없음';
+    const cardClass = hasPrice ? 'border-success' : 'border-warning';
+    const badgeClass = hasPrice ? 'bg-success' : 'bg-warning';
+    const badgeText = hasPrice ? '가격 발견' : '가격 없음';
+    
+    cardCol.innerHTML = `
+        <div class="card ${cardClass}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">${data.cid_name}</h6>
+                <span class="badge ${badgeClass}">${badgeText}</span>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h5 class="text-primary">${price}</h5>
+                </div>
+                <button class="btn btn-outline-primary btn-sm w-100 card-open-btn" 
+                        data-url="${data.url}" 
+                        ${!hasPrice ? 'disabled' : ''}>
+                    <i class="fas fa-external-link-alt"></i>
+                    창열기
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(cardCol);
+    
+    // 창열기 버튼 이벤트 추가
+    const openBtn = cardCol.querySelector('.card-open-btn');
+    if (openBtn && !openBtn.disabled) {
+        openBtn.addEventListener('click', function() {
+            window.open(data.url, '_blank');
+        });
+    }
+}
+
+// 디버그 결과 표시 (개발용)
+function displayDebugResult(data) {
+    const container = document.getElementById('debugResultsContainer');
     
     const resultCard = document.createElement('div');
     resultCard.className = 'card mb-3';
@@ -144,7 +262,7 @@ function displayResult(data) {
         pricesHtml = data.prices.map(price => `
             <div class="price-item mb-3">
                 <div class="d-flex justify-content-between align-items-center">
-                    <span class="price-value h5 mb-0 text-success">${price.price}</span>
+                    <span class="price-value h6 mb-0 text-success">${price.price}</span>
                     <small class="text-muted">${data.process_time}초</small>
                 </div>
                 <div class="price-context mt-1">
@@ -156,21 +274,11 @@ function displayResult(data) {
         pricesHtml = '<div class="text-muted">이 CID에서는 가격을 찾지 못했습니다.</div>';
     }
     
-    // 다운로드 링크 생성
-    const downloadLinkHtml = data.download_link ? `
-        <div class="mt-3 pt-3 border-top">
-            <a href="${data.download_link}" class="btn btn-sm btn-outline-primary" target="_blank">
-                <i class="fas fa-download"></i>
-                페이지 텍스트 다운로드 (${data.download_filename})
-            </a>
-        </div>
-    ` : '';
-
     resultCard.innerHTML = `
         <div class="card-header d-flex justify-content-between align-items-center">
             <h6 class="mb-0">
                 <i class="fas fa-tag text-info"></i>
-                CID: ${data.cid}
+                ${data.cid_name} (CID: ${data.cid})
             </h6>
             ${statusBadge}
         </div>
@@ -182,32 +290,62 @@ function displayResult(data) {
                 </small>
             </div>
             ${pricesHtml}
-            ${downloadLinkHtml}
         </div>
     `;
     
-    resultsContainer.appendChild(resultCard);
+    container.appendChild(resultCard);
     
-    // URL을 안전하게 표시 (HTML 엔티티 변환 방지)
+    // URL을 안전하게 표시
     const urlSpan = resultCard.querySelector('.url-display');
     urlSpan.textContent = data.url;
     
-    showResultsSection();
+    showDebugResultsSection();
+}
+
+// 계속 분석 버튼 처리
+function continueAnalysis() {
+    currentStep++;
+    hideContinueButton();
+    analyzeCid();
+}
+
+// 진행률 업데이트
+function updateProgress() {
+    const progressText = document.getElementById('progressText');
+    const progressBar = document.getElementById('progressBar');
+    const currentCidNameEl = document.getElementById('currentCidName');
+    const currentPhaseEl = document.getElementById('currentPhase');
+    const loadingCid = document.getElementById('loadingCid');
     
-    // 결과로 스크롤
-    resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const step = currentStep + 1;
+    const percentage = Math.round((step / totalSteps) * 100);
+    
+    // 진행률 %로 표시
+    progressText.textContent = `${percentage}%`;
+    progressBar.style.width = `${percentage}%`;
+    
+    // 현재 단계 정보 업데이트
+    if (currentStep < allCids.length) {
+        const currentCid = allCids[currentStep];
+        currentCidNameEl.textContent = currentCid.name;
+        
+        // 현재 페이즈 표시
+        const isSearchPhase = currentStep < searchCids.length;
+        currentPhaseEl.textContent = isSearchPhase ? '검색창리스트' : '카드리스트';
+        currentPhaseEl.className = `badge ${isSearchPhase ? 'bg-primary' : 'bg-info'}`;
+        
+        if (loadingCid) {
+            loadingCid.textContent = currentCid.name;
+        }
+    }
 }
 
 // 계속 버튼 표시
 function showContinueButton(nextStep) {
     const nextCidInfo = document.getElementById('nextCidInfo');
-    const cidLabels = [
-        '원본(1833981)', '1917614', '1829968', '1908612', 
-        '1922868', '1776688', '1729890'
-    ];
     
-    if (nextStep < cidLabels.length) {
-        nextCidInfo.textContent = cidLabels[nextStep];
+    if (nextStep < allCids.length) {
+        nextCidInfo.textContent = allCids[nextStep].name;
     }
     
     continueSection.style.display = 'block';
@@ -231,13 +369,33 @@ function startNewSearch() {
     currentUrl = '';
     currentStep = 0;
     allResults = [];
+    searchResults = [];
+    cardResults = [];
+    lowestPrice = null;
+    lowestPriceUrl = '';
+    lowestPriceCidName = '';
     
     hideAllSections();
     urlInput.value = '';
     urlInput.focus();
     
     // 결과 컨테이너 초기화
-    document.getElementById('resultsContainer').innerHTML = '';
+    document.getElementById('cardResultsContainer').innerHTML = '';
+    document.getElementById('debugResultsContainer').innerHTML = '';
+}
+
+// 숫자 가격 추출 (비교용)
+function extractNumericPrice(priceString) {
+    const matches = priceString.match(/[\d,]+/);
+    if (matches) {
+        return parseInt(matches[0].replace(/,/g, ''));
+    }
+    return null;
+}
+
+// 가격 포맷팅
+function formatPrice(numericPrice) {
+    return numericPrice.toLocaleString();
 }
 
 // UI 표시/숨기기 함수들
@@ -266,12 +424,28 @@ function hideError() {
     errorMessage.style.display = 'none';
 }
 
-function showResultsSection() {
-    resultsSection.style.display = 'block';
+function showLowestPriceSection() {
+    lowestPriceSection.style.display = 'block';
 }
 
-function hideResultsSection() {
-    resultsSection.style.display = 'none';
+function hideLowestPriceSection() {
+    lowestPriceSection.style.display = 'none';
+}
+
+function showCardResultsSection() {
+    cardResultsSection.style.display = 'block';
+}
+
+function hideCardResultsSection() {
+    cardResultsSection.style.display = 'none';
+}
+
+function showDebugResultsSection() {
+    debugResultsSection.style.display = 'block';
+}
+
+function hideDebugResultsSection() {
+    debugResultsSection.style.display = 'none';
 }
 
 function hideContinueButton() {
@@ -282,7 +456,9 @@ function hideAllSections() {
     hideProgressSection();
     hideLoading();
     hideError();
-    hideResultsSection();
+    hideLowestPriceSection();
+    hideCardResultsSection();
+    hideDebugResultsSection();
     hideContinueButton();
     completeSection.style.display = 'none';
 }
