@@ -146,29 +146,49 @@ body {
     word-break: break-all;
     overflow-x: auto;
     font-size: 14px;
-    min-width: 300px;
+    flex: 1;
+    min-width: 0;
 }
 
 /* URL 입력을 위한 반응형 개선 */
 @media (max-width: 768px) {
     #urlInput {
-        min-width: 250px;
         font-size: 13px;
+        min-width: 0;
     }
     
     .input-group .btn {
         white-space: nowrap;
+        flex-shrink: 0;
     }
     
     .input-group {
         flex-wrap: nowrap;
+        width: 100%;
+    }
+    
+    .input-group-text {
+        flex-shrink: 0;
+    }
+    
+    .card-body {
+        padding: 1rem 0.75rem;
     }
 }
 
-/* 큰 화면에서 더 넓은 URL 입력 필드 */
-@media (min-width: 1200px) {
+/* 매우 작은 화면에서 추가 최적화 */
+@media (max-width: 576px) {
     #urlInput {
-        min-width: 400px;
+        font-size: 12px;
+    }
+    
+    .btn {
+        font-size: 13px;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .input-group-text {
+        padding: 0.5rem;
     }
 }
 
