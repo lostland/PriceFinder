@@ -489,7 +489,6 @@ def reorder_url_parameters(url):
     """
     URL의 파라메터를 지정된 순서로 재정렬하고 필요한 파라메터만 유지
     """
-    print(f"DEBUG: 입력 URL: {url}")
     # 지정된 파라메터 순서
     desired_order = [
         'countryId',
@@ -554,7 +553,6 @@ def reorder_url_parameters(url):
             parsed_url.fragment
         ))
         
-        print(f"DEBUG: 출력 URL: {new_url}")
         return new_url
         
     except Exception as e:

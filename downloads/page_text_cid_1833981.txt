@@ -1,6 +1,6 @@
-URL: https://www.agoda.com/partners/partnersearch.aspx?finalPriceView=1&currencyCode=KRW&cid=1833981
+URL: https://www.agoda.com/ko-kr/130-hotel-residence-bangkok/hotel/bangkok-th.html?locale=ko-kr&ckuid=184deb8f-0dc5-4631-9af6-c19a75d2f355&prid=0&currency=KRW&correlationId=aef42c3b-6536-440a-96d4-a48ec6ec16ae&analyticsSessionId=9199547918033997234&pageTypeId=7&realLanguageId=9&languageId=9&origin=KR&stateCode=11&cid=1833981&userId=184deb8f-0dc5-4631-9af6-c19a75d2f355&whitelabelid=1&loginLvl=0&storefrontId=3&currencyId=26&currencyCode=KRW&htmlLanguage=ko-kr&cultureInfoName=ko-kr&memberId=1419331&machineName=hk-pc-2f-acm-web-user-9bcf567cf-5hwj6&trafficGroupId=2&trafficSubGroupId=111&aid=169474&useFullPageLogin=true&cttp=4&isRealUser=true&mode=production&browserFamily=Chrome&cdnDomain=agoda.net&checkIn=2025-08-27&checkOut=2025-08-28&rooms=1&adults=2&childs=0&priceCur=KRW&los=1&textToSearch=130+%ED%98%B8%ED%85%94+%EC%95%A4+%EB%A0%88%EC%A7%80%EB%8D%98%EC%8A%A4+%EB%B0%A9%EC%BD%95&productType=-1&travellerType=1&familyMode=off&ds=alxnS9x0nEhSCcoY
 CID: 1833981
-스크래핑 시간: 2025-08-24 03:49:18
+스크래핑 시간: 2025-08-24 03:50:42
 파일 크기: 5KB 제한 적용
 ==================================================
 
@@ -8,7 +8,16 @@ CID: 1833981
 
 
 
-Agoda Official Site | Free Cancellation & Booking Deals | Over 2 Million Hotels
+130 호텔 앤 레지던스 방콕 (130 Hotel & Residence Bangkok) 실제 이용후기 및 할인 특가
+
+
+
+
+
+
+
+
+
 
 
 
@@ -40,159 +49,11 @@ Agoda Official Site | Free Cancellation & Booking Deals | Over 2 Million Hotels
 
 
 
-Manage Cookie PreferenceAgoda only uses cookies and other tracking technologies that are strictly necessary for functionality. We do not use analytical or marketing cookies. For more details, click hereDismiss
-
-Skip to main contentHotels & HomesNew!TransportActivitiesCoupons & DealsApartmentseSIMTravel GuidesTravel ItinerariesList your placeUSDSign inCreate account
-
-
-See the world for lessHotelsHomes & AptsLong staysFlightsNew!ActivitiesAirport transferBegin typing property name or keyword to search, use arrow keys or tab key to navigate, press Enter to select2 Sep 2025Tuesday3 Sep 2025Wednesday2 adults1 roomSEARCH Top destinations in the United StatesLas Vegas (NV)1,113 accommodations
-Los Angeles (CA)4,491 accommodations
-Dallas (TX)1,813 accommodations
-New York (NY)3,049 accommodations
-Orlando (FL)17,408 accommodations
-Chicago (IL)1,444 accommodations
-Houston (TX)2,359 accommodations
-Phoenix (AZ)3,922 accommodations
-San Francisco (CA)1,357 accommodations
-Atlanta (GA)1,630 accommodations
-San Diego (CA)1,270 accommodations
-Accommodation PromotionsView allFlights & Activities PromotionsPopular destinations outside United StatesKuala Lumpur19,902 accommodations
-Manila13,223 accommodations
-Penang5,161 accommodations
-Jakarta14,249 accommodations
-Dubai19,464 accommodations
-Bangkok12,048 accommodations
-Johor Bahru6,994 accommodations
-Malacca5,883 accommodations
-Kota Kinabalu3,417 accommodations
-Cebu5,254 accommodations
-Johor Bahru6,994 accommodations
-Bali32,908 accommodations
-New Delhi and NCR12,786 accommodations
-Bandung7,196 accommodations
-Singapore1,326 accommodations
-Cameron Highlands1,789 accommodations
-Bangalore5,372 accommodations
-Ipoh2,516 accommodations
-Kuching1,465 accommodations
-Mumbai4,177 accommodations
-Save 10% on your 1st app booking!Just scan the QR code for instant savings
-
-
-
-HelpHelp centerFAQsPrivacy policyDo Not Sell or Share My Personal InformationCookie policyTerms of useDigital Services Act (EU)Content guidelines & reportingModern Slavery StatementCompanyAbout usCareersPressBlogPointsMAXDestinationsCountries/TerritoriesAll Flight RoutesPartner with usYCS partner portalPartner HubAdvertise on AgodaAffiliatesAgoda API DocumentationGet the appiOS appAndroid app
-
-
-
-Destination Cities
-Asia
-
-Bali Hotels
-Bandung Hotels
-Bangkok Hotels
-Boracay Island Hotels
-
-Busan Hotels
-Cebu Hotels
-Chiang Mai Hotels
-Da Nang Hotels
-Fukuoka Hotels
-Hanoi Hotels
-Hat Yai Hotels
-Ho Chi Minh City
-                            Hotels
-Hoi An Hotels
-Hong Kong Hotels
-Hua Hin Hotels
-Hualien Hotels
-Ipoh Hotels
-Jakarta Hotels
-Jeju Island Hotels
-Johor Bahru Hotels
-Kaohsiung Hotels
-Kota Kinabalu Hotels
-Krabi Hotels
-Kuala Lumpur Hotels
-Kuantan Hotels
-Kyoto Hotels
+쿠키 관련 설정 관리아고다는 기능에 있어 꼭 필요한 경우에만 쿠키 및 기타 추적 기술을 사용하며, 분석 또는 마케팅용 쿠키를 사용하지 않습니다. 더 자세한 사항은 여기를 참조하십시오닫기
 
 
 
 
-Macau Hotels
-Malacca Hotels
-Manila Hotels
-Nagoya Hotels
-Nha Trang Hotels
-Okinawa Hotels
-Osaka Hotels
-Pattaya Hotels
-Penang Hotels
-Phuket Hotels
-Sapporo Hotels
-Seoul Hotels
-Shanghai Hotels
-Singapore Hotels
-Surabaya Hotels
-Taichung Hotels
-Tainan Hotels
-Taipei Hotels
-Tokyo Hotels
-Yilan Hotels
-Yogyakarta Hotels
 
-Europe
-
-London Hotels
-Paris Hotels
-
-Middle East
-
-Dubai Hotels
-
-
-
-Countries & Territories
-Africa
-
-Morocco Hotels
-South Africa Hotels
-
-Americas
-
-Argentina Hotels
-Brazil Hotels
-Canada Hotels
-Mexico Hotels
-United States Hotels
-Venezuela Hotels
-
-Asia
-
-Cambodia Hotels
-China Hotels
-India Hotels
-Indonesia Hotels
-Japan Hotels
-Laos Hotels
-Malaysia Hotels
-Myanmar Hotels
-Nepal Hotels
-Philippines Hotels
-South Korea Hotels
-Sri Lanka Hotels
-Taiwan Hotels
-Thailand Hotels
-Vietnam Hotels
-
-
-
-Europe
-
-Austria Hotels
-Czech Republic Hotels
-
-Denmark Hotels
-Finland Hotels
-France Hotels
-Germany Hot... [5KB 제한으로 텍스트 일부만 수집됨]
+숙소신규오픈교통편즐길 거리할인 쿠폰 & 특가 상품아파트먼트eSIM여행 가이드여행 일정 팁숙소 등록₩로그인회원 가입
+검색하고 싶은 키워드나 숙소명을 입력하고 방향키나 탭 키를 사용하여 탐색한 후 엔터키를 눌러 선택하세요.2025년 8월 27일수요일2025년 8월 28일목요일성인 2명객실 1개확인 홈태국 숙소(116,293)방콕 숙소(12,048)130 호텔 앤 레지던스 방콕 예약방콕의 12,048개 숙소 모두 보기객실 사진 보기관심 숙소에서 삭제됨개요객실여행 추천편의 시설/서비스이용후기위치정책시작가 ₩ 35,364객실 상품 보기 개요객실여행 추천편의 시설/서비스이용후기위치정책시작가 ₩ 35,364객실 상품 보기 International Deals130 호텔 앤 레지던스 방콕 (130 Hotel & Residence Bangkok)4성급tooltip기대할 수 있는 편안함, 편의 시설 및 서비스를 반영해 숙소에서 제공한 성급입니다.25 Latphrao Soi 130, 방카피, 방콕, 태국, 10240 - 지도에서 보기주요 특징대중교통(250m 거리)다양한 액티비티위생 PLUS24시간 프런트 데스크24시간 프런트 데스크위치 만족도 31%투숙객 이용후기 기준무료 Wi-Fi (모든 객실)편의 시설/서비스무료 Wi-Fi 무료 주차24시간 프런트 데스크레스토랑공항 이동 교통편 서비스가족용 공간/거실 관련여행 가방 보관 서비스정원숙소 소개130 호텔 앤 레지던스 방콕은 푸르른 정원이 있는 평화로운 오아시스입니다. 편안한 여행객에게 이상적입니다. 세련된 인디고 레스토랑은 모든 입맛을 만족시키는 다양한 메뉴를 제공합니다. 이 친환경 호텔은 방콕의 활기찬 명소에 가까운 완벽한 환경에서 휴식을 취할 수 있도록 해줍니다. 활기찬 방카피 지역에서 커플들은 현지 시장, 현대적인 쇼핑 센터, 고요한 공원을 탐험할 수 있습니다. 멋진 야외 수영장에서 리프레시하고 재충전하세요. 편안한 숙소에는 에어컨, 무료 Wi-Fi가 제공되며, 일부 객실에는 매력적인 도시 또는 정원의 전망을 감상할 수 있는 전용 발코니가 있습니다. 방콕에서의 잊지 못할 휴식을 보장합니다. [일부 콘텐츠는 생성형 AI에 의해 작성되었으며 부정확한 내용이 포함될 수 있습니다.]더 보기인기 많은 숙소입니다!오늘 12명의 여행객이 이 숙소 예약함숙소 평점 10 만점에 8.5점 우수  5,254 건의 이용후기8.5우수 5,254 건의 이용후기 5,254 건의 이용후기이용후기 모두 보기가격 대비 만족도 8.8숙소 청결 상태 8.7서비스 8.7위치 8.6이용후기 5,254건 기준가격 대비 만족도8.8숙소 청결 상태8.7서비스8.7위치8.6부대시설8.4"가성비최고 방카피 지역에서 최고의 호텔""깨끗하고 친절합니다""우선 직원들 영어실력이 좋고""숙소 상태도 좋습니다."tooltip주변 대중교통•Lat Phrao 101 MRT Station (0.24km 내)•Bang Kapi MRT Station (0.95km 내)지도에서 보기8.6우수숙소 위치 평가 점수위치 평가 - 우수주차무료인기 명소짜뚜짝 시장9.5k... [5KB 제한으로 텍스트 일부만 수집됨]

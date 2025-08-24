@@ -178,7 +178,7 @@ function displayResult(data) {
             <div class="mb-2">
                 <small class="text-muted">
                     <i class="fas fa-link"></i>
-                    URL: <span class="text-break">${data.url}</span>
+                    URL: <span class="text-break url-display"></span>
                 </small>
             </div>
             ${pricesHtml}
@@ -187,6 +187,11 @@ function displayResult(data) {
     `;
     
     resultsContainer.appendChild(resultCard);
+    
+    // URL을 안전하게 표시 (HTML 엔티티 변환 방지)
+    const urlSpan = resultCard.querySelector('.url-display');
+    urlSpan.textContent = data.url;
+    
     showResultsSection();
     
     // 결과로 스크롤
