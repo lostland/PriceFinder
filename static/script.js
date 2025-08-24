@@ -43,7 +43,6 @@ const loadingIndicator = document.getElementById('loadingIndicator');
 const errorMessage = document.getElementById('errorMessage');
 const lowestPriceSection = document.getElementById('lowestPriceSection');
 const cardResultsSection = document.getElementById('cardResultsSection');
-const debugResultsSection = document.getElementById('debugResultsSection');
 const continueSection = document.getElementById('continueSection');
 const completeSection = document.getElementById('completeSection');
 const continueBtn = document.getElementById('continueBtn');
@@ -439,13 +438,6 @@ function hideCardResultsSection() {
     cardResultsSection.style.display = 'none';
 }
 
-function showDebugResultsSection() {
-    debugResultsSection.style.display = 'block';
-}
-
-function hideDebugResultsSection() {
-    debugResultsSection.style.display = 'none';
-}
 
 function hideContinueButton() {
     continueSection.style.display = 'none';
@@ -457,7 +449,6 @@ function hideAllSections() {
     hideError();
     hideLowestPriceSection();
     hideCardResultsSection();
-    hideDebugResultsSection();
     hideContinueButton();
     completeSection.style.display = 'none';
 }
