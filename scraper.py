@@ -4,11 +4,10 @@ import logging
 import requests
 import time
 
-def scrape_prices_simple(url, original_currency_code=None):
+def scrape_prices_simple(url):
     """
     단순하고 빠른 가격 스크래핑 - 이미지 처리 없음
     Returns a list of dictionaries containing price and context information
-    original_currency_code: 원본 URL의 통화 코드 (예: USD, KRW, THB)
     """
     try:
         # Selenium 사용 - 간단한 설정
@@ -40,21 +39,6 @@ def scrape_prices_simple(url, original_currency_code=None):
         # 봇 탐지 우회
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
-        # URL에서 currencyCode 복원 (리다이렉트로 바뀐 경우)
-        if original_currency_code:
-            import re
-            # 현재 URL에서 currencyCode 찾아서 원본으로 교체
-            currency_pattern = r'currencyCode=([^&]+)'
-            if re.search(currency_pattern, url):
-                url = re.sub(currency_pattern, f'currencyCode={original_currency_code}', url)
-                print(f"CurrencyCode 복원: → {original_currency_code}")
-            
-            # currency= 파라미터도 교체 (일부 사이트에서 사용)
-            currency_param_pattern = r'currency=([^&]+)'
-            if re.search(currency_param_pattern, url):
-                url = re.sub(currency_param_pattern, f'currency={original_currency_code}', url)
-                print(f"Currency 파라미터 복원: → {original_currency_code}")
-
         start_time = time.time()
         try:
             driver.get(url)
@@ -265,30 +249,17 @@ def scrape_prices_simple(url, original_currency_code=None):
             # txt 파일에서 "시작가" 뒤의 가격 찾기
             starting_price = None
             try:
-                # "시작가" 뒤의 가격 패턴 검색 (다양한 통화 단위 지원)
-                starting_price_patterns = [
-                    r'시작가\s*(USD\s+[\d,]+(?:\.\d+)?)',         # USD 46 형태
-                    r'시작가\s*(KRW\s+[\d,]+(?:\.\d+)?)',         # KRW 46000 형태  
-                    r'시작가\s*(THB\s+[\d,]+(?:\.\d+)?)',         # THB 1500 형태
-                    r'시작가\s*([₩][\d,]+(?:\.\d+)?)',           # ₩46000 형태
-                    r'시작가\s*(\$[\d,]+(?:\.\d+)?)',            # $46 형태
-                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*USD)',      # 46 USD 형태
-                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*THB)',      # 46 THB 형태
-                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*KRW)',      # 46 KRW 형태
-                ]
-                
-                match = None
-                for pattern in starting_price_patterns:
-                    match = re.search(pattern, all_text, re.IGNORECASE)
-                    if match:
-                        break
+                # "시작가" 패턴 검색
+                starting_price_pattern = r'시작가[^\d]*([^\s\n]+)'
+                match = re.search(starting_price_pattern, all_text, re.IGNORECASE)
                 
                 if match:
                     price_text = match.group(1).strip()
-                    # 원본 가격 텍스트를 그대로 사용 (통화 단위 포함)
-                    if price_text:
+                    # 가격 형태로 정리 (USD, $ 등 제거하고 숫자만)
+                    clean_price = re.sub(r'[^\d\.]', '', price_text)
+                    if clean_price:
                         starting_price = {
-                            'price': price_text,  # 원본 형태 그대로 (₩, THB, $ 등 포함)
+                            'price': f"${clean_price}",
                             'context': f"시작가 {price_text}",
                             'source': 'starting_price_from_file'
                         }
