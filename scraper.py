@@ -493,8 +493,10 @@ def reorder_url_parameters(url):
         'childs',  # children의 다른 표현
         'maxRooms',
         'rooms',
-        'checkIn',
-        'checkOut',  # 체크아웃 날짜 추가
+        'checkIn',    # 체크인 날짜 (camelCase)
+        'checkin',    # 체크인 날짜 (lowercase)
+        'checkOut',   # 체크아웃 날짜 (camelCase)
+        'checkout',   # 체크아웃 날짜 (lowercase)
         'isCalendarCallout',
         'childAges',
         'numberOfGuest',
@@ -527,6 +529,16 @@ def reorder_url_parameters(url):
                 if '=' in pair:
                     key, value = pair.split('=', 1)
                     params_dict[key] = value
+        
+        # 디버깅: 입력 URL에서 체크인 관련 파라미터 확인
+        checkin_found = []
+        for key in params_dict.keys():
+            if 'checkin' in key.lower():
+                checkin_found.append(f"{key}={params_dict[key]}")
+        if checkin_found:
+            print(f"체크인 관련 파라미터 발견: {', '.join(checkin_found)}")
+        else:
+            print("⚠️ 체크인 파라미터가 입력 URL에 없음")
         
         # currency 파라미터가 없으면 기본값 KRW 추가
         if 'currency' not in params_dict:
