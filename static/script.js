@@ -128,6 +128,11 @@ function analyzeCid() {
         hideLoading();
         
         if (data.error) {
+            // 첫번째 CID에서 가격을 찾지 못한 경우 - 잘못된 링크로 판단
+            if (data.error_type === 'invalid_link' && data.step === 0) {
+                showInvalidLinkModal(data.error);
+                return;
+            }
             showError(data.error);
             return;
         }
@@ -476,4 +481,50 @@ function hideAllSections() {
     hideCardResultsSection();
     hideContinueButton();
     completeSection.style.display = 'none';
+}
+
+// 잘못된 링크 모달 표시 및 입력창 초기화
+function showInvalidLinkModal(message) {
+    // Bootstrap Alert로 모달처럼 표시
+    const alertHtml = `
+        <div class="alert alert-warning alert-dismissible fade show position-fixed" 
+             style="top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 500px; width: 90%;" 
+             role="alert">
+            <h6 class="alert-heading">
+                <i class="fas fa-exclamation-triangle"></i> 링크 오류
+            </h6>
+            <p class="mb-2">${message.replace('\n', '<br>')}</p>
+            <hr>
+            <p class="mb-0">
+                <a href="/guide" target="_blank" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-question-circle"></i> 사용법 보기
+                </a>
+            </p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    // 기존 alert 제거
+    const existingAlert = document.querySelector('.alert-warning');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+    
+    // 새 alert 추가
+    document.body.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // 입력창 초기화
+    urlInput.value = '';
+    urlInput.focus();
+    
+    // 모든 섹션 숨기기
+    hideAllSections();
+    
+    // 5초 후 자동 제거
+    setTimeout(() => {
+        const alert = document.querySelector('.alert-warning');
+        if (alert) {
+            alert.remove();
+        }
+    }, 8000);
 }

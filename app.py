@@ -116,6 +116,15 @@ def scrape():
         prices = scrape_prices_simple(new_url, original_currency_code=original_currency)
         process_time = time.time() - start_time
         
+        # 첫번째 CID에서 가격을 찾지 못한 경우 - 잘못된 링크로 판단
+        if step == 0 and len(prices) == 0:
+            app.logger.warning(f"First CID parsing failed - no prices found: {new_url}")
+            return jsonify({
+                'error': '잘못된 링크를 입력한 것 같습니다\n사용법을 확인해 주세요',
+                'error_type': 'invalid_link',
+                'step': step
+            }), 400
+        
         # 텍스트 파일 다운로드 링크 생성
         download_filename = f"page_text_cid_{current_cid}.txt"
         download_link = f"/download/{download_filename}"
