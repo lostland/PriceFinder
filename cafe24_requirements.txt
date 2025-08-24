@@ -1,5 +1,0 @@
-# Cafe24용 최소 의존성 목록
-beautifulsoup4
-flask
-requests
-werkzeug
