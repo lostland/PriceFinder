@@ -516,18 +516,28 @@ def reorder_url_parameters(url):
     try:
         # URL 파싱
         parsed_url = urlparse(url)
-        query_params = parse_qs(parsed_url.query, keep_blank_values=True)
+        query_string = parsed_url.query
+        
+        # 정규표현식으로 파라메터 추출 (디코딩 없이)
+        params_dict = {}
+        
+        # 쿼리 스트링을 &로 분리하여 파라메터 추출
+        if query_string:
+            param_pairs = query_string.split('&')
+            for pair in param_pairs:
+                if '=' in pair:
+                    key, value = pair.split('=', 1)
+                    params_dict[key] = value
         
         # 새로운 파라메터 딕셔너리 (지정된 순서대로)
         reordered_params = {}
         
         # 지정된 순서대로 파라메터 추가 (존재하는 경우만)
         for param in desired_order:
-            if param in query_params:
-                # parse_qs는 리스트로 반환하므로 첫 번째 값 사용
-                reordered_params[param] = query_params[param][0]
+            if param in params_dict:
+                reordered_params[param] = params_dict[param]
         
-        # 새로운 쿼리 스트링 생성 (수동으로 구성하여 인코딩 문제 방지)
+        # 새로운 쿼리 스트링 생성
         query_parts = []
         for key, value in reordered_params.items():
             query_parts.append(f"{key}={value}")
