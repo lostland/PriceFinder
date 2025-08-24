@@ -159,7 +159,8 @@ def scrape():
 @app.route('/guide')
 def guide():
     """사용방법 가이드 페이지"""
-    return render_template('guide.html')
+    lang = request.args.get('lang', 'ko')  # 기본값은 한국어
+    return render_template('guide.html', lang=lang)
 
 @app.route('/download/<filename>')
 def download_file(filename):

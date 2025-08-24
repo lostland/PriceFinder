@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>사용방법 - Agoda Magic Price</title>
+    <title><span id="pageTitle">사용방법 - Agoda Magic Price</span></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -89,8 +89,16 @@
         <!-- 헤더 -->
         <div class="text-center mb-5">
             <h1 class="magic-title display-4 mb-3">Agoda Magic Price</h1>
-            <h2 class="text-white mb-4">사용방법</h2>
-            <p class="text-white-50 lead">아고다 호텔의 최저가를 자동으로 검색해 줍니다.</p>
+            <h2 class="text-white mb-4" id="guideTitle">사용방법</h2>
+            <p class="text-white-50 lead" id="guideSubtitle">아고다 호텔의 최저가를 자동으로 검색해 줍니다.</p>
+            
+            <!-- 언어 전환 버튼 -->
+            <div class="mt-3">
+                <button id="languageToggle" class="btn-back btn-sm">
+                    <i class="fas fa-language"></i>
+                    <span id="languageText">English</span>
+                </button>
+            </div>
         </div>
 
         <!-- 가이드 단계들 -->
@@ -100,43 +108,43 @@
                 <!-- 1단계 -->
                 <div class="guide-step">
                     <div class="step-number">1</div>
-                    <h4 class="text-white mb-3">예약하려는 아고다 호텔 주소 복사합니다.</h4>
+                    <h4 class="text-white mb-3" data-translate="step1Title">예약하려는 아고다 호텔 주소 복사합니다.</h4>
                     <img src="{{ url_for('static', filename='images/화면 캡처 2025-08-24 150241_1756017033568.png') }}" 
                          alt="아고다 호텔 페이지" class="guide-image">
-                    <p class="text-white-50 mt-3">아고다 웹사이트에서 예약하고 싶은 호텔 페이지로 이동한 후, 브라우저 주소창의 URL을 복사합니다.</p>
+                    <p class="text-white-50 mt-3" data-translate="step1Desc">아고다 웹사이트에서 예약하고 싶은 호텔 페이지로 이동한 후, 브라우저 주소창의 URL을 복사합니다.</p>
                 </div>
 
                 <!-- 2단계 -->
                 <div class="guide-step">
                     <div class="step-number">2</div>
-                    <h4 class="text-white mb-3">아고다 Magic Price 사이트에 복사한 주소 붙여 넣기 해줍니다.</h4>
+                    <h4 class="text-white mb-3" data-translate="step2Title">아고다 Magic Price 사이트에 복사한 주소 붙여 넣기 해줍니다.</h4>
                     <img src="{{ url_for('static', filename='images/화면 캡처 2025-08-24 150503_1756017038050.png') }}" 
                          alt="URL 입력 화면" class="guide-image">
-                    <p class="text-white-50 mt-3">Agoda Magic Price 사이트의 URL 입력창에 복사한 아고다 호텔 주소를 붙여넣습니다.</p>
+                    <p class="text-white-50 mt-3" data-translate="step2Desc">Agoda Magic Price 사이트의 URL 입력창에 복사한 아고다 호텔 주소를 붙여넣습니다.</p>
                 </div>
 
                 <!-- 3단계 -->
                 <div class="guide-step">
                     <div class="step-number">3</div>
-                    <h4 class="text-white mb-3">분석 시작 버튼을 클릭해 주세요</h4>
+                    <h4 class="text-white mb-3" data-translate="step3Title">분석 시작 버튼을 클릭해 주세요</h4>
                     <img src="{{ url_for('static', filename='images/화면 캡처 2025-08-24 1505032_1756017041913.png') }}" 
                          alt="분석 시작 버튼" class="guide-image">
-                    <p class="text-white-50 mt-3">URL을 입력한 후 <strong>"분석 시작"</strong> 버튼을 클릭하여 가격 분석을 시작합니다.</p>
+                    <p class="text-white-50 mt-3" data-translate="step3Desc">URL을 입력한 후 <strong data-translate="startAnalysis">"분석 시작"</strong> 버튼을 클릭하여 가격 분석을 시작합니다.</p>
                 </div>
 
                 <!-- 4단계 -->
                 <div class="guide-step">
                     <div class="step-number">4</div>
-                    <h4 class="text-white mb-3">분석이 완료되면 구글등 검색창리스트에서 찾은 최저가가 표시가 되며, 각 카드사별 할인 가격들이 별도로 표시가 됩니다.</h4>
+                    <h4 class="text-white mb-3" data-translate="step4Title">분석이 완료되면 구글등 검색창리스트에서 찾은 최저가가 표시가 되며, 각 카드사별 할인 가격들이 별도로 표시가 됩니다.</h4>
                     <img src="{{ url_for('static', filename='images/화면 캡처 2025-08-24 152949_1756017045835.jpg') }}" 
                          alt="분석 결과 화면" class="guide-image">
-                    <p class="text-white-50 mt-3">
+                    <p class="text-white-50 mt-3" data-translate="step4Intro">
                         분석이 완료되면 다음과 같이 표시됩니다:
                     </p>
                     <ul class="text-white-50">
-                        <li><strong>현재 최저가:</strong> 검색창리스트에서 찾은 가장 저렴한 가격</li>
-                        <li><strong>카드별 가격 비교:</strong> 각 카드사별 할인 적용 가격들</li>
-                        <li><strong>창열기 버튼:</strong> 원하는 가격의 창열기 버튼을 클릭하면 해당 가격의 아고다 창이 새로 열립니다</li>
+                        <li><strong data-translate="currentLowest">현재 최저가:</strong> <span data-translate="currentLowestDesc">검색창리스트에서 찾은 가장 저렴한 가격</span></li>
+                        <li><strong data-translate="cardComparison">카드별 가격 비교:</strong> <span data-translate="cardComparisonDesc">각 카드사별 할인 적용 가격들</span></li>
+                        <li><strong data-translate="openButton">창열기 버튼:</strong> <span data-translate="openButtonDesc">원하는 가격의 창열기 버튼을 클릭하면 해당 가격의 아고다 창이 새로 열립니다</span></li>
                     </ul>
                 </div>
 
@@ -144,9 +152,9 @@
                 <div class="warning-box">
                     <div class="d-flex align-items-center mb-3">
                         <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                        <h5 class="text-warning mb-0">중요 안내사항</h5>
+                        <h5 class="text-warning mb-0" data-translate="warningTitle">중요 안내사항</h5>
                     </div>
-                    <p class="text-white mb-0">
+                    <p class="text-white mb-0" data-translate="warningDesc">
                         아고다의 로그인 없이 검색을 하므로 화면에 나타나는 가격은 실제 가격과 상이할 수 있습니다.
                         정확한 가격 확인을 위해서는 해당 창에서 직접 로그인 후 확인해 주시기 바랍니다.
                     </p>
@@ -154,9 +162,9 @@
 
                 <!-- 돌아가기 버튼 -->
                 <div class="text-center mt-5">
-                    <a href="/" class="btn-back">
+                    <a href="/" class="btn-back" id="backButton">
                         <i class="fas fa-arrow-left me-2"></i>
-                        메인으로 돌아가기
+                        <span data-translate="backToMain">메인으로 돌아가기</span>
                     </a>
                 </div>
 
@@ -165,5 +173,126 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 언어 전환 시스템
+        let currentLanguage = 'ko'; // 기본값: 한국어
+        
+        // 번역 객체
+        const translations = {
+            ko: {
+                pageTitle: '사용방법 - Agoda Magic Price',
+                guideTitle: '사용방법',
+                guideSubtitle: '아고다 호텔의 최저가를 자동으로 검색해 줍니다.',
+                languageBtn: 'English',
+                step1Title: '예약하려는 아고다 호텔 주소 복사합니다.',
+                step1Desc: '아고다 웹사이트에서 예약하고 싶은 호텔 페이지로 이동한 후, 브라우저 주소창의 URL을 복사합니다.',
+                step2Title: '아고다 Magic Price 사이트에 복사한 주소 붙여 넣기 해줍니다.',
+                step2Desc: 'Agoda Magic Price 사이트의 URL 입력창에 복사한 아고다 호텔 주소를 붙여넣습니다.',
+                step3Title: '분석 시작 버튼을 클릭해 주세요',
+                step3Desc: 'URL을 입력한 후 "분석 시작" 버튼을 클릭하여 가격 분석을 시작합니다.',
+                startAnalysis: '"분석 시작"',
+                step4Title: '분석이 완료되면 구글등 검색창리스트에서 찾은 최저가가 표시가 되며, 각 카드사별 할인 가격들이 별도로 표시가 됩니다.',
+                step4Intro: '분석이 완료되면 다음과 같이 표시됩니다:',
+                currentLowest: '현재 최저가:',
+                currentLowestDesc: '검색창리스트에서 찾은 가장 저렴한 가격',
+                cardComparison: '카드별 가격 비교:',
+                cardComparisonDesc: '각 카드사별 할인 적용 가격들',
+                openButton: '창열기 버튼:',
+                openButtonDesc: '원하는 가격의 창열기 버튼을 클릭하면 해당 가격의 아고다 창이 새로 열립니다',
+                warningTitle: '중요 안내사항',
+                warningDesc: '아고다의 로그인 없이 검색을 하므로 화면에 나타나는 가격은 실제 가격과 상이할 수 있습니다. 정확한 가격 확인을 위해서는 해당 창에서 직접 로그인 후 확인해 주시기 바랍니다.',
+                backToMain: '메인으로 돌아가기'
+            },
+            en: {
+                pageTitle: 'Guide - Agoda Magic Price',
+                guideTitle: 'How to Use',
+                guideSubtitle: 'Automatically search for the lowest prices on Agoda hotels.',
+                languageBtn: '한국어',
+                step1Title: 'Copy the Agoda hotel address you want to book.',
+                step1Desc: 'Go to the hotel page you want to book on the Agoda website, then copy the URL from the browser address bar.',
+                step2Title: 'Paste the copied address into the Agoda Magic Price site.',
+                step2Desc: 'Paste the copied Agoda hotel address into the URL input field on the Agoda Magic Price site.',
+                step3Title: 'Click the "Start Analysis" button',
+                step3Desc: 'After entering the URL, click the "Start Analysis" button to begin price analysis.',
+                startAnalysis: '"Start Analysis"',
+                step4Title: 'When analysis is complete, the lowest price found from search engines will be displayed, and discount prices for each card company will be shown separately.',
+                step4Intro: 'When analysis is complete, the following will be displayed:',
+                currentLowest: 'Current Lowest:',
+                currentLowestDesc: 'The cheapest price found from search engine lists',
+                cardComparison: 'Price Comparison by Card:',
+                cardComparisonDesc: 'Discount prices applied by each card company',
+                openButton: 'Open Button:',
+                openButtonDesc: 'Click the open button for your desired price to open a new Agoda window with that price',
+                warningTitle: 'Important Notice',
+                warningDesc: 'Since searches are performed without logging into Agoda, the prices displayed on screen may differ from actual prices. For accurate price confirmation, please log in directly on the respective page and check.',
+                backToMain: 'Back to Main'
+            }
+        };
+
+        // 페이지 로드 시 URL 파라미터에서 언어 확인
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const langParam = urlParams.get('lang');
+            if (langParam === 'en') {
+                currentLanguage = 'en';
+                updateLanguage();
+            }
+            
+            // 언어 전환 버튼 이벤트
+            const languageToggle = document.getElementById('languageToggle');
+            if (languageToggle) {
+                languageToggle.addEventListener('click', toggleLanguage);
+            }
+        });
+
+        // 언어 전환
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'ko' ? 'en' : 'ko';
+            updateLanguage();
+            
+            // URL 업데이트
+            const url = new URL(window.location);
+            url.searchParams.set('lang', currentLanguage);
+            window.history.pushState({}, '', url);
+        }
+
+        // 언어 업데이트
+        function updateLanguage() {
+            const t = translations[currentLanguage];
+            
+            // 페이지 제목
+            document.title = t.pageTitle;
+            const pageTitleEl = document.getElementById('pageTitle');
+            if (pageTitleEl) pageTitleEl.textContent = t.pageTitle;
+            
+            // 헤더
+            const guideTitleEl = document.getElementById('guideTitle');
+            if (guideTitleEl) guideTitleEl.textContent = t.guideTitle;
+            
+            const guideSubtitleEl = document.getElementById('guideSubtitle');
+            if (guideSubtitleEl) guideSubtitleEl.textContent = t.guideSubtitle;
+            
+            // 언어 버튼
+            const languageTextEl = document.getElementById('languageText');
+            if (languageTextEl) languageTextEl.textContent = t.languageBtn;
+            
+            // 번역 요소들
+            const translateElements = document.querySelectorAll('[data-translate]');
+            translateElements.forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (t[key]) {
+                    el.textContent = t[key];
+                }
+            });
+            
+            // step3Desc는 HTML 포함하여 처리
+            const step3DescEl = document.querySelector('[data-translate="step3Desc"]');
+            if (step3DescEl) {
+                step3DescEl.innerHTML = currentLanguage === 'ko' 
+                    ? 'URL을 입력한 후 <strong data-translate="startAnalysis">"분석 시작"</strong> 버튼을 클릭하여 가격 분석을 시작합니다.'
+                    : 'After entering the URL, click the <strong data-translate="startAnalysis">"Start Analysis"</strong> button to begin price analysis.';
+            }
+        }
+    </script>
 </body>
 </html>

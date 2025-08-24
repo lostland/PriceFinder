@@ -562,7 +562,7 @@ function showInvalidLinkModal(message) {
                 <button type="button" class="btn btn-primary btn-sm me-2 modal-ok-btn">
                     <i class="fas fa-check"></i> ${t.ok}
                 </button>
-                <a href="/guide" target="_blank" class="btn btn-outline-primary btn-sm">
+                <a href="/guide?lang=${currentLanguage}" target="_blank" class="btn btn-outline-primary btn-sm">
                     <i class="fas fa-question-circle"></i> ${t.guide}
                 </a>
             </p>
@@ -641,6 +641,10 @@ function updateLanguage() {
     // 사용방법 버튼
     const guideText = document.querySelector('.guide-text');
     if (guideText) guideText.textContent = t.guide;
+    
+    // 가이드 링크 업데이트
+    const guideLink = document.getElementById('guideLink');
+    if (guideLink) guideLink.href = `/guide?lang=${currentLanguage}`;
     
     // 진행률 관련
     const progressTitle = document.querySelector('#progressSection h6');
