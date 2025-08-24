@@ -48,14 +48,14 @@ def scrape_prices_simple(url, original_currency_code=None):
         try:
             driver.get(url)
             
-            # 간단하고 빠른 로딩 전략
-            time.sleep(3)  # 기본 로딩 대기
+            # 빠른 로딩 전략 (timeout 방지)
+            time.sleep(1.5)  # 로딩 대기 시간 단축
             
             # 스크롤로 콘텐츠 로딩
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(1)
+            time.sleep(0.5)
             driver.execute_script("window.scrollTo(0, 0);")
-            time.sleep(1)
+            time.sleep(0.5)
             
             page_source = driver.page_source
             
@@ -530,15 +530,10 @@ def reorder_url_parameters(url):
                     key, value = pair.split('=', 1)
                     params_dict[key] = value
         
-        # 디버깅: 입력 URL에서 체크인 관련 파라미터 확인
-        checkin_found = []
-        for key in params_dict.keys():
-            if 'checkin' in key.lower():
-                checkin_found.append(f"{key}={params_dict[key]}")
+        # 체크인 관련 파라미터 확인 (간소화)
+        checkin_found = [f"{k}={v}" for k, v in params_dict.items() if 'checkin' in k.lower()]
         if checkin_found:
             print(f"체크인 관련 파라미터 발견: {', '.join(checkin_found)}")
-        else:
-            print("⚠️ 체크인 파라미터가 입력 URL에 없음")
         
         # currency 파라미터가 없으면 기본값 KRW 추가
         if 'currency' not in params_dict:

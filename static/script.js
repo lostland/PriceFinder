@@ -116,7 +116,14 @@ function analyzeCid() {
             step: currentStep
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        // 응답이 JSON인지 확인
+        const contentType = response.headers.get('Content-Type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('서버에서 JSON이 아닌 응답을 반환했습니다 (HTML 에러 페이지 가능성)');
+        }
+        return response.json();
+    })
     .then(data => {
         hideLoading();
         
