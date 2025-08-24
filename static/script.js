@@ -7,7 +7,7 @@ let cardResults = [];
 let lowestPrice = null;
 let lowestPriceUrl = '';
 let lowestPriceCidName = '';
-const totalSteps = 16; // 검색창리스트(8) + 카드리스트(8)
+const totalSteps = 17; // 검색창리스트(9) + 카드리스트(8)
 
 // CID 정보 배열
 const searchCids = [
@@ -18,7 +18,8 @@ const searchCids = [
     { name: '구글 검색A', cid: '1776688' },
     { name: '구글 검색B', cid: '1922868' },
     { name: '구글 검색C', cid: '1908612' },
-    { name: '네이버 검색', cid: '1729890' }
+    { name: '네이버 검색', cid: '1729890' },
+    { name: 'TripAdvisor', cid: '1587497' }
 ];
 
 const cardCids = [
