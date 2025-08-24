@@ -482,7 +482,7 @@ def reorder_url_parameters(url):
     """
     URL의 파라메터를 지정된 순서로 재정렬하고 필요한 파라메터만 유지
     """
-    # 지정된 파라메터 순서
+    # 지정된 파라메터 순서 (필요한 모든 파라미터 포함)
     desired_order = [
         'countryId',
         'finalPriceView', 
@@ -490,9 +490,11 @@ def reorder_url_parameters(url):
         'familyMode',
         'adults',
         'children',
+        'childs',  # children의 다른 표현
         'maxRooms',
         'rooms',
         'checkIn',
+        'checkOut',  # 체크아웃 날짜 추가
         'isCalendarCallout',
         'childAges',
         'numberOfGuest',
@@ -503,7 +505,10 @@ def reorder_url_parameters(url):
         'currency',
         'isFreeOccSearch',
         'los',
+        'textToSearch',  # 검색 텍스트 추가
+        'productType',   # 상품 타입 추가
         'searchrequestid',
+        'ds',           # ds 파라미터 추가
         'cid'
     ]
     
@@ -522,6 +527,7 @@ def reorder_url_parameters(url):
                 if '=' in pair:
                     key, value = pair.split('=', 1)
                     params_dict[key] = value
+        
         
         # 새로운 파라메터 딕셔너리 (지정된 순서대로)
         reordered_params = {}
