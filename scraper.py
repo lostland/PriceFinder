@@ -282,6 +282,33 @@ def scrape_prices_simple(url):
         else:
             prices_found = all_prices  # 없으면 빈 리스트
         
+        # 전체 텍스트를 파일로 저장 (다운로드용)
+        try:
+            import os
+            if not os.path.exists('downloads'):
+                os.makedirs('downloads')
+            
+            # CID 정보 추출
+            cid_match = re.search(r'cid=([^&]+)', url)
+            cid_value = cid_match.group(1) if cid_match else 'unknown'
+            
+            # 파일명 생성
+            filename = f"page_text_cid_{cid_value}.txt"
+            filepath = os.path.join('downloads', filename)
+            
+            # 전체 텍스트 저장
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(f"URL: {url}\n")
+                f.write(f"CID: {cid_value}\n")
+                f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write("="*50 + "\n\n")
+                f.write(all_text)
+            
+            print(f"텍스트 파일 저장됨: {filepath}")
+            
+        except Exception as save_error:
+            print(f"텍스트 파일 저장 오류: {save_error}")
+        
         return prices_found
         
     except Exception as e:

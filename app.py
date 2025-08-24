@@ -1,7 +1,7 @@
 import os
 import logging
 from urllib.parse import urlparse, parse_qs
-from flask import Flask, render_template, request, jsonify, Response
+from flask import Flask, render_template, request, jsonify, Response, send_file
 from werkzeug.middleware.proxy_fix import ProxyFix
 from scraper import process_all_cids_sequential
 
@@ -74,6 +74,10 @@ def scrape():
         prices = scrape_prices_simple(new_url)
         process_time = time.time() - start_time
         
+        # 텍스트 파일 다운로드 링크 생성
+        download_filename = f"page_text_cid_{current_cid}.txt"
+        download_link = f"/download/{download_filename}"
+        
         # 결과 반환
         result = {
             'step': step + 1,
@@ -84,7 +88,9 @@ def scrape():
             'found_count': len(prices),
             'process_time': round(process_time, 1),
             'has_next': step + 1 < len(cid_values),  # 다음 단계가 있는지
-            'next_step': step + 1 if step + 1 < len(cid_values) else None
+            'next_step': step + 1 if step + 1 < len(cid_values) else None,
+            'download_link': download_link,  # 텍스트 파일 다운로드 링크
+            'download_filename': download_filename
         }
         
         return jsonify(result)
@@ -94,6 +100,27 @@ def scrape():
         return jsonify({
             'error': f'처리 실패: {str(e)}'
         }), 500
+
+@app.route('/download/<filename>')
+def download_file(filename):
+    """텍스트 파일 다운로드 엔드포인트"""
+    try:
+        import os
+        file_path = os.path.join('downloads', filename)
+        
+        if not os.path.exists(file_path):
+            return jsonify({'error': '파일을 찾을 수 없습니다'}), 404
+        
+        return send_file(
+            file_path,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='text/plain; charset=utf-8'
+        )
+        
+    except Exception as e:
+        app.logger.error(f"Error downloading file: {str(e)}")
+        return jsonify({'error': f'다운로드 실패: {str(e)}'}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

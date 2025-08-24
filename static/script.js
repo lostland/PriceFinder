@@ -156,6 +156,16 @@ function displayResult(data) {
         pricesHtml = '<div class="text-muted">이 CID에서는 가격을 찾지 못했습니다.</div>';
     }
     
+    // 다운로드 링크 생성
+    const downloadLinkHtml = data.download_link ? `
+        <div class="mt-3 pt-3 border-top">
+            <a href="${data.download_link}" class="btn btn-sm btn-outline-primary" target="_blank">
+                <i class="fas fa-download"></i>
+                페이지 텍스트 다운로드 (${data.download_filename})
+            </a>
+        </div>
+    ` : '';
+
     resultCard.innerHTML = `
         <div class="card-header d-flex justify-content-between align-items-center">
             <h6 class="mb-0">
@@ -172,6 +182,7 @@ function displayResult(data) {
                 </small>
             </div>
             ${pricesHtml}
+            ${downloadLinkHtml}
         </div>
     `;
     
