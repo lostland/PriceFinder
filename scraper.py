@@ -41,19 +41,8 @@ def scrape_prices_simple(url, original_currency_code=None):
         # 봇 탐지 우회
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
-        # URL에서 currencyCode 복원 (리다이렉트로 바뀐 경우)
-        if original_currency_code:
-            # 현재 URL에서 currencyCode 찾아서 원본으로 교체
-            currency_pattern = r'currencyCode=([^&]+)'
-            if re.search(currency_pattern, url):
-                url = re.sub(currency_pattern, f'currencyCode={original_currency_code}', url)
-                print(f"CurrencyCode 복원: → {original_currency_code}")
-            
-            # currency= 파라미터도 교체 (일부 사이트에서 사용)
-            currency_param_pattern = r'currency=([^&]+)'
-            if re.search(currency_param_pattern, url):
-                url = re.sub(currency_param_pattern, f'currency={original_currency_code}', url)
-                print(f"Currency 파라미터 복원: → {original_currency_code}")
+        # URL은 app.py에서 이미 올바르게 처리되었으므로 추가 수정하지 않음
+        print(f"스크래핑 사용 URL: {url}")
 
         start_time = time.time()
         try:
