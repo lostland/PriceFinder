@@ -129,9 +129,12 @@ function analyzeCid() {
         // 결과 처리
         processResult(data);
         
-        // 다음 단계가 있는지 확인
+        // 다음 단계가 있는지 확인 - 자동으로 계속 진행
         if (data.has_next) {
-            showContinueButton(data.next_step);
+            // 짧은 지연 후 자동으로 다음 단계 실행
+            setTimeout(() => {
+                continueAnalysis();
+            }, 500); // 0.5초 지연
         } else {
             showComplete();
         }
@@ -157,9 +160,6 @@ function processResult(data) {
     if (data.search_phase_completed) {
         showCardResultsSection();
     }
-    
-    // 디버그용 결과도 표시
-    displayDebugResult(data);
 }
 
 // 검색창리스트 결과 처리
@@ -381,7 +381,6 @@ function startNewSearch() {
     
     // 결과 컨테이너 초기화
     document.getElementById('cardResultsContainer').innerHTML = '';
-    document.getElementById('debugResultsContainer').innerHTML = '';
 }
 
 // 숫자 가격 추출 (비교용)
