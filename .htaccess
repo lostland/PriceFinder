@@ -1,0 +1,25 @@
+# 기존 PHP 설정
+PHP_FLAG register_globals ON
+PHP_VALUE mysql.default_charset UTF8
+
+# Python CGI 실행 설정
+AddHandler cgi-script .py .cgi
+Options +ExecCGI
+
+# Python 파일을 CGI로 실행
+<Files "*.py">
+    SetHandler cgi-script
+</Files>
+
+<Files "*.cgi">
+    SetHandler cgi-script
+</Files>
+
+# 디렉터리 인덱스에서 Python 파일 허용
+DirectoryIndex index.html index.htm index.php index.py index.cgi
+
+# Python 파일 접근 권한
+<FilesMatch "\.(py|cgi)$">
+    Order allow,deny
+    Allow from all
+</FilesMatch>
