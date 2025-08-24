@@ -50,7 +50,7 @@ def scrape():
         current_cid = cid_values[step]
         
         # URL에서 CID 교체하고 currencyCode 유지
-        from scraper import extract_cid_from_url, scrape_prices_simple
+        from scraper import extract_cid_from_url, scrape_prices_simple, reorder_url_parameters
         from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
         import re
         
@@ -81,6 +81,9 @@ def scrape():
                 separator = "&" if "?" in new_url else "?"
                 new_url = f"{new_url}{separator}currencyCode={original_currency}"
                 app.logger.info(f"CurrencyCode 추가: {original_currency}")
+        
+        # URL 파라메터를 지정된 순서로 재정렬
+        new_url = reorder_url_parameters(new_url)
         
         # CID 라벨 생성
         if step == 0:

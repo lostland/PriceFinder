@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import logging
 import requests
 import time
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 def scrape_prices_simple(url, original_currency_code=None):
     """
@@ -42,7 +43,6 @@ def scrape_prices_simple(url, original_currency_code=None):
         
         # URL에서 currencyCode 복원 (리다이렉트로 바뀐 경우)
         if original_currency_code:
-            import re
             # 현재 URL에서 currencyCode 찾아서 원본으로 교체
             currency_pattern = r'currencyCode=([^&]+)'
             if re.search(currency_pattern, url):
@@ -484,6 +484,67 @@ def extract_cid_from_url(url):
     """URL에서 CID 값 추출"""
     match = re.search(r'cid=([^&]+)', url)
     return match.group(1) if match else None
+
+def reorder_url_parameters(url):
+    """
+    URL의 파라메터를 지정된 순서로 재정렬하고 필요한 파라메터만 유지
+    """
+    # 지정된 파라메터 순서
+    desired_order = [
+        'countryId',
+        'finalPriceView', 
+        'isShowMobileAppPrice',
+        'familyMode',
+        'adults',
+        'children',
+        'maxRooms',
+        'rooms',
+        'checkIn',
+        'isCalendarCallout',
+        'childAges',
+        'numberOfGuest',
+        'missingChildAges',
+        'travellerType',
+        'showReviewSubmissionEntry',
+        'currencyCode',
+        'isFreeOccSearch',
+        'los',
+        'searchrequestid',
+        'cid'
+    ]
+    
+    try:
+        # URL 파싱
+        parsed_url = urlparse(url)
+        query_params = parse_qs(parsed_url.query, keep_blank_values=True)
+        
+        # 새로운 파라메터 딕셔너리 (지정된 순서대로)
+        reordered_params = {}
+        
+        # 지정된 순서대로 파라메터 추가 (존재하는 경우만)
+        for param in desired_order:
+            if param in query_params:
+                # parse_qs는 리스트로 반환하므로 첫 번째 값 사용
+                reordered_params[param] = query_params[param][0]
+        
+        # 새로운 쿼리 스트링 생성
+        new_query = urlencode(reordered_params, doseq=False)
+        
+        # 새로운 URL 구성
+        new_url = urlunparse((
+            parsed_url.scheme,
+            parsed_url.netloc,
+            parsed_url.path,
+            parsed_url.params,
+            new_query,
+            parsed_url.fragment
+        ))
+        
+        return new_url
+        
+    except Exception as e:
+        print(f"URL 파라메터 재정렬 오류: {e}")
+        return url  # 오류 시 원본 URL 반환
 
 def replace_cid_and_scrape(base_url, cid_list):
     """기존 함수명 호환성을 위한 래퍼"""
