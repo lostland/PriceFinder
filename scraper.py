@@ -249,17 +249,30 @@ def scrape_prices_simple(url):
             # txt 파일에서 "시작가" 뒤의 가격 찾기
             starting_price = None
             try:
-                # "시작가" 패턴 검색
-                starting_price_pattern = r'시작가[^\d]*([^\s\n]+)'
-                match = re.search(starting_price_pattern, all_text, re.IGNORECASE)
+                # "시작가" 뒤의 가격 패턴 검색 (다양한 통화 단위 지원)
+                starting_price_patterns = [
+                    r'시작가\s*(USD\s+[\d,]+(?:\.\d+)?)',         # USD 46 형태
+                    r'시작가\s*(KRW\s+[\d,]+(?:\.\d+)?)',         # KRW 46000 형태  
+                    r'시작가\s*(THB\s+[\d,]+(?:\.\d+)?)',         # THB 1500 형태
+                    r'시작가\s*([₩][\d,]+(?:\.\d+)?)',           # ₩46000 형태
+                    r'시작가\s*(\$[\d,]+(?:\.\d+)?)',            # $46 형태
+                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*USD)',      # 46 USD 형태
+                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*THB)',      # 46 THB 형태
+                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*KRW)',      # 46 KRW 형태
+                ]
+                
+                match = None
+                for pattern in starting_price_patterns:
+                    match = re.search(pattern, all_text, re.IGNORECASE)
+                    if match:
+                        break
                 
                 if match:
                     price_text = match.group(1).strip()
-                    # 가격 형태로 정리 (USD, $ 등 제거하고 숫자만)
-                    clean_price = re.sub(r'[^\d\.]', '', price_text)
-                    if clean_price:
+                    # 원본 가격 텍스트를 그대로 사용 (통화 단위 포함)
+                    if price_text:
                         starting_price = {
-                            'price': f"${clean_price}",
+                            'price': price_text,  # 원본 형태 그대로 (₩, THB, $ 등 포함)
                             'context': f"시작가 {price_text}",
                             'source': 'starting_price_from_file'
                         }
