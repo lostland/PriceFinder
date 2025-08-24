@@ -194,9 +194,10 @@ body {
 
 /* 로고 스타일 */
 .logo-image {
-    max-width: 500px;
     width: 100%;
-    height: auto;
+    height: 200px;
+    object-fit: cover;
+    object-position: center;
     border-radius: 15px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
@@ -336,12 +337,12 @@ body {
 /* 반응형 로고 */
 @media (max-width: 768px) {
     .logo-image {
-        max-width: 350px;
+        height: 150px;
     }
 }
 
 @media (max-width: 576px) {
     .logo-image {
-        max-width: 280px;
+        height: 120px;
     }
 }
