@@ -90,10 +90,10 @@ def scrape():
         
         app.logger.info(f"Processing step {step+1}/{len(cid_values)}: CID {cid_label}")
         
-        # 스크래핑 실행
+        # 스크래핑 실행 (원본 currencyCode 전달)
         import time
         start_time = time.time()
-        prices = scrape_prices_simple(new_url)
+        prices = scrape_prices_simple(new_url, original_currency_code=original_currency)
         process_time = time.time() - start_time
         
         # 텍스트 파일 다운로드 링크 생성
