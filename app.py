@@ -146,6 +146,11 @@ def scrape():
             'error': f'처리 실패: {str(e)}'
         }), 500
 
+@app.route('/guide')
+def guide():
+    """사용방법 가이드 페이지"""
+    return render_template('guide.html')
+
 @app.route('/download/<filename>')
 def download_file(filename):
     """텍스트 파일 다운로드 엔드포인트"""

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용방법 - Agoda Magic Price</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .magic-title {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 25%, #4facfe 50%, #00f2fe 75%, #43e97b 100%);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient 3s ease infinite;
+            font-family: 'Brush Script MT', cursive;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+            font-weight: bold;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .guide-step {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .step-number {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .guide-image {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin: 15px 0;
+        }
+        
+        .warning-box {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn-back {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 30px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <!-- 헤더 -->
+        <div class="text-center mb-5">
+            <h1 class="magic-title display-4 mb-3">Agoda Magic Price</h1>
+            <h2 class="text-white mb-4">사용방법</h2>
+            <p class="text-white-50 lead">아고다 호텔의 최저가를 자동으로 검색해 줍니다.</p>
+        </div>
+
+        <!-- 가이드 단계들 -->
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                
+                <!-- 1단계 -->
+                <div class="guide-step">
+                    <div class="step-number">1</div>
+                    <h4 class="text-white mb-3">예약하려는 아고다 호텔 주소 복사합니다.</h4>
+                    <img src="{{ url_for('static', filename='images/화면 캡처 2025-08-24 150241_1756017033568.png') }}" 
+                         alt="아고다 호텔 페이지" class="guide-image">
+                    <p class="text-white-50 mt-3">아고다 웹사이트에서 예약하고 싶은 호텔 페이지로 이동한 후, 브라우저 주소창의 URL을 복사합니다.</p>
+                </div>
+
+                <!-- 2단계 -->
+                <div class="guide-step">
+                    <div class="step-number">2</div>
+                    <h4 class="text-white mb-3">아고다 Magic Price 사이트에 복사한 주소 붙여 넣기 해줍니다.</h4>
+                    <img src="{{ url_for('static', filename='images/화면 캡처 2025-08-24 150503_1756017038050.png') }}" 
+                         alt="URL 입력 화면" class="guide-image">
+                    <p class="text-white-50 mt-3">Agoda Magic Price 사이트의 URL 입력창에 복사한 아고다 호텔 주소를 붙여넣습니다.</p>
+                </div>
+
+                <!-- 3단계 -->
+                <div class="guide-step">
+                    <div class="step-number">3</div>
+                    <h4 class="text-white mb-3">분석 시작 버튼을 클릭해 주세요</h4>
+                    <img src="{{ url_for('static', filename='images/화면 캡처 2025-08-24 1505032_1756017041913.png') }}" 
+                         alt="분석 시작 버튼" class="guide-image">
+                    <p class="text-white-50 mt-3">URL을 입력한 후 <strong>"분석 시작"</strong> 버튼을 클릭하여 가격 분석을 시작합니다.</p>
+                </div>
+
+                <!-- 4단계 -->
+                <div class="guide-step">
+                    <div class="step-number">4</div>
+                    <h4 class="text-white mb-3">분석이 완료되면 구글등 검색창리스트에서 찾은 최저가가 표시가 되며, 각 카드사별 할인 가격들이 별도로 표시가 됩니다.</h4>
+                    <img src="{{ url_for('static', filename='images/화면 캡처 2025-08-24 152949_1756017045835.jpg') }}" 
+                         alt="분석 결과 화면" class="guide-image">
+                    <p class="text-white-50 mt-3">
+                        분석이 완료되면 다음과 같이 표시됩니다:
+                    </p>
+                    <ul class="text-white-50">
+                        <li><strong>현재 최저가:</strong> 검색창리스트에서 찾은 가장 저렴한 가격</li>
+                        <li><strong>카드별 가격 비교:</strong> 각 카드사별 할인 적용 가격들</li>
+                        <li><strong>창열기 버튼:</strong> 원하는 가격의 창열기 버튼을 클릭하면 해당 가격의 아고다 창이 새로 열립니다</li>
+                    </ul>
+                </div>
+
+                <!-- 5단계 (주의사항) -->
+                <div class="warning-box">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        <h5 class="text-warning mb-0">중요 안내사항</h5>
+                    </div>
+                    <p class="text-white mb-0">
+                        아고다의 로그인 없이 검색을 하므로 화면에 나타나는 가격은 실제 가격과 상이할 수 있습니다.
+                        정확한 가격 확인을 위해서는 해당 창에서 직접 로그인 후 확인해 주시기 바랍니다.
+                    </p>
+                </div>
+
+                <!-- 돌아가기 버튼 -->
+                <div class="text-center mt-5">
+                    <a href="/" class="btn-back">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        메인으로 돌아가기
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
