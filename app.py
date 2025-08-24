@@ -82,8 +82,9 @@ def scrape():
                 new_url = f"{new_url}{separator}currencyCode={original_currency}"
                 app.logger.info(f"CurrencyCode 추가: {original_currency}")
         
-        # URL 파라메터를 지정된 순서로 재정렬
-        new_url = reorder_url_parameters(new_url)
+        # URL 파라메터를 지정된 순서로 재정렬 (임시 비활성화)
+        app.logger.info(f"최종 URL (재정렬 비활성화): {new_url}")
+        # new_url = reorder_url_parameters(new_url)
         
         # CID 라벨 생성
         if step == 0:
