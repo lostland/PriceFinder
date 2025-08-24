@@ -201,7 +201,7 @@ function updateLowestPriceDisplay() {
     const lowestCidNameEl = document.getElementById('lowestCidName');
     const openLowestPriceBtnEl = document.getElementById('openLowestPriceBtn');
     
-    if (lowestPrice !== null) {
+    if (lowestPrice !== null && lowestPriceEl && lowestCidNameEl && openLowestPriceBtnEl) {
         lowestPriceEl.textContent = formatPrice(lowestPrice);
         lowestCidNameEl.textContent = lowestPriceCidName;
         openLowestPriceBtnEl.disabled = false;
@@ -303,7 +303,9 @@ function displayDebugResult(data) {
     
     // URL을 안전하게 표시
     const urlSpan = resultCard.querySelector('.url-display');
-    urlSpan.textContent = data.url;
+    if (urlSpan) {
+        urlSpan.textContent = data.url;
+    }
     
     showDebugResultsSection();
 }
@@ -327,21 +329,29 @@ function updateProgress() {
     const percentage = Math.round((step / totalSteps) * 100);
     
     // 진행률 %로 표시
-    progressText.textContent = `${percentage}%`;
+    if (progressText) {
+        progressText.textContent = `${percentage}%`;
+    }
     progressBar.style.width = `${percentage}%`;
     
     // 현재 단계 정보 업데이트
     if (currentStep < allCids.length) {
         const currentCid = allCids[currentStep];
-        currentCidNameEl.textContent = currentCid.name;
+        if (currentCidNameEl) {
+            currentCidNameEl.textContent = currentCid.name;
+        }
         
         // 현재 페이즈 표시
         const isSearchPhase = currentStep < searchCids.length;
-        currentPhaseEl.textContent = isSearchPhase ? '검색창리스트' : '카드리스트';
+        if (currentPhaseEl) {
+            currentPhaseEl.textContent = isSearchPhase ? '검색창리스트' : '카드리스트';
+        }
         currentPhaseEl.className = `badge ${isSearchPhase ? 'bg-primary' : 'bg-info'}`;
         
         if (loadingCid) {
-            loadingCid.textContent = currentCid.name;
+            if (loadingCid) {
+                loadingCid.textContent = currentCid.name;
+            }
         }
     }
 }
@@ -351,7 +361,9 @@ function showContinueButton(nextStep) {
     const nextCidInfo = document.getElementById('nextCidInfo');
     
     if (nextStep < allCids.length) {
-        nextCidInfo.textContent = allCids[nextStep].name;
+        if (nextCidInfo) {
+            nextCidInfo.textContent = allCids[nextStep].name;
+        }
     }
     
     continueSection.style.display = 'block';
@@ -361,7 +373,10 @@ function showContinueButton(nextStep) {
 // 완료 표시
 function showComplete() {
     const totalResults = allResults.reduce((sum, result) => sum + result.found_count, 0);
-    document.getElementById('totalResults').textContent = totalResults;
+    const totalResultsEl = document.getElementById('totalResults');
+    if (totalResultsEl) {
+        totalResultsEl.textContent = totalResults;
+    }
     
     completeSection.style.display = 'block';
     hideContinueButton();
@@ -421,7 +436,10 @@ function hideLoading() {
 }
 
 function showError(message) {
-    document.getElementById('errorText').textContent = message;
+    const errorTextEl = document.getElementById('errorText');
+    if (errorTextEl) {
+        errorTextEl.textContent = message;
+    }
     errorMessage.style.display = 'block';
 }
 
