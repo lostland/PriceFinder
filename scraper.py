@@ -274,15 +274,7 @@ def scrape_prices_simple(url):
             if len(all_prices) >= 20:
                 break
         
-        # 두 번째 가격만 반환 (사용자 요구사항)
-        if len(all_prices) >= 2:
-            prices_found = [all_prices[1]]  # 두 번째 가격만
-        elif len(all_prices) >= 1:
-            prices_found = [all_prices[0]]  # 첫 번째라도 반환
-        else:
-            prices_found = all_prices  # 없으면 빈 리스트
-        
-        # 전체 텍스트를 파일로 저장 (다운로드용)
+        # 가격 분석 전에 먼저 전체 텍스트를 파일로 저장 (다운로드용)
         try:
             import os
             if not os.path.exists('downloads'):
@@ -308,6 +300,14 @@ def scrape_prices_simple(url):
             
         except Exception as save_error:
             print(f"텍스트 파일 저장 오류: {save_error}")
+        
+        # 두 번째 가격만 반환 (사용자 요구사항)
+        if len(all_prices) >= 2:
+            prices_found = [all_prices[1]]  # 두 번째 가격만
+        elif len(all_prices) >= 1:
+            prices_found = [all_prices[0]]  # 첫 번째라도 반환
+        else:
+            prices_found = all_prices  # 없으면 빈 리스트
         
         return prices_found
         
