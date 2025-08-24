@@ -528,6 +528,10 @@ def reorder_url_parameters(url):
                     key, value = pair.split('=', 1)
                     params_dict[key] = value
         
+        # currency 파라미터가 없으면 기본값 KRW 추가
+        if 'currency' not in params_dict:
+            params_dict['currency'] = 'KRW'
+            print("currency 파라미터가 없어서 currency=KRW로 기본값 추가")
         
         # 새로운 파라메터 딕셔너리 (지정된 순서대로)
         reordered_params = {}
