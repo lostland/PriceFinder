@@ -246,8 +246,33 @@ def scrape_prices_simple(url):
             except Exception as save_error:
                 print(f"텍스트 파일 저장 오류: {save_error}")
             
-            # 가격 분석 없이 빈 결과 반환 (다운로드 링크만 제공)
-            return []
+            # txt 파일에서 "시작가" 뒤의 가격 찾기
+            starting_price = None
+            try:
+                # "시작가" 패턴 검색
+                starting_price_pattern = r'시작가[^\d]*([^\s\n]+)'
+                match = re.search(starting_price_pattern, all_text, re.IGNORECASE)
+                
+                if match:
+                    price_text = match.group(1).strip()
+                    # 가격 형태로 정리 (USD, $ 등 제거하고 숫자만)
+                    clean_price = re.sub(r'[^\d\.]', '', price_text)
+                    if clean_price:
+                        starting_price = {
+                            'price': f"${clean_price}",
+                            'context': f"시작가 {price_text}",
+                            'source': 'starting_price_from_file'
+                        }
+                        print(f"시작가 발견: {starting_price['price']}")
+                
+            except Exception as e:
+                print(f"시작가 검색 오류: {e}")
+            
+            # 시작가를 찾았으면 반환, 못 찾았으면 빈 결과
+            if starting_price:
+                return [starting_price]
+            else:
+                return []
         
         for pattern in debug_patterns:
             matches = re.findall(pattern, all_text, re.IGNORECASE)
