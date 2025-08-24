@@ -171,3 +171,157 @@ body {
         min-width: 400px;
     }
 }
+
+/* 로고 스타일 */
+.logo-image {
+    max-width: 500px;
+    width: 100%;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* 매직 그라데이션 테마 */
+:root {
+    --magic-gold: #ffd700;
+    --magic-teal: #20b2aa;
+    --magic-purple: #9370db;
+    --magic-gradient: linear-gradient(135deg, #ffd700 0%, #20b2aa 50%, #9370db 100%);
+}
+
+/* 전체 테마 색상 오버라이드 */
+.btn-info {
+    background: var(--magic-gradient) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 600;
+    transition: transform 0.2s ease;
+}
+
+.btn-info:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.progress-bar.bg-info {
+    background: var(--magic-gradient) !important;
+}
+
+.text-info {
+    background: var(--magic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 600;
+}
+
+.badge.bg-primary {
+    background: var(--magic-gradient) !important;
+    border: none !important;
+}
+
+.badge.bg-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, #20b2aa 0%, #17a2b8 100%) !important;
+}
+
+.card-header.bg-success {
+    background: var(--magic-gradient) !important;
+    border: none !important;
+}
+
+.border-success {
+    border-color: var(--magic-teal) !important;
+}
+
+/* 진행바 중앙 정렬 */
+.progress {
+    max-width: 400px;
+    margin: 0 auto !important;
+    height: 12px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.progress-bar {
+    border-radius: 10px;
+    background: var(--magic-gradient);
+    background-size: 200% 200%;
+    animation: magicShimmer 2s ease-in-out infinite;
+}
+
+@keyframes magicShimmer {
+    0% { background-position: 200% 200%; }
+    50% { background-position: 0% 0%; }
+    100% { background-position: 200% 200%; }
+}
+
+/* 카드 스타일 개선 - 기존 스타일 오버라이드 */
+.card {
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 215, 0, 0.2) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.15) !important;
+}
+
+/* 입력 필드 스타일 */
+.form-control:focus {
+    border-color: var(--magic-teal) !important;
+    box-shadow: 0 0 0 0.2rem rgba(32, 178, 170, 0.25) !important;
+}
+
+/* 가격 텍스트 강조 - 기존 스타일 오버라이드 */
+.text-success {
+    background: linear-gradient(135deg, #20b2aa 0%, #17a2b8 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    font-weight: 700 !important;
+}
+
+/* 창열기 버튼 스타일 */
+.btn-success {
+    background: var(--magic-gradient) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(32, 178, 170, 0.4);
+}
+
+.btn-outline-primary {
+    border-color: var(--magic-teal) !important;
+    color: var(--magic-teal) !important;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-primary:hover {
+    background: var(--magic-gradient) !important;
+    border-color: transparent !important;
+    color: white !important;
+    transform: translateY(-2px);
+}
+
+/* 반응형 로고 */
+@media (max-width: 768px) {
+    .logo-image {
+        max-width: 350px;
+    }
+}
+
+@media (max-width: 576px) {
+    .logo-image {
+        max-width: 280px;
+    }
+}
