@@ -49,9 +49,16 @@ def scrape():
         
         current_cid = cid_values[step]
         
-        # URL에서 CID 교체
+        # URL에서 CID 교체하고 currencyCode 유지
         from scraper import extract_cid_from_url, scrape_prices_simple
         from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+        import re
+        
+        # 원본 URL에서 currencyCode 추출
+        original_currency = None
+        currency_match = re.search(r'currencyCode=([^&]+)', url)
+        if currency_match:
+            original_currency = currency_match.group(1)
         
         original_cid = extract_cid_from_url(url)
         if original_cid:
@@ -59,6 +66,21 @@ def scrape():
         else:
             separator = "&" if "?" in url else "?"
             new_url = f"{url}{separator}cid={current_cid}"
+        
+        # currencyCode가 바뀌었다면 원본으로 복원
+        if original_currency:
+            # 현재 URL의 currencyCode 찾아서 교체
+            current_currency_match = re.search(r'currencyCode=([^&]+)', new_url)
+            if current_currency_match:
+                current_currency = current_currency_match.group(1)
+                if current_currency != original_currency:
+                    new_url = new_url.replace(f"currencyCode={current_currency}", f"currencyCode={original_currency}")
+                    app.logger.info(f"CurrencyCode 복원: {current_currency} → {original_currency}")
+            else:
+                # currencyCode가 없으면 추가
+                separator = "&" if "?" in new_url else "?"
+                new_url = f"{new_url}{separator}currencyCode={original_currency}"
+                app.logger.info(f"CurrencyCode 추가: {original_currency}")
         
         # CID 라벨 생성
         if step == 0:
