@@ -7,7 +7,7 @@ let cardResults = [];
 let lowestPrice = null;
 let lowestPriceUrl = '';
 let lowestPriceCidName = '';
-const totalSteps = 17; // 검색창리스트(9) + 카드리스트(8)
+const totalSteps = 16; // 검색창리스트(8) + 카드리스트(8)
 
 // CID 정보 배열
 const searchCids = [
@@ -18,8 +18,7 @@ const searchCids = [
     { name: '구글 검색A', cid: '1776688' },
     { name: '구글 검색B', cid: '1922868' },
     { name: '구글 검색C', cid: '1908612' },
-    { name: '네이버 검색', cid: '1729890' },
-    { name: 'TripAdvisor', cid: '1587497' }
+    { name: '네이버 검색', cid: '1729890' }
 ];
 
 const cardCids = [
@@ -129,11 +128,6 @@ function analyzeCid() {
         hideLoading();
         
         if (data.error) {
-            // 첫 번째 단계에서 에러 발생 시 모달 표시
-            if (currentStep === 0) {
-                showInvalidLinkModal();
-                return;
-            }
             showError(data.error);
             return;
         }
@@ -153,11 +147,6 @@ function analyzeCid() {
     })
     .catch(error => {
         hideLoading();
-        // 첫 번째 단계에서 에러 발생 시 모달 표시
-        if (currentStep === 0) {
-            showInvalidLinkModal();
-            return;
-        }
         showError('분석 중 오류가 발생했습니다: ' + error.message);
     });
 }
@@ -487,13 +476,4 @@ function hideAllSections() {
     hideCardResultsSection();
     hideContinueButton();
     completeSection.style.display = 'none';
-}
-
-// 잘못된 링크 모달 표시
-function showInvalidLinkModal() {
-    const modal = new bootstrap.Modal(document.getElementById('invalidLinkModal'));
-    modal.show();
-    
-    // 모든 UI 섹션 숨기기
-    hideAllSections();
 }

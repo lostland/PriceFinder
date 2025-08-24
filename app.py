@@ -116,10 +116,6 @@ def scrape():
         prices = scrape_prices_simple(new_url, original_currency_code=original_currency)
         process_time = time.time() - start_time
         
-        # 첫 번째 단계에서 "시작가"나 "Start Price"가 없으면 에러 반환
-        if step == 0 and len(prices) == 0:
-            return jsonify({'error': '시작가를 찾을 수 없습니다'}), 400
-        
         # 텍스트 파일 다운로드 링크 생성
         download_filename = f"page_text_cid_{current_cid}.txt"
         download_link = f"/download/{download_filename}"
