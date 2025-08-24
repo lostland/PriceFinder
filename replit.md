@@ -12,7 +12,8 @@ Preferred communication style: Simple, everyday language.
 - **Technology**: Pure HTML5, CSS3, and vanilla JavaScript
 - **Framework**: Bootstrap 5 with dark theme for responsive UI
 - **Design**: Single-page application with form-based interaction
-- **User Experience**: Real-time loading states, error handling, and responsive design
+- **User Experience**: Real-time loading states, error handling, responsive design, and multilingual support (Korean/English)
+- **Language Support**: Dynamic language switching with comprehensive translation system
 
 ## Backend Architecture
 - **Framework**: Flask (Python web framework)
@@ -33,6 +34,8 @@ Preferred communication style: Simple, everyday language.
 - **Content Extraction**: Context-aware price extraction with surrounding text
 - **Result Ranking**: Returns top 5 most relevant price matches
 - **Response Format**: Structured JSON with price values and contextual information
+- **Error Handling**: Invalid link detection with user-friendly modal feedback
+- **UI Enhancements**: Clean card display without "price found" badges, focus on price information
 
 # External Dependencies
 

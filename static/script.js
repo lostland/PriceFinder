@@ -8,6 +8,7 @@ let lowestPrice = null;
 let lowestPriceUrl = '';
 let lowestPriceCidName = '';
 const totalSteps = 17; // 검색창리스트(9) + 카드리스트(8)
+let currentLanguage = 'ko'; // 기본값: 한국어
 
 // CID 정보 배열
 const searchCids = [
@@ -49,11 +50,69 @@ const completeSection = document.getElementById('completeSection');
 const continueBtn = document.getElementById('continueBtn');
 const newSearchBtn = document.getElementById('newSearchBtn');
 
+// 번역 객체
+const translations = {
+    ko: {
+        title: '아고다 최저 가격 자동 검색',
+        subtitle1: '접속 경로 따라 달라지는 아고다 가격에 당황하셨죠?',
+        subtitle2: '아고다 Magic Price 가 최저가만 깔끔하게 찾아드립니다',
+        urlInput: '아고다 URL 입력',
+        urlPlaceholder: '아고다 링크를 입력해 주세요',
+        startAnalysis: '분석 시작',
+        guide: '사용방법',
+        languageBtn: 'English',
+        progress: '진행 상황',
+        searchPhase: '검색창리스트',
+        cardPhase: '카드리스트',
+        analyzing: '분석 중...',
+        loading: '웹페이지에서 가격 정보를 추출하는 중입니다. 잠시만 기다려주세요.',
+        currentLowest: '현재 최저가',
+        openLink: '창열기',
+        cardComparison: '카드별 가격 비교',
+        analysisComplete: '분석 완료!',
+        newSearch: '새로운 검색',
+        noPrice: '가격 없음',
+        errorTitle: '링크 오류',
+        invalidLink: '잘못된 링크를 입력한 것 같습니다\n사용법을 확인해 주세요',
+        ok: 'OK'
+    },
+    en: {
+        title: 'Agoda Lowest Price Auto Search',
+        subtitle1: 'Confused by different Agoda prices depending on access route?',
+        subtitle2: 'Agoda Magic Price finds the lowest prices cleanly for you',
+        urlInput: 'Enter Agoda URL',
+        urlPlaceholder: 'Please enter Agoda link',
+        startAnalysis: 'Start Analysis',
+        guide: 'Guide',
+        languageBtn: '한국어',
+        progress: 'Progress',
+        searchPhase: 'Search Engine List',
+        cardPhase: 'Card List',
+        analyzing: 'Analyzing...',
+        loading: 'Extracting price information from webpage. Please wait a moment.',
+        currentLowest: 'Current Lowest',
+        openLink: 'Open',
+        cardComparison: 'Price Comparison by Card',
+        analysisComplete: 'Analysis Complete!',
+        newSearch: 'New Search',
+        noPrice: 'No Price',
+        errorTitle: 'Link Error',
+        invalidLink: 'It seems you entered an invalid link\nPlease check the usage guide',
+        ok: 'OK'
+    }
+};
+
 // 이벤트 리스너 설정
 document.addEventListener('DOMContentLoaded', function() {
     scrapeForm.addEventListener('submit', handleFormSubmit);
     continueBtn.addEventListener('click', continueAnalysis);
     newSearchBtn.addEventListener('click', startNewSearch);
+    
+    // 언어 전환 버튼
+    const languageToggle = document.getElementById('languageToggle');
+    if (languageToggle) {
+        languageToggle.addEventListener('click', toggleLanguage);
+    }
     
     // 최저가 창열기 버튼
     const openLowestPriceBtn = document.getElementById('openLowestPriceBtn');
@@ -217,21 +276,22 @@ function updateLowestPriceDisplay() {
 // 카드 결과 표시
 function displayCardResult(data) {
     const container = document.getElementById('cardResultsContainer');
+    const t = translations[currentLanguage];
     
     const cardCol = document.createElement('div');
     cardCol.className = 'col-md-6 col-lg-4 mb-3';
     
     const hasPrice = data.prices && data.prices.length > 0;
-    const price = hasPrice ? data.prices[0].price : '가격 없음';
+    const price = hasPrice ? data.prices[0].price : t.noPrice;
     const cardClass = hasPrice ? 'border-success' : 'border-warning';
     const badgeClass = hasPrice ? 'bg-success' : 'bg-warning';
-    const badgeText = hasPrice ? '가격 발견' : '가격 없음';
+    const badgeText = hasPrice ? '' : t.noPrice;
     
     cardCol.innerHTML = `
         <div class="card ${cardClass}">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">${data.cid_name}</h6>
-                <span class="badge ${badgeClass}">${badgeText}</span>
+                ${badgeText ? `<span class="badge ${badgeClass}">${badgeText}</span>` : ''}
             </div>
             <div class="card-body">
                 <div class="mb-3">
@@ -241,7 +301,7 @@ function displayCardResult(data) {
                         data-url="${data.url}" 
                         ${!hasPrice ? 'disabled' : ''}>
                     <i class="fas fa-external-link-alt"></i>
-                    창열기
+                    ${t.openLink}
                 </button>
             </div>
         </div>
@@ -486,22 +546,24 @@ function hideAllSections() {
 
 // 잘못된 링크 모달 표시 및 입력창 초기화
 function showInvalidLinkModal(message) {
+    const t = translations[currentLanguage];
+    
     // Bootstrap Alert로 모달처럼 표시
     const alertHtml = `
         <div class="alert alert-warning alert-dismissible fade show position-fixed" 
              style="top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 500px; width: 90%;" 
              role="alert">
             <h6 class="alert-heading">
-                <i class="fas fa-exclamation-triangle"></i> 링크 오류
+                <i class="fas fa-exclamation-triangle"></i> ${t.errorTitle}
             </h6>
-            <p class="mb-2">${message.replace('\n', '<br>')}</p>
+            <p class="mb-2">${t.invalidLink.replace('\n', '<br>')}</p>
             <hr>
             <p class="mb-0">
                 <button type="button" class="btn btn-primary btn-sm me-2 modal-ok-btn">
-                    <i class="fas fa-check"></i> OK
+                    <i class="fas fa-check"></i> ${t.ok}
                 </button>
                 <a href="/guide" target="_blank" class="btn btn-outline-primary btn-sm">
-                    <i class="fas fa-question-circle"></i> 사용법 보기
+                    <i class="fas fa-question-circle"></i> ${t.guide}
                 </a>
             </p>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -542,4 +604,90 @@ function showInvalidLinkModal(message) {
             alert.remove();
         }
     }, 8000);
+}
+
+// 언어 전환
+function toggleLanguage() {
+    currentLanguage = currentLanguage === 'ko' ? 'en' : 'ko';
+    updateLanguage();
+}
+
+// 언어 업데이트
+function updateLanguage() {
+    const t = translations[currentLanguage];
+    
+    // 페이지 제목과 설명
+    const titleEl = document.querySelector('.dynamic-title');
+    if (titleEl) titleEl.textContent = t.title;
+    
+    const subtitlePs = document.querySelectorAll('.subtitle-description p');
+    if (subtitlePs[0]) subtitlePs[0].textContent = t.subtitle1;
+    if (subtitlePs[1]) subtitlePs[1].textContent = t.subtitle2;
+    
+    // URL 입력 관련
+    const urlInputTitle = document.querySelector('.card-title');
+    if (urlInputTitle) urlInputTitle.innerHTML = `<i class="fas fa-link text-info"></i> ${t.urlInput}`;
+    
+    const urlInput = document.getElementById('urlInput');
+    if (urlInput) urlInput.placeholder = t.urlPlaceholder;
+    
+    const startBtn = document.getElementById('scrapeBtn');
+    if (startBtn) startBtn.innerHTML = `<i class="fas fa-search"></i> ${t.startAnalysis}`;
+    
+    // 언어 전환 버튼
+    const languageText = document.getElementById('languageText');
+    if (languageText) languageText.textContent = t.languageBtn;
+    
+    // 사용방법 버튼
+    const guideText = document.querySelector('.guide-text');
+    if (guideText) guideText.textContent = t.guide;
+    
+    // 진행률 관련
+    const progressTitle = document.querySelector('#progressSection h6');
+    if (progressTitle) progressTitle.textContent = t.progress;
+    
+    // 최저가 섹션
+    const lowestTitle = document.querySelector('#lowestPriceSection h5');
+    if (lowestTitle) lowestTitle.innerHTML = `<i class="fas fa-trophy"></i> ${t.currentLowest}`;
+    
+    const openBtn = document.getElementById('openLowestPriceBtn');
+    if (openBtn) openBtn.innerHTML = `<i class="fas fa-external-link-alt"></i> ${t.openLink}`;
+    
+    // 카드 비교 섹션
+    const cardTitle = document.querySelector('#cardResultsSection h5');
+    if (cardTitle) cardTitle.innerHTML = `<i class="fas fa-credit-card"></i> ${t.cardComparison}`;
+    
+    // 완료 섹션
+    const completeTitle = document.querySelector('#completeSection h4');
+    if (completeTitle) completeTitle.textContent = t.analysisComplete;
+    
+    const newSearchBtn = document.getElementById('newSearchBtn');
+    if (newSearchBtn) newSearchBtn.innerHTML = `<i class="fas fa-search"></i> ${t.newSearch}`;
+    
+    // 동적으로 생성되는 카드들 업데이트
+    updateDynamicTexts();
+}
+
+// 동적 텍스트 업데이트
+function updateDynamicTexts() {
+    const t = translations[currentLanguage];
+    
+    // 진행률 페이즈 업데이트
+    const currentPhase = document.getElementById('currentPhase');
+    if (currentPhase) {
+        const isSearchPhase = currentStep < searchCids.length;
+        currentPhase.textContent = isSearchPhase ? t.searchPhase : t.cardPhase;
+    }
+    
+    // 분석 중 텍스트 업데이트
+    const analyzingTexts = document.querySelectorAll('.ms-2');
+    analyzingTexts.forEach(el => {
+        if (el.textContent.includes('분석 중') || el.textContent.includes('Analyzing')) {
+            el.textContent = t.analyzing;
+        }
+    });
+    
+    // 로딩 텍스트 업데이트
+    const loadingText = document.querySelector('#loadingIndicator p');
+    if (loadingText) loadingText.textContent = t.loading;
 }
