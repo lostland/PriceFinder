@@ -485,22 +485,26 @@ function hideAllSections() {
 
 // 잘못된 링크 모달 표시 및 입력창 초기화
 function showInvalidLinkModal(message) {
-    // Bootstrap Alert로 모달처럼 표시
+    // Bootstrap Alert로 모달처럼 표시 - 어두운 테마 적용
     const alertHtml = `
-        <div class="alert alert-warning alert-dismissible fade show position-fixed" 
-             style="top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 500px; width: 90%;" 
+        <div class="alert alert-dismissible fade show position-fixed" 
+             style="top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; max-width: 500px; width: 90%; 
+                    background: linear-gradient(135deg, rgba(13, 27, 42, 0.95) 0%, rgba(27, 27, 27, 0.95) 100%);
+                    color: white; border: 1px solid #20b2aa; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);" 
              role="alert">
-            <h6 class="alert-heading">
+            <h6 class="alert-heading text-warning">
                 <i class="fas fa-exclamation-triangle"></i> 링크 오류
             </h6>
-            <p class="mb-2">${message.replace('\n', '<br>')}</p>
-            <hr>
-            <p class="mb-0">
-                <a href="/guide" target="_blank" class="btn btn-outline-primary btn-sm">
+            <p class="mb-3">${message.replace('\n', '<br>')}</p>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-success btn-sm flex-fill" data-bs-dismiss="alert">
+                    <i class="fas fa-check"></i> 확인
+                </button>
+                <a href="/guide" target="_blank" class="btn btn-outline-info btn-sm flex-fill">
                     <i class="fas fa-question-circle"></i> 사용법 보기
                 </a>
-            </p>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" style="filter: invert(1);"></button>
         </div>
     `;
     
