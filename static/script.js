@@ -551,6 +551,18 @@ function startNewSearch() {
 
 // 숫자 가격 추출 (비교용)
 function extractNumericPrice(priceString) {
+    if (!priceString) return null;
+    
+    // 숫자 타입이면 바로 반환
+    if (typeof priceString === 'number') {
+        return priceString;
+    }
+    
+    // 문자열이 아니면 문자열로 변환
+    if (typeof priceString !== 'string') {
+        priceString = String(priceString);
+    }
+    
     const matches = priceString.match(/[\d,]+/);
     if (matches) {
         return parseInt(matches[0].replace(/,/g, ''));

@@ -1,0 +1,46 @@
+================================================================================
+🔍 AGODA MAGIC PRICE - 상세 디버그 세션
+================================================================================
+📅 세션 시작: 2025-08-25 14:05:43
+🌐 원본 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&familyMode=false&adults=2&children=0&maxRooms=0&rooms=1&checkIn=2025-09-9&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&currency=KRW&isFreeOccSearch=false&los=1&searchrequestid=202d2d4d-1971-4cbf-9b96-5b5618413438&cid=-1&ds=oX9RoM3RB4QVw94V
+💱 원본 통화: KRW
+📊 처리할 CID 총 개수: 17
+
+================================================================================
+🚀 스크래핑 시작
+================================================================================
+
+[14:05:43] 
+============================================================
+[14:05:43] 📍 단계 1/17: 시크릿창 (CID: -1)
+[14:05:43] 🌐 접속 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&familyMode=false&adults=2&children=0&maxRooms=0&rooms=1&checkIn=2025-09-9&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&currency=KRW&isFreeOccSearch=false&los=1&searchrequestid=202d2d4d-1971-4cbf-9b96-5b5618413438&cid=-1&ds=oX9RoM3RB4QVw94V
+[14:05:43] ============================================================
+[14:05:43] 🔧 Chrome 브라우저 옵션 설정 중...
+[14:05:43] ✅ Chrome 옵션 설정 완료
+[14:05:43] 🚀 웹페이지 접속 시작...
+[14:05:43] 🔍 환경 진단 시작...
+[14:05:43] 🌐 Chromium 버전: Chromium 138.0.7204.100
+[14:05:43] 🚗 ChromeDriver 버전: ChromeDriver 138.0.7204.100 (5f45b4744e3d5ba82c2ca6d942f1e7a516110752-refs/tags/138.0.7204.100@{#0})
+[14:05:43] 🐍 Python 버전: 3.11.13 (main, Jun  3 2025, 18:38:25) [GCC 14.3.0]
+[14:05:43] 💻 작업 디렉토리: /home/runner/workspace
+[14:05:43] 🔒 실행 사용자: runner
+[14:05:43] 💾 메모리 상태:
+               total        used        free      shared  buff/cache   available
+Mem:            62Gi        52Gi       4.0Gi        29Mi       6.9Gi        10Gi
+Swap:             0B          0B          0B
+
+[14:05:43] ℹ️ 실행 중인 Chrome 프로세스 없음
+[14:05:43] ⚡ Chrome 드라이버 실행 중...
+[14:05:44] 📱 모바일 사이트 접속용 스크립트 실행...
+[14:05:44] 🧪 Chrome 작동 테스트 (Google 접속)...
+[14:05:44] ✅ Google 테스트 성공: Google
+[14:05:44] 📱 모바일 아고다 페이지 로딩 시작...
+[14:05:44] 🌐 모바일 URL: https://m.agoda.com/mobile/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?...
+[14:05:47] 🔍 실시간 페이지 모니터링 시작...
+[14:05:47] 📄 페이지 변화 감지 #1: 685489 문자
+[14:05:47] 💾 페이지 내용 저장: downloads/page_text_cid_-1_attempt_1.txt
+[14:05:47] 💰 가격 발견! 16개 (시도 #1)
+[14:05:47] ✅ 실시간 모니터링 성공! 16개 가격 발견
+[14:05:47] 🔄 실시간 결과 반환 - 추가 처리 건너뛰기
+[14:05:47] 🔚 Chrome 드라이버 종료...
+[14:05:47] ✅ Chrome 드라이버 정상 종료
