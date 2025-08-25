@@ -180,10 +180,55 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
             write_debug_log(f"🌐 모바일 URL: {mobile_url[:100]}...")
             
             driver.get(mobile_url)
-            write_debug_log("📄 페이지 소스 추출 중...")
-            # 불필요한 대기 시간 제거 - 페이지 로드 완료 후 바로 진행
-            page_source = driver.page_source
-            write_debug_log(f"✅ 페이지 소스 추출 완료 ({len(page_source)} 문자)")
+            write_debug_log("🔍 실시간 페이지 모니터링 시작...")
+            
+            # 실시간 모니터링 시스템
+            previous_source = ""
+            page_source = ""
+            max_attempts = 20  # 최대 20번 시도 (10초)
+            found_prices = []
+            
+            for attempt in range(max_attempts):
+                try:
+                    # 현재 페이지 소스 가져오기
+                    current_source = driver.page_source
+                    
+                    # 페이지가 변화했으면 처리
+                    if len(current_source) > len(previous_source) + 1000:  # 1KB 이상 변화
+                        write_debug_log(f"📄 페이지 변화 감지 #{attempt+1}: {len(current_source)} 문자")
+                        
+                        # 즉시 파일 저장
+                        text_filename = f"downloads/page_text_cid_{cid}_attempt_{attempt+1}.txt"
+                        try:
+                            with open(text_filename, 'w', encoding='utf-8') as f:
+                                f.write(current_source)
+                            write_debug_log(f"💾 페이지 내용 저장: {text_filename}")
+                        except:
+                            pass
+                        
+                        # 즉시 가격 추출 시도
+                        temp_prices = extract_prices_from_html(current_source, original_currency)
+                        if temp_prices:
+                            write_debug_log(f"💰 가격 발견! {len(temp_prices)}개 (시도 #{attempt+1})")
+                            found_prices = temp_prices
+                            page_source = current_source
+                            break
+                        
+                        previous_source = current_source
+                        page_source = current_source  # 최신 소스 유지
+                    
+                    time.sleep(0.5)  # 0.5초마다 체크
+                    
+                except Exception as monitor_error:
+                    write_debug_log(f"⚠️ 모니터링 중 오류 #{attempt+1}: {monitor_error}")
+                    continue
+            
+            # 최종 결과
+            if found_prices:
+                write_debug_log(f"✅ 실시간 모니터링 성공! {len(found_prices)}개 가격 발견")
+            else:
+                write_debug_log(f"📄 최종 페이지 소스: {len(page_source)} 문자")
+                write_debug_log("⚠️ 실시간 모니터링에서 가격을 찾지 못함")
             
         except Exception as agoda_error:
             write_debug_log(f"❌ 모바일 아고다 페이지 로딩 실패: {agoda_error}")
