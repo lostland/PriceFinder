@@ -1,0 +1,58 @@
+================================================================================
+🔍 AGODA MAGIC PRICE - 상세 디버그 세션
+================================================================================
+📅 세션 시작: 2025-08-25 15:37:01
+🌐 원본 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&cid=1729471&numberOfBedrooms=&familyMode=false&adults=2&children=0&rooms=1&maxRooms=0&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8
+💱 원본 통화: KRW
+📊 처리할 CID 총 개수: 17
+
+================================================================================
+🚀 스크래핑 시작
+================================================================================
+
+[15:37:01] 
+============================================================
+[15:37:01] 📍 단계 1/17: 시크릿창 (CID: -1)
+[15:37:01] 🌐 접속 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&familyMode=false&adults=2&children=0&maxRooms=0&rooms=1&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8&cid=-1&numberOfBedrooms=
+[15:37:01] ============================================================
+[15:37:01] 🔧 Chrome 브라우저 옵션 설정 중...
+[15:37:01] ✅ Chrome 옵션 설정 완료
+[15:37:01] 🚀 웹페이지 접속 시작...
+[15:37:01] 🔍 환경 진단 시작...
+[15:37:01] 🌐 Chromium 버전: Chromium 138.0.7204.100
+[15:37:01] 🚗 ChromeDriver 버전: ChromeDriver 138.0.7204.100 (5f45b4744e3d5ba82c2ca6d942f1e7a516110752-refs/tags/138.0.7204.100@{#0})
+[15:37:01] 🐍 Python 버전: 3.11.13 (main, Jun  3 2025, 18:38:25) [GCC 14.3.0]
+[15:37:01] 💻 작업 디렉토리: /home/runner/workspace
+[15:37:01] 🔒 실행 사용자: runner
+[15:37:01] 💾 메모리 상태:
+               total        used        free      shared  buff/cache   available
+Mem:            62Gi        39Gi        14Gi        30Mi       9.8Gi        23Gi
+Swap:             0B          0B          0B
+
+[15:37:01] ℹ️ 실행 중인 Chrome 프로세스 없음
+[15:37:01] ⚡ Chrome 드라이버 실행 중...
+[15:37:02] 🖥️ 데스크톱 사이트 접속용 스크립트 실행...
+[15:37:03] 🧪 Chrome 작동 테스트 (Google 접속)...
+[15:37:04] ✅ Google 테스트 성공: Google
+[15:37:04] 🖥️ 데스크톱 아고다 페이지 로딩 시작...
+[15:37:04] 🌐 데스크톱 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?count...
+[15:37:04] 🔍 실시간 페이지 모니터링 시작...
+[15:37:04] 📄 페이지 변화 감지 #1: 186754 문자
+[15:37:04] 💾 페이지 내용 저장: downloads/page_text_cid_-1_attempt_1.txt
+[15:37:04] 💰 가격 발견! 17개 (시도 #1)
+[15:37:04] ✅ 실시간 모니터링 성공! 17개 가격 발견
+[15:37:04] 📄 최종 페이지 소스: 186754 문자
+[15:37:04] 🔚 Chrome 드라이버 종료...
+[15:37:09] ✅ Chrome 드라이버 정상 종료
+[15:37:10] ⏱️ 총 페이지 로딩 시간: 9.05초
+[15:37:10] 🔍 HTML 파싱 시작...
+[15:37:10] 📊 추출된 텍스트: 379 글자, 381 bytes
+[15:37:10] 📝 페이지 텍스트 샘플: Google   AboutStoreGmailImagesSign in           AI ModeChoose what you’re giving feedback onSee moreDeleteDelete      Report inappropriate predictions            AdvertisingBusiness How Search works Applying AI towards science and the environmentPrivacyTermsSettingsSearch settingsAdvanced searchYour data in SearchSearch historySearch helpSend feedbackDark theme: OffGoogle apps...
+[15:37:10] 💰 가격 추출 시작...
+[15:37:10] 🔍 KRW(원화) 패턴 검색 중...
+[15:37:10] 💰 발견된 가격 패턴: 0개
+[15:37:10] 🔧 중복 제거 후 유니크 가격: 0개
+[15:37:10] ✅ 최종 반환할 가격: 0개
+[15:37:10] 😔 가격을 찾을 수 없음
+[15:37:10] 🔍 페이지의 큰 숫자 패턴: 0개 발견
+[15:37:10] ✅ 스크래핑 완료 - 처리 시간: 9.05초

@@ -244,7 +244,7 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
                             break
                         
                         previous_source = current_source
-                        page_source = current_source  # 최신 소스 유지
+                        # 가격이 발견되지 않았으면 소스 업데이트 안함 (Google 페이지 방지)
                     
                     time.sleep(0.5)  # 0.5초마다 체크
                     
@@ -252,11 +252,23 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
                     write_debug_log(f"⚠️ 모니터링 중 오류 #{attempt+1}: {monitor_error}")
                     continue
             
-            # 최종 결과 (모든 CID 테스트를 위해 바로 반환하지 않음)
+            # 페이지 로딩 스레드 완료 대기
+            page_loading_complete.wait(timeout=5)
+            
+            # 가격이 발견되지 않았으면 스레드 완료 후 최종 소스 시도
+            if not found_prices and not page_source:
+                try:
+                    final_source = driver.page_source
+                    if len(final_source) > 100000:
+                        page_source = final_source
+                        write_debug_log(f"📄 스레드 완료 후 최종 소스 사용: {len(page_source)} 문자")
+                except:
+                    write_debug_log("⚠️ 최종 소스 가져오기 실패")
+            
+            # 최종 결과
             if found_prices:
                 write_debug_log(f"✅ 실시간 모니터링 성공! {len(found_prices)}개 가격 발견")
-                write_debug_log(f"📄 최종 페이지 소스: {len(page_source)} 문자")
-                # 모든 CID를 테스트하기 위해 계속 진행
+                write_debug_log(f"📄 가격 발견된 소스 사용: {len(page_source)} 문자")
             else:
                 write_debug_log(f"📄 최종 페이지 소스: {len(page_source)} 문자")
                 write_debug_log("⚠️ 실시간 모니터링에서 가격을 찾지 못함")
