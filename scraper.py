@@ -138,7 +138,7 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
         
         write_debug_log("⚡ Chrome 드라이버 실행 중...")
         driver = webdriver.Chrome(options=chrome_options)
-        driver.set_page_load_timeout(3)  # 3초 타임아웃으로 단축
+        driver.set_page_load_timeout(0.5)  # 0.5초 초단축 타임아웃
         
         write_debug_log("🖥️ 데스크톱 사이트 접속용 스크립트 실행...")
         
@@ -239,11 +239,11 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
                     write_debug_log(f"⚠️ 모니터링 중 오류 #{attempt+1}: {monitor_error}")
                     continue
             
-            # 최종 결과
+            # 최종 결과 (모든 CID 테스트를 위해 바로 반환하지 않음)
             if found_prices:
                 write_debug_log(f"✅ 실시간 모니터링 성공! {len(found_prices)}개 가격 발견")
-                write_debug_log(f"🔄 실시간 결과 반환 - 추가 처리 건너뛰기")
-                return found_prices  # 즉시 반환!
+                write_debug_log(f"📄 최종 페이지 소스: {len(page_source)} 문자")
+                # 모든 CID를 테스트하기 위해 계속 진행
             else:
                 write_debug_log(f"📄 최종 페이지 소스: {len(page_source)} 문자")
                 write_debug_log("⚠️ 실시간 모니터링에서 가격을 찾지 못함")
