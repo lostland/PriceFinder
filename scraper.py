@@ -60,7 +60,8 @@ def scrape_prices_simple(url, original_currency_code=None):
         
         print(f"페이지 크기: {len(all_text)} 글자, {len(all_text.encode('utf-8'))} bytes")
         
-        # 항상 디버그 파일 저장 (페이지 크기와 관계없이)
+        # 단계별 디버그 파일 생성 - 어디서 문제인지 정확히 파악
+        debug_filepath = None
         try:
             import os
             if not os.path.exists('downloads'):
@@ -72,54 +73,86 @@ def scrape_prices_simple(url, original_currency_code=None):
             
             # 파일명 생성
             filename = f"page_text_cid_{cid_value}.txt"
-            filepath = os.path.join('downloads', filename)
+            debug_filepath = os.path.join('downloads', filename)
             
-            # 디버그 정보와 함께 텍스트 저장
-            with open(filepath, 'w', encoding='utf-8') as f:
+            print(f"📝 1단계: 기본 파일 생성 시작 - {debug_filepath}")
+            
+            # 1단계: 기본 헤더 파일 생성
+            with open(debug_filepath, 'w', encoding='utf-8') as f:
                 f.write("="*80 + "\n")
                 f.write("🔍 AGODA MAGIC PRICE - 상세 디버그 정보\n")
                 f.write("="*80 + "\n")
                 f.write(f"📅 스크래핑 일시: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
                 f.write(f"🌐 요청 URL: {url}\n")
                 f.write(f"🎯 CID 값: {cid_value}\n")
+                f.write("✅ 1단계 완료: 기본 파일 생성됨\n")
+            
+            print(f"✅ 1단계 완료: 기본 파일 생성됨")
+            
+            # 2단계: 성능 정보 추가
+            with open(debug_filepath, 'a', encoding='utf-8') as f:
                 f.write(f"📊 원본 페이지 크기: {len(page_source):,} 글자\n")
                 f.write(f"📝 텍스트 크기: {len(all_text):,} 글자\n")
                 f.write(f"💾 파일 크기: {len(all_text.encode('utf-8')):,} bytes\n")
                 f.write(f"⚡ 로딩 시간: {load_time:.2f}초\n")
-                
-                # 시작가 검색 결과
-                pattern = r'시작가\s*₩\s*(\d{1,3}(?:,\d{3})+)'
-                match = re.search(pattern, all_text)
-                if match:
-                    f.write(f"✅ 시작가 발견: ₩{match.group(1)}\n")
-                else:
-                    f.write("❌ 시작가 패턴 실패\n")
-                
-                # 통화 정보 분석
-                krw_count = len(re.findall(r'₩', all_text))
-                usd_count = len(re.findall(r'\$', all_text))
-                thb_count = len(re.findall(r'฿', all_text))
-                f.write(f"💱 통화 기호 개수: ₩({krw_count}), $({usd_count}), ฿({thb_count})\n")
-                
-                # 숫자 패턴 분석
-                price_numbers = re.findall(r'\d{1,3}(?:,\d{3})+', all_text)
-                f.write(f"🔢 큰 숫자 패턴: {len(price_numbers)}개 발견\n")
-                if price_numbers:
-                    f.write(f"    예시: {', '.join(price_numbers[:5])}\n")
-                
-                # 브라우저 정보
-                f.write(f"🌐 Chrome 옵션: headless, no-images, 800x600\n")
-                f.write(f"🚀 최적화: 이미지 차단, 플러그인 차단\n")
-                
-                f.write("="*80 + "\n")
-                f.write("📄 실제 페이지 텍스트 내용\n")
-                f.write("="*80 + "\n\n")
-                f.write(all_text)
+                f.write("✅ 2단계 완료: 성능 정보 추가됨\n")
             
-            print(f"📁 디버그 파일 저장됨: {filepath}")
+            print(f"✅ 2단계 완료: 성능 정보 추가됨")
             
-        except Exception as save_error:
-            print(f"❌ 파일 저장 오류: {save_error}")
+        except Exception as step_error:
+            print(f"❌ 1-2단계 오류: {step_error}")
+            
+        # 3단계: 가격 분석 정보 추가
+        try:
+            if debug_filepath:
+                with open(debug_filepath, 'a', encoding='utf-8') as f:
+                    # 시작가 검색 결과
+                    pattern = r'시작가\s*₩\s*(\d{1,3}(?:,\d{3})+)'
+                    match = re.search(pattern, all_text)
+                    if match:
+                        f.write(f"✅ 시작가 발견: ₩{match.group(1)}\n")
+                    else:
+                        f.write("❌ 시작가 패턴 실패\n")
+                    
+                    # 통화 정보 분석
+                    krw_count = len(re.findall(r'₩', all_text))
+                    usd_count = len(re.findall(r'\$', all_text))
+                    thb_count = len(re.findall(r'฿', all_text))
+                    f.write(f"💱 통화 기호 개수: ₩({krw_count}), $({usd_count}), ฿({thb_count})\n")
+                    
+                    # 숫자 패턴 분석
+                    price_numbers = re.findall(r'\d{1,3}(?:,\d{3})+', all_text)
+                    f.write(f"🔢 큰 숫자 패턴: {len(price_numbers)}개 발견\n")
+                    if price_numbers:
+                        f.write(f"    예시: {', '.join(price_numbers[:5])}\n")
+                    
+                    f.write("✅ 3단계 완료: 가격 분석 정보 추가됨\n")
+                
+                print(f"✅ 3단계 완료: 가격 분석 정보 추가됨")
+                
+        except Exception as analysis_error:
+            print(f"❌ 3단계 오류: {analysis_error}")
+            
+        # 4단계: 기술 정보 및 텍스트 내용 추가
+        try:
+            if debug_filepath:
+                with open(debug_filepath, 'a', encoding='utf-8') as f:
+                    # 브라우저 정보
+                    f.write(f"🌐 Chrome 옵션: headless, no-images, 800x600\n")
+                    f.write(f"🚀 최적화: 이미지 차단, 플러그인 차단\n")
+                    f.write("✅ 4단계 완료: 기술 정보 추가됨\n")
+                    
+                    f.write("="*80 + "\n")
+                    f.write("📄 실제 페이지 텍스트 내용\n")
+                    f.write("="*80 + "\n\n")
+                    f.write(all_text)
+                    f.write("\n\n✅ 5단계 완료: 전체 텍스트 내용 추가됨")
+                
+                print(f"✅ 4-5단계 완료: 전체 디버그 파일 완성됨")
+                print(f"📁 최종 디버그 파일: {debug_filepath}")
+                
+        except Exception as final_error:
+            print(f"❌ 4-5단계 오류: {final_error}")
         
         # 시작가 검색 시도
         starting_price = None
