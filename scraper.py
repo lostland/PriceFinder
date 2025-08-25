@@ -63,44 +63,85 @@ def scrape_prices_simple(url, original_currency_code=None):
         # 단계별 디버그 파일 생성 - 어디서 문제인지 정확히 파악
         debug_filepath = None
         try:
+            print(f"🚀 파일 생성 프로세스 시작")
+            
             import os
+            print(f"📂 현재 작업 디렉토리: {os.getcwd()}")
+            print(f"✏️  현재 디렉토리 쓰기 권한: {os.access('.', os.W_OK)}")
+            
             if not os.path.exists('downloads'):
+                print(f"📁 downloads 디렉토리 생성 중...")
                 os.makedirs('downloads')
+                print(f"✅ downloads 디렉토리 생성 완료")
+            else:
+                print(f"✅ downloads 디렉토리 이미 존재")
+            
+            print(f"✏️  downloads 디렉토리 쓰기 권한: {os.access('downloads', os.W_OK)}")
             
             # CID 정보 추출
+            print(f"🎯 URL에서 CID 추출 중: {url}")
             cid_match = re.search(r'cid=([^&]+)', url)
             cid_value = cid_match.group(1) if cid_match else 'unknown'
+            print(f"🎯 추출된 CID 값: {cid_value}")
             
             # 파일명 생성
             filename = f"page_text_cid_{cid_value}.txt"
             debug_filepath = os.path.join('downloads', filename)
+            print(f"📝 생성할 파일 경로: {debug_filepath}")
             
             print(f"📝 1단계: 기본 파일 생성 시작 - {debug_filepath}")
             
             # 1단계: 기본 헤더 파일 생성
-            with open(debug_filepath, 'w', encoding='utf-8') as f:
-                f.write("="*80 + "\n")
-                f.write("🔍 AGODA MAGIC PRICE - 상세 디버그 정보\n")
-                f.write("="*80 + "\n")
-                f.write(f"📅 스크래핑 일시: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                f.write(f"🌐 요청 URL: {url}\n")
-                f.write(f"🎯 CID 값: {cid_value}\n")
-                f.write("✅ 1단계 완료: 기본 파일 생성됨\n")
-            
-            print(f"✅ 1단계 완료: 기본 파일 생성됨")
+            try:
+                with open(debug_filepath, 'w', encoding='utf-8') as f:
+                    f.write("="*80 + "\n")
+                    f.write("🔍 AGODA MAGIC PRICE - 상세 디버그 정보\n")
+                    f.write("="*80 + "\n")
+                    f.write(f"📅 스크래핑 일시: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                    f.write(f"🌐 요청 URL: {url}\n")
+                    f.write(f"🎯 CID 값: {cid_value}\n")
+                    f.write("✅ 1단계 완료: 기본 파일 생성됨\n")
+                
+                print(f"✅ 1단계 완료: 기본 파일 생성됨")
+                
+                # 파일이 실제로 생성되었는지 즉시 확인
+                if os.path.exists(debug_filepath):
+                    file_size = os.path.getsize(debug_filepath)
+                    print(f"✅ 파일 생성 확인됨: {file_size} bytes")
+                else:
+                    print(f"❌ 파일이 생성되지 않음!")
+                    
+            except Exception as write_error:
+                print(f"❌ 파일 쓰기 중 오류: {write_error}")
+                import traceback
+                traceback.print_exc()
+                debug_filepath = None
             
             # 2단계: 성능 정보 추가
-            with open(debug_filepath, 'a', encoding='utf-8') as f:
-                f.write(f"📊 원본 페이지 크기: {len(page_source):,} 글자\n")
-                f.write(f"📝 텍스트 크기: {len(all_text):,} 글자\n")
-                f.write(f"💾 파일 크기: {len(all_text.encode('utf-8')):,} bytes\n")
-                f.write(f"⚡ 로딩 시간: {load_time:.2f}초\n")
-                f.write("✅ 2단계 완료: 성능 정보 추가됨\n")
-            
-            print(f"✅ 2단계 완료: 성능 정보 추가됨")
+            if debug_filepath:  # debug_filepath가 None이 아닐 때만 실행
+                try:
+                    print(f"📊 2단계: 성능 정보 추가 시작")
+                    with open(debug_filepath, 'a', encoding='utf-8') as f:
+                        f.write(f"📊 원본 페이지 크기: {len(page_source):,} 글자\n")
+                        f.write(f"📝 텍스트 크기: {len(all_text):,} 글자\n")
+                        f.write(f"💾 파일 크기: {len(all_text.encode('utf-8')):,} bytes\n")
+                        f.write(f"⚡ 로딩 시간: {load_time:.2f}초\n")
+                        f.write("✅ 2단계 완료: 성능 정보 추가됨\n")
+                    
+                    print(f"✅ 2단계 완료: 성능 정보 추가됨")
+                    
+                except Exception as append_error:
+                    print(f"❌ 2단계 성능 정보 추가 중 오류: {append_error}")
+                    import traceback
+                    traceback.print_exc()
+            else:
+                print(f"❌ 2단계 건너뜀: debug_filepath가 None임")
             
         except Exception as step_error:
-            print(f"❌ 1-2단계 오류: {step_error}")
+            print(f"❌ 전체 파일 생성 프로세스에서 치명적 오류 발생: {step_error}")
+            import traceback
+            traceback.print_exc()
+            debug_filepath = None
             
         # 3단계: 가격 분석 정보 추가
         try:
