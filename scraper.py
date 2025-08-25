@@ -65,6 +65,14 @@ def scrape_prices_simple(url, original_currency_code=None):
         try:
             print(f"🚀 파일 생성 프로세스 시작")
             
+            # 로그 파일에도 직접 기록
+            try:
+                with open('/tmp/agoda_debug.log', 'a', encoding='utf-8') as log_f:
+                    log_f.write(f"\n=== {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
+                    log_f.write(f"🚀 파일 생성 프로세스 시작\n")
+            except:
+                pass  # 로그 실패해도 무시
+            
             import os
             print(f"📂 현재 작업 디렉토리: {os.getcwd()}")
             print(f"✏️  현재 디렉토리 쓰기 권한: {os.access('.', os.W_OK)}")
@@ -108,8 +116,24 @@ def scrape_prices_simple(url, original_currency_code=None):
                 if os.path.exists(debug_filepath):
                     file_size = os.path.getsize(debug_filepath)
                     print(f"✅ 파일 생성 확인됨: {file_size} bytes")
+                    
+                    # 로그 파일에도 기록
+                    try:
+                        with open('/tmp/agoda_debug.log', 'a', encoding='utf-8') as log_f:
+                            log_f.write(f"✅ 파일 생성 확인됨: {file_size} bytes\n")
+                            log_f.write(f"📁 파일 경로: {debug_filepath}\n")
+                    except:
+                        pass
                 else:
                     print(f"❌ 파일이 생성되지 않음!")
+                    
+                    # 로그 파일에도 기록
+                    try:
+                        with open('/tmp/agoda_debug.log', 'a', encoding='utf-8') as log_f:
+                            log_f.write(f"❌ 파일이 생성되지 않음!\n")
+                            log_f.write(f"📁 시도한 경로: {debug_filepath}\n")
+                    except:
+                        pass
                     
             except Exception as write_error:
                 print(f"❌ 파일 쓰기 중 오류: {write_error}")
