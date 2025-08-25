@@ -50,6 +50,7 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
         chrome_options.add_argument('--disable-extensions')
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
+        chrome_options.add_argument('--page-load-strategy=eager')  # DOM 로딩 완료 시 바로 진행
         
         # 데스크톱 사이트 접속용 설정
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
