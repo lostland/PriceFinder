@@ -59,6 +59,9 @@ def scrape_prices_simple(url, original_currency_code=None):
         # 봇 탐지 우회 스크립트 (빠르게)
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
+        # 스크롤을 맨 위로 고정
+        driver.execute_script("window.scrollTo(0, 0);")
+        
         try:
             # 💡 매 초단위 체크: "시작가" "Start Price" 발견 시 즉시 중단
             driver.get(url)
@@ -106,7 +109,45 @@ def scrape_prices_simple(url, original_currency_code=None):
         
         # BeautifulSoup으로 파싱
         soup = BeautifulSoup(page_source, 'html.parser')
-        all_text = soup.get_text()
+        
+        # 🎯 상단 영역만 추출: 가격 정보가 있는 영역 우선 선택
+        target_text = ""
+        
+        # 1단계: 가격/예약 관련 주요 영역 선택
+        price_sections = soup.select([
+            '[class*="price"]',
+            '[class*="booking"]', 
+            '[class*="reservation"]',
+            '[class*="room"]',
+            '[class*="rate"]',
+            '[class*="cost"]',
+            '.property-details',
+            '.hotel-details', 
+            '.accommodation-details',
+            'main',
+            '[role="main"]'
+        ])
+        
+        # 선택된 영역들의 텍스트 추출
+        for section in price_sections[:10]:  # 상위 10개 영역만
+            section_text = section.get_text(strip=True)
+            if section_text and len(section_text) > 50:  # 의미있는 텍스트만
+                target_text += section_text + "\n"
+                
+                # 10KB 제한 확인
+                if len(target_text.encode('utf-8')) >= 10 * 1024:
+                    target_text = target_text.encode('utf-8')[:10*1024].decode('utf-8', errors='ignore')
+                    print("📏 선별적 추출 - 10KB 제한 적용")
+                    break
+        
+        # 2단계: 주요 영역에서 못 찾으면 상단 body 내용만 추출
+        if not target_text or len(target_text) < 100:
+            print("⚠️ 주요 영역 추출 실패 - body 상단 추출")
+            # body 전체에서 상위 부분만 (첫 10KB)
+            all_text = soup.get_text()
+            target_text = all_text[:10240]  # 대략 10KB 분량
+        
+        all_text = target_text
         
         print(f"페이지 크기: {len(all_text)} 글자, {len(all_text.encode('utf-8'))} bytes")
         
