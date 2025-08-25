@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import logging
 import requests
 import time
+import threading
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, step_info=None):
@@ -174,11 +175,23 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
             write_debug_log(f"🖥️ 데스크톱 아고다 페이지 로딩 시작...")
             write_debug_log(f"🌐 데스크톱 URL: {url[:100]}...")
             
-            try:
-                driver.get(url)
-            except:
-                # 페이지 로딩이 완료되지 않아도 계속 진행
-                pass
+            # 페이지 로딩을 별도 스레드에서 실행
+            page_loading_complete = threading.Event()
+            loading_error = None
+            
+            def load_page():
+                nonlocal loading_error
+                try:
+                    driver.get(url)
+                    page_loading_complete.set()
+                except Exception as e:
+                    loading_error = e
+                    page_loading_complete.set()
+            
+            # 페이지 로딩 스레드 시작
+            loading_thread = threading.Thread(target=load_page)
+            loading_thread.daemon = True
+            loading_thread.start()
             
             write_debug_log("🔍 실시간 페이지 모니터링 시작...")
             
