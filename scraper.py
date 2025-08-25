@@ -212,3 +212,31 @@ def extract_cid_from_url(url):
         return params.get('cid', [None])[0]
     except:
         return None
+
+
+def reorder_url_parameters(url):
+    """URL의 파라미터들을 일관된 순서로 재정렬"""
+    try:
+        parsed = urlparse(url)
+        params = parse_qs(parsed.query, keep_blank_values=True)
+        
+        # 파라미터들을 알파벳 순서로 정렬
+        sorted_params = []
+        for key in sorted(params.keys()):
+            for value in params[key]:
+                sorted_params.append(f"{key}={value}")
+        
+        # 새로운 URL 구성
+        new_query = "&".join(sorted_params)
+        new_url = urlunparse((
+            parsed.scheme,
+            parsed.netloc,
+            parsed.path,
+            parsed.params,
+            new_query,
+            parsed.fragment
+        ))
+        
+        return new_url
+    except:
+        return url  # 오류 시 원본 URL 반환
