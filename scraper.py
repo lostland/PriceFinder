@@ -138,7 +138,7 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
         
         write_debug_log("⚡ Chrome 드라이버 실행 중...")
         driver = webdriver.Chrome(options=chrome_options)
-        driver.set_page_load_timeout(15)  # 15초 타임아웃
+        driver.set_page_load_timeout(3)  # 3초 타임아웃으로 단축
         
         write_debug_log("🖥️ 데스크톱 사이트 접속용 스크립트 실행...")
         
@@ -174,7 +174,12 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
             write_debug_log(f"🖥️ 데스크톱 아고다 페이지 로딩 시작...")
             write_debug_log(f"🌐 데스크톱 URL: {url[:100]}...")
             
-            driver.get(url)
+            try:
+                driver.get(url)
+            except:
+                # 페이지 로딩이 완료되지 않아도 계속 진행
+                pass
+            
             write_debug_log("🔍 실시간 페이지 모니터링 시작...")
             
             # 실시간 모니터링 시스템
