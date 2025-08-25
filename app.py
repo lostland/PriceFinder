@@ -171,6 +171,120 @@ def guide():
     lang = request.args.get('lang', 'ko')  # 기본값은 한국어
     return render_template('guide.html', lang=lang)
 
+@app.route('/debug-files')
+def debug_files():
+    """가상서버에서 파일 시스템 디버그"""
+    import os
+    import time
+    import platform
+    
+    debug_info = []
+    debug_info.append("🔍 가상서버 파일 시스템 디버그")
+    debug_info.append("="*50)
+    
+    # 1. 기본 정보
+    debug_info.append(f"📍 현재 위치: {os.getcwd()}")
+    debug_info.append(f"🖥️  운영체제: {platform.system()} {platform.release()}")
+    debug_info.append(f"✏️  쓰기 권한: {os.access('.', os.W_OK)}")
+    
+    # 2. downloads 폴더 확인
+    downloads_dir = 'downloads'
+    debug_info.append(f"\n📁 downloads 폴더:")
+    
+    if not os.path.exists(downloads_dir):
+        try:
+            os.makedirs(downloads_dir)
+            debug_info.append("   ✅ 새로 생성됨")
+        except Exception as e:
+            debug_info.append(f"   ❌ 생성 실패: {e}")
+    else:
+        debug_info.append("   ✅ 이미 존재")
+    
+    debug_info.append(f"   쓰기 권한: {os.access(downloads_dir, os.W_OK)}")
+    
+    # 3. 간단한 파일 생성 테스트
+    test_file = os.path.join(downloads_dir, f"web_debug_{int(time.time())}.txt")
+    debug_info.append(f"\n✏️  파일 쓰기 테스트:")
+    
+    try:
+        with open(test_file, 'w', encoding='utf-8') as f:
+            f.write(f"웹 디버그 테스트\n생성 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        
+        if os.path.exists(test_file):
+            size = os.path.getsize(test_file)
+            debug_info.append(f"   ✅ 성공 ({size} bytes)")
+            
+            # 내용 읽기
+            with open(test_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+                debug_info.append(f"   📖 내용: {content[:50]}...")
+            
+        else:
+            debug_info.append("   ❌ 파일이 생성되지 않음")
+            
+    except Exception as e:
+        debug_info.append(f"   ❌ 오류: {e}")
+    
+    # 4. 아고다 방식 파일 생성 테스트
+    debug_info.append(f"\n🏷️  아고다 방식 테스트:")
+    agoda_file = os.path.join(downloads_dir, f"page_text_cid_WEBTEST.txt")
+    
+    try:
+        # 1단계: 기본 생성
+        with open(agoda_file, 'w', encoding='utf-8') as f:
+            f.write("="*80 + "\n")
+            f.write("🔍 AGODA MAGIC PRICE - 웹 디버그\n")
+            f.write("="*80 + "\n")
+            f.write(f"📅 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        
+        debug_info.append("   ✅ 1단계 성공")
+        
+        # 2단계: 내용 추가
+        with open(agoda_file, 'a', encoding='utf-8') as f:
+            f.write(f"📊 테스트 데이터\n")
+            f.write(f"✅ 2단계 완료\n")
+            
+        debug_info.append("   ✅ 2단계 성공")
+        
+        # 3단계: 대량 텍스트
+        with open(agoda_file, 'a', encoding='utf-8') as f:
+            test_content = "시작가 ₩64,039 한글 테스트 " * 50
+            f.write("="*80 + "\n")
+            f.write(test_content)
+        
+        if os.path.exists(agoda_file):
+            size = os.path.getsize(agoda_file)
+            debug_info.append(f"   ✅ 3단계 성공 ({size:,} bytes)")
+        else:
+            debug_info.append("   ❌ 3단계 실패")
+            
+    except Exception as e:
+        debug_info.append(f"   ❌ 아고다 테스트 실패: {e}")
+    
+    # 5. 기존 파일 목록
+    debug_info.append(f"\n📂 downloads 폴더 내용:")
+    try:
+        files = os.listdir(downloads_dir)
+        if files:
+            for i, filename in enumerate(files[:10]):  # 최대 10개만
+                file_path = os.path.join(downloads_dir, filename)
+                file_size = os.path.getsize(file_path)
+                debug_info.append(f"   {i+1}. {filename} ({file_size:,} bytes)")
+            
+            if len(files) > 10:
+                debug_info.append(f"   ... 총 {len(files)}개 파일")
+        else:
+            debug_info.append("   (파일 없음)")
+                
+    except Exception as e:
+        debug_info.append(f"   ❌ 목록 확인 실패: {e}")
+    
+    debug_info.append(f"\n🎯 결론:")
+    debug_info.append(f"   파일 생성이 정상 작동한다면 스크래퍼 문제입니다.")
+    debug_info.append(f"   파일 생성이 실패한다면 서버 환경 문제입니다.")
+    
+    return "<pre style='font-family: monospace; background: #f5f5f5; padding: 20px; margin: 20px;'>" + "\n".join(debug_info) + "</pre>"
+
 @app.route('/download/<filename>')
 def download_file(filename):
     """텍스트 파일 다운로드 엔드포인트"""
