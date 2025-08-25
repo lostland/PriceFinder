@@ -1,0 +1,128 @@
+
+(venv) [root@agodamagic agoda-magic-price]# ps aux | grep chrome
+root       31208  0.0  0.3 33899380 3848 pts/1   Sl   15:55   0:00 chromedriver --port=37665
+root       31441  0.0  0.3 33899380 3912 pts/1   Sl   15:57   0:00 chromedriver --port=37283
+root       32565  2.9  6.9 34588164 68628 pts/1  S<l  16:10  10:04 /opt/google/chrome/chrome --allow-pre-commit-input --disable-background-networking --disable-client-side-phishing-detection --disable-default-apps --disable-dev-shm-usage --disable-hang-monitor --disable-popup-blocking --disable-prompt-on-repost --disable-sync --enable-automation --enable-logging --headless --log-level=0 --no-first-run --no-sandbox --no-service-autorun --password-store=basic --remote-debugging-port=0 --test-type=webdriver --use-mock-keychain --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx data:,
+root       32567  0.0  0.2 33587048 2104 ?       Sl   16:10   0:00 /opt/google/chrome/chrome_crashpad_handler --monitor-self --monitor-self-annotation=ptype=crashpad-handler --database=/root/.config/google-chrome/Crash Reports --url=https://clients2.google.com/cr/report --annotation=channel= --annotation=lsb-release=Rocky Linux 8.6 (Green Obsidian) --annotation=plat=Linux --annotation=prod=Chrome_Linux --annotation=ver=139.0.7258.138 --initial-client-fd=6 --shared-client-connection
+root       32569  0.0  0.0 33578836 176 ?        Sl   16:10   0:00 /opt/google/chrome/chrome_crashpad_handler --no-periodic-tasks --monitor-self-annotation=ptype=crashpad-handler --database=/root/.config/google-chrome/Crash Reports --url=https://clients2.google.com/cr/report --annotation=channel= --annotation=lsb-release=Rocky Linux 8.6 (Green Obsidian) --annotation=plat=Linux --annotation=prod=Chrome_Linux --annotation=ver=139.0.7258.138 --initial-client-fd=4 --shared-client-connection
+root       32574  0.0  1.7 34334416 17172 pts/1  S    16:10   0:00 /opt/google/chrome/chrome --type=zygote --no-zygote-sandbox --no-sandbox --enable-logging --headless --log-level=0 --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --no-first-run --ozone-platform=headless --ozone-override-screen-size=800,600 --use-angle=swiftshader-webgl
+root       32575  0.0  1.7 34334416 17124 pts/1  S    16:10   0:00 /opt/google/chrome/chrome --type=zygote --no-sandbox --enable-logging --headless --log-level=0 --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --no-first-run --ozone-platform=headless --ozone-override-screen-size=800,600 --use-angle=swiftshader-webgl
+root       32597  1.6  3.6 34595052 35632 pts/1  S<l  16:10   5:48 /opt/google/chrome/chrome --type=gpu-process --no-sandbox --disable-dev-shm-usage --headless --ozone-platform=headless --use-angle=swiftshader-webgl --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --gpu-preferences=UAAAAAAAAAAgAAAIAAAAAAAAAAAAAGAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAAAAAAAABgAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAgAAAAAAAAA --shared-files --field-trial-handle=3,i,17847968052855351459,888844428479363879,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       32598  0.0  4.9 34329272 48508 pts/1  Sl   16:10   0:02 /opt/google/chrome/chrome --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --no-sandbox --disable-dev-shm-usage --use-angle=swiftshader-webgl --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,17847968052855351459,888844428479363879,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       32600  0.0  2.7 34392612 26688 pts/1  Sl   16:10   0:00 /opt/google/chrome/chrome --type=utility --utility-sub-type=storage.mojom.StorageService --lang=en-US --service-sandbox-type=utility --no-sandbox --disable-dev-shm-usage --use-angle=swiftshader-webgl --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,17847968052855351459,888844428479363879,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       32647  0.8  5.4 1476918072 53520 pts/1 S<l 16:10   2:56 /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --no-sandbox --disable-dev-shm-usage --enable-automation --remote-debugging-port=0 --test-type=webdriver --allow-pre-commit-input --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=7 --time-ticks-at-unix-epoch=-1756047897757768 --launch-time-ticks=57928530440 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,17847968052855351459,888844428479363879,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       32670  0.0  4.6 1476856944 45940 pts/1 S<l 16:10   0:00 /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --no-sandbox --disable-dev-shm-usage --enable-automation --remote-debugging-port=0 --test-type=webdriver --allow-pre-commit-input --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=8 --time-ticks-at-unix-epoch=-1756047897757768 --launch-time-ticks=57937148569 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,17847968052855351459,888844428479363879,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       32679  0.0  4.9 1476848748 48432 pts/1 S<l 16:10   0:00 /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --no-sandbox --disable-dev-shm-usage --enable-automation --remote-debugging-port=0 --test-type=webdriver --allow-pre-commit-input --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=9 --time-ticks-at-unix-epoch=-1756047897757768 --launch-time-ticks=57937460366 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,17847968052855351459,888844428479363879,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       33137  0.0  0.4 33899380 4128 pts/1   Sl   16:14   0:00 chromedriver --port=49667
+root       33143  3.0  7.4 34580720 73984 pts/1  S<l  16:14  10:22 /opt/google/chrome/chrome --allow-pre-commit-input --disable-background-networking --disable-client-side-phishing-detection --disable-default-apps --disable-dev-shm-usage --disable-hang-monitor --disable-popup-blocking --disable-prompt-on-repost --disable-sync --enable-automation --enable-logging --headless --log-level=0 --no-first-run --no-sandbox --no-service-autorun --password-store=basic --remote-debugging-port=0 --test-type=webdriver --use-mock-keychain --user-data-dir=/tmp/.org.chromium.Chromium.15lRre data:,
+root       33145  0.0  0.2 33587048 2220 ?       Sl   16:14   0:00 /opt/google/chrome/chrome_crashpad_handler --monitor-self --monitor-self-annotation=ptype=crashpad-handler --database=/root/.config/google-chrome/Crash Reports --url=https://clients2.google.com/cr/report --annotation=channel= --annotation=lsb-release=Rocky Linux 8.6 (Green Obsidian) --annotation=plat=Linux --annotation=prod=Chrome_Linux --annotation=ver=139.0.7258.138 --initial-client-fd=6 --shared-client-connection
+root       33147  0.0  0.0 33578836 340 ?        Sl   16:14   0:00 /opt/google/chrome/chrome_crashpad_handler --no-periodic-tasks --monitor-self-annotation=ptype=crashpad-handler --database=/root/.config/google-chrome/Crash Reports --url=https://clients2.google.com/cr/report --annotation=channel= --annotation=lsb-release=Rocky Linux 8.6 (Green Obsidian) --annotation=plat=Linux --annotation=prod=Chrome_Linux --annotation=ver=139.0.7258.138 --initial-client-fd=4 --shared-client-connection
+root       33152  0.0  1.8 34334420 18224 pts/1  S    16:14   0:00 /opt/google/chrome/chrome --type=zygote --no-zygote-sandbox --no-sandbox --enable-logging --headless --log-level=0 --crashpad-handler-pid=33145 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.15lRre --change-stack-guard-on-fork=enable --no-first-run --ozone-platform=headless --ozone-override-screen-size=800,600 --use-angle=swiftshader-webgl
+root       33153  0.0  1.8 34334420 18468 pts/1  S    16:14   0:00 /opt/google/chrome/chrome --type=zygote --no-sandbox --enable-logging --headless --log-level=0 --crashpad-handler-pid=33145 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.15lRre --change-stack-guard-on-fork=enable --no-first-run --ozone-platform=headless --ozone-override-screen-size=800,600 --use-angle=swiftshader-webgl
+root       33175  8.4  4.3 34587808 42708 pts/1  S<l  16:14  28:52 /opt/google/chrome/chrome --type=gpu-process --no-sandbox --disable-dev-shm-usage --headless --ozone-platform=headless --use-angle=swiftshader-webgl --crashpad-handler-pid=33145 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.15lRre --change-stack-guard-on-fork=enable --gpu-preferences=UAAAAAAAAAAgAAAIAAAAAAAAAAAAAGAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAAAAAAAABgAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAgAAAAAAAAA --shared-files --field-trial-handle=3,i,11968164692511387709,15290558710759411739,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       33177  0.0  5.0 34329132 50032 pts/1  Sl   16:14   0:02 /opt/google/chrome/chrome --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --no-sandbox --disable-dev-shm-usage --use-angle=swiftshader-webgl --crashpad-handler-pid=33145 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.15lRre --change-stack-guard-on-fork=enable --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,11968164692511387709,15290558710759411739,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       33179  0.0  2.7 34392488 26784 pts/1  Sl   16:14   0:00 /opt/google/chrome/chrome --type=utility --utility-sub-type=storage.mojom.StorageService --lang=en-US --service-sandbox-type=utility --no-sandbox --disable-dev-shm-usage --use-angle=swiftshader-webgl --crashpad-handler-pid=33145 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.15lRre --change-stack-guard-on-fork=enable --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,11968164692511387709,15290558710759411739,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       33225  2.2 12.5 1476922240 123628 pts/1 S<l 16:14   7:39 /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=33145 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.15lRre --change-stack-guard-on-fork=enable --no-sandbox --disable-dev-shm-usage --enable-automation --remote-debugging-port=0 --test-type=webdriver --allow-pre-commit-input --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=7 --time-ticks-at-unix-epoch=-1756047897757768 --launch-time-ticks=58153106595 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,11968164692511387709,15290558710759411739,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       33253  0.0  5.3 1478569080 52772 pts/1 S<l 16:14   0:00 /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=33145 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.15lRre --change-stack-guard-on-fork=enable --no-sandbox --disable-dev-shm-usage --enable-automation --remote-debugging-port=0 --test-type=webdriver --allow-pre-commit-input --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=8 --time-ticks-at-unix-epoch=-1756047897757768 --launch-time-ticks=58162634801 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,11968164692511387709,15290558710759411739,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       34485  0.0  0.5 33899380 5488 pts/1   Sl   16:37   0:00 chromedriver --port=60935
+root       40624  0.0  0.1 221944  1088 pts/1    S+   21:56   0:00 grep --color=auto chrome
+(venv) [root@agodamagic agoda-magic-price]# ls -la /home/agodamagic/agoda-magic-price/downloads/
+ls: cannot access '/home/agodamagic/agoda-magic-price/downloads/': No such file or directory
+(venv) [root@agodamagic agoda-magic-price]# pwd
+/var/www/agoda-magic-price
+(venv) [root@agodamagic agoda-magic-price]# ls -la /var/www/agoda-magic-price/downloads/
+total 96
+drwxr-xr-x. 2 root root 4096 Aug 25 21:16 .
+drwxr-xr-x. 9 root root 4096 Aug 25 21:54 ..
+-rw-r--r--. 1 root root 1816 Aug 25 21:23 page_text_cid_-1.txt
+-rw-r--r--. 1 root root 2209 Aug 25 21:08 page_text_cid_WEBTEST.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:06 web_debug_1756123617.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:07 web_debug_1756123620.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:07 web_debug_1756123622.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:07 web_debug_1756123624.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:07 web_debug_1756123625.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:07 web_debug_1756123627.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:07 web_debug_1756123628.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:07 web_debug_1756123629.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:07 web_debug_1756123630.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:07 web_debug_1756123631.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:07 web_debug_1756123633.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:07 web_debug_1756123634.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:07 web_debug_1756123635.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:07 web_debug_1756123636.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:07 web_debug_1756123637.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:07 web_debug_1756123638.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:08 web_debug_1756123680.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:08 web_debug_1756123682.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:08 web_debug_1756123701.txt
+-rw-r--r--. 1 root root   59 Aug 25 21:08 web_debug_1756123703.txt
+(venv) [root@agodamagic agoda-magic-price]# ls -la /var/www/agoda-magic-price/
+total 256
+drwxr-xr-x. 9 root root   4096 Aug 25 21:54 .
+drwxr-xr-x. 5 root root   4096 Aug 25 11:40 ..
+-rw-r--r--. 1 root root  12521 Aug 25 21:54 app.py
+drwxr-xr-x. 2 root root   4096 Aug 25 21:54 attached_assets
+-rw-r--r--. 1 root root   7430 Aug 25 21:04 cafe24_debug.py
+-rw-r--r--. 1 root root   6320 Aug 25 21:04 debug_agoda_scraper.py
+-rw-r--r--. 1 root root   5448 Aug 25 21:04 debug_file_system.py
+drwxr-xr-x. 2 root root   4096 Aug 25 21:16 downloads
+drwxr-xr-x. 8 root root   4096 Aug 25 21:54 .git
+-rw-r--r--. 1 root root    514 Aug 25 21:48 gunicorn.log
+-rw-r--r--. 1 root root     34 Aug 25 14:24 main.py
+drwxr-xr-x. 2 root root   4096 Aug 25 21:54 __pycache__
+-rw-r--r--. 1 root root    407 Aug 25 14:24 pyproject.toml
+-rw-r--r--. 1 root root    754 Aug 25 18:26 .replit
+-rw-r--r--. 1 root root   2735 Aug 25 14:24 replit.md
+-rw-r--r--. 1 root root  33107 Aug 25 21:54 scraper.py
+-rw-r--r--. 1 root root   4953 Aug 25 21:04 simple_debug.py
+drwxr-xr-x. 3 root root   4096 Aug 25 21:54 static
+drwxr-xr-x. 2 root root   4096 Aug 25 14:24 templates
+-rw-r--r--. 1 root root 116844 Aug 25 14:24 uv.lock
+drwxr-xr-x. 5 root root   4096 Aug 25 14:28 venv
+(venv) [root@agodamagic agoda-magic-price]# ls -ld /var/www/agoda-magic-price/
+drwxr-xr-x. 9 root root 4096 Aug 25 21:54 /var/www/agoda-magic-price/
+(venv) [root@agodamagic agoda-magic-price]# ls -ld /var/www/agoda-magic-price/downloads/
+drwxr-xr-x. 2 root root 4096 Aug 25 21:16 /var/www/agoda-magic-price/downloads/
+(venv) [root@agodamagic agoda-magic-price]# tail -f /tmp/gunicorn8000.log
+[2025-08-25 21:55:22 +0900] [40507] [INFO] Using worker: sync
+[2025-08-25 21:55:22 +0900] [40510] [INFO] Booting worker with pid: 40510
+INFO:app:재정렬 전 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&cid=-1&numberOfBedrooms=&familyMode=false&adults=2&children=0&rooms=1&maxRooms=0&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8
+INFO:app:재정렬 후 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&familyMode=false&adults=2&children=0&maxRooms=0&rooms=1&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&currency=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8&cid=-1
+INFO:app:Processing step 1/17: CID 시크릿창(-1)
+WARNING:app:First CID parsing failed - no prices found
+WARNING:app:Original URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&cid=1729471&numberOfBedrooms=&familyMode=false&adults=2&children=0&rooms=1&maxRooms=0&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8
+WARNING:app:Modified URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&familyMode=false&adults=2&children=0&maxRooms=0&rooms=1&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&currency=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8&cid=-1
+WARNING:app:Original Currency: KRW
+WARNING:app:Price extraction result: []
+
+^C
+(venv) [root@agodamagic agoda-magic-price]# tail -f /tmp/gunicorn8000.log &
+[2] 40635
+(venv) [root@agodamagic agoda-magic-price]# [2025-08-25 21:55:22 +0900] [40507] [INFO] Using worker: sync
+[2025-08-25 21:55:22 +0900] [40510] [INFO] Booting worker with pid: 40510
+INFO:app:재정렬 전 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&cid=-1&numberOfBedrooms=&familyMode=false&adults=2&children=0&rooms=1&maxRooms=0&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8
+INFO:app:재정렬 후 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&familyMode=false&adults=2&children=0&maxRooms=0&rooms=1&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&currency=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8&cid=-1
+INFO:app:Processing step 1/17: CID 시크릿창(-1)
+WARNING:app:First CID parsing failed - no prices found
+WARNING:app:Original URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&cid=1729471&numberOfBedrooms=&familyMode=false&adults=2&children=0&rooms=1&maxRooms=0&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8
+WARNING:app:Modified URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&familyMode=false&adults=2&children=0&maxRooms=0&rooms=1&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&currency=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8&cid=-1
+WARNING:app:Original Currency: KRW
+WARNING:app:Price extraction result: []
+
+(venv) [root@agodamagic agoda-magic-price]# tail -f /tmp/agoda_debug.log &
+[3] 40636
+(venv) [root@agodamagic agoda-magic-price]# tail: cannot open '/tmp/agoda_debug.log' for reading: No such file or directory
+tail: no files remaining
+
+[3]+  Exit 1                  tail -f /tmp/agoda_debug.log
+(venv) [root@agodamagic agoda-magic-price]#
+(venv) [root@agodamagic agoda-magic-price]#
+(venv) [root@agodamagic agoda-magic-price]# INFO:app:재정렬 전 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&cid=-1&numberOfBedrooms=&familyMode=false&adults=2&children=0&rooms=1&maxRooms=0&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8
+INFO:app:재정렬 후 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&familyMode=false&adults=2&children=0&maxRooms=0&rooms=1&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&currency=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8&cid=-1
+INFO:app:Processing step 1/17: CID 시크릿창(-1)
+WARNING:app:First CID parsing failed - no prices found
+WARNING:app:Original URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&cid=1729471&numberOfBedrooms=&familyMode=false&adults=2&children=0&rooms=1&maxRooms=0&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8
+WARNING:app:Modified URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&familyMode=false&adults=2&children=0&maxRooms=0&rooms=1&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&currency=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8&cid=-1
+WARNING:app:Original Currency: KRW
+WARNING:app:Price extraction result: []
+
