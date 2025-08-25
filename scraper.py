@@ -249,13 +249,47 @@ def scrape_prices_simple(url, original_currency_code=None):
                 filename = f"page_text_cid_{cid_value}.txt"
                 filepath = os.path.join('downloads', filename)
                 
-                # 전체 텍스트 저장
+                # 전체 텍스트 저장 (디버그 정보 대폭 추가)
                 with open(filepath, 'w', encoding='utf-8') as f:
-                    f.write(f"URL: {url}\n")
-                    f.write(f"CID: {cid_value}\n")
-                    f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write(f"파일 크기: 5KB 제한 적용\n")
-                    f.write("="*50 + "\n\n")
+                    f.write("="*80 + "\n")
+                    f.write("🔍 AGODA MAGIC PRICE - 상세 디버그 정보\n")
+                    f.write("="*80 + "\n")
+                    f.write(f"📅 스크래핑 일시: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                    f.write(f"🌐 요청 URL: {url}\n")
+                    f.write(f"🎯 CID 값: {cid_value}\n")
+                    f.write(f"📊 원본 페이지 크기: {len(page_source):,} 글자\n")
+                    f.write(f"📝 텍스트 크기: {len(all_text):,} 글자\n")
+                    f.write(f"💾 파일 크기: {len(all_text.encode('utf-8')):,} bytes\n")
+                    f.write(f"⚡ 로딩 시간: {load_time:.2f}초\n")
+                    f.write(f"🚫 5KB 제한: 적용됨 (원본 크기 초과)\n")
+                    
+                    # 시작가 검색 결과
+                    pattern = r'시작가\s*₩\s*(\d{1,3}(?:,\d{3})+)'
+                    match = re.search(pattern, all_text)
+                    if match:
+                        f.write(f"✅ 시작가 발견: ₩{match.group(1)}\n")
+                    else:
+                        f.write("❌ 시작가 패턴 실패\n")
+                    
+                    # 통화 정보 분석
+                    krw_count = len(re.findall(r'₩', all_text))
+                    usd_count = len(re.findall(r'\$', all_text))
+                    thb_count = len(re.findall(r'฿', all_text))
+                    f.write(f"💱 통화 기호 개수: ₩({krw_count}), $({usd_count}), ฿({thb_count})\n")
+                    
+                    # 숫자 패턴 분석
+                    price_numbers = re.findall(r'\d{1,3}(?:,\d{3})+', all_text)
+                    f.write(f"🔢 큰 숫자 패턴: {len(price_numbers)}개 발견\n")
+                    if price_numbers:
+                        f.write(f"    예시: {', '.join(price_numbers[:5])}\n")
+                    
+                    # 브라우저 정보
+                    f.write(f"🌐 Chrome 옵션: headless, no-images, 800x600\n")
+                    f.write(f"🚀 최적화: 이미지 차단, 플러그인 차단\n")
+                    
+                    f.write("="*80 + "\n")
+                    f.write("📄 실제 페이지 텍스트 내용\n")
+                    f.write("="*80 + "\n\n")
                     f.write(all_text)
                 
                 print(f"5KB 제한 - 텍스트 파일 저장됨: {filepath}")
