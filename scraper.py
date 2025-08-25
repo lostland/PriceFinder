@@ -36,7 +36,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         chrome_options.add_argument('--disable-background-networking')
         chrome_options.add_argument('--disable-features=NetworkService')  # 네트워크 최적화
         chrome_options.add_argument('--disable-ipc-flooding-protection')  # IPC 최적화
-        chrome_options.add_argument('--window-size=320,240')  # 더더욱 작은 창  
+        chrome_options.add_argument('--window-size=1920,1080')  # 데스크탑 크기로 변경  
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
         chrome_options.add_argument('--silent')
@@ -60,21 +60,42 @@ def scrape_prices_simple(url, original_currency_code=None):
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
         try:
-            # 페이지 로딩 시작
+            # 💡 단계별 로딩: 빠른 확인 후 필요시에만 더 기다리기
             driver.get(url)
             
-            # 💡 10KB 제한: 페이지 소스가 10KB 넘으면 바로 중단
-            max_wait = 10  # 최대 10초 대기
-            start_wait = time.time()
-            
-            while time.time() - start_wait < max_wait:
-                current_source = driver.page_source
-                if len(current_source.encode('utf-8')) >= 10 * 1024:  # 10KB
-                    print("📏 10KB 도달 - 로딩 중단")
-                    break
-                time.sleep(0.2)  # 0.2초마다 체크
-            
+            # 1단계: 1초 대기 후 첫 체크
+            time.sleep(1)
             page_source = driver.page_source
+            
+            # 가격 관련 키워드가 있는지 빠른 체크
+            quick_check = any(keyword in page_source for keyword in [
+                '시작가', 'Start Price', '₩', '$', 'USD', 'KRW', 'THB'
+            ])
+            
+            if quick_check:
+                print("💰 가격 관련 키워드 발견 - 추가 대기")
+                # 2단계: 가격 정보 로딩을 위해 최대 3초 더 대기
+                max_additional_wait = 3
+                start_additional = time.time()
+                
+                while time.time() - start_additional < max_additional_wait:
+                    time.sleep(0.5)
+                    new_source = driver.page_source
+                    if len(new_source) > len(page_source):
+                        page_source = new_source  # 더 많은 내용이 로딩되면 업데이트
+                    
+                    # 10KB가 넘으면 중단
+                    if len(page_source.encode('utf-8')) >= 10 * 1024:
+                        print("📏 10KB 도달 - 로딩 중단")
+                        break
+            else:
+                print("⚠️ 가격 키워드 없음 - 짧은 대기만")
+            
+            # 최종 소스 크기 제한
+            if len(page_source.encode('utf-8')) > 10 * 1024:
+                # 10KB로 자르기
+                page_source = page_source.encode('utf-8')[:10*1024].decode('utf-8', errors='ignore')
+                print(f"📏 10KB로 텍스트 잘라내기 완료")
             
         except:
             # 타임아웃되어도 현재까지 로딩된 소스라도 가져오기
