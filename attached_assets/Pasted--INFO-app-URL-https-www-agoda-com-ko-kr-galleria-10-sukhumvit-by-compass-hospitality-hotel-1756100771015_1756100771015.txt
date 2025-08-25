@@ -1,0 +1,10 @@
+
+INFO:app:재정렬 전 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&cid=-1&numberOfBedrooms=&familyMode=false&adults=2&children=0&rooms=1&maxRooms=0&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8
+INFO:app:재정렬 후 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&familyMode=false&adults=2&children=0&maxRooms=0&rooms=1&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&currency=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8&cid=-1
+INFO:app:Processing step 1/17: CID 시크릿창(-1)
+WARNING:app:First CID parsing failed - no prices found
+WARNING:app:Original URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&cid=1729471&numberOfBedrooms=&familyMode=false&adults=2&children=0&rooms=1&maxRooms=0&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8
+WARNING:app:Modified URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&familyMode=false&adults=2&children=0&maxRooms=0&rooms=1&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&currency=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8&cid=-1
+WARNING:app:Original Currency: KRW
+WARNING:app:Price extraction result: []
+
