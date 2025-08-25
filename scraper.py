@@ -108,46 +108,121 @@ def scrape_prices_simple(url, original_currency_code=None):
         print(f"✅ 페이지 로딩 완료: {load_time:.2f}초")
         
         # BeautifulSoup으로 파싱
+        parse_start = time.time()
         soup = BeautifulSoup(page_source, 'html.parser')
+        parse_time = time.time() - parse_start
         
-        # 🎯 상단 영역만 추출: 가격 정보가 있는 영역 우선 선택
-        target_text = ""
+        # 🔍 디버깅: 전체 텍스트 추출 과정 기록
+        debug_info = []
+        debug_info.append(f"=== 텍스트 추출 디버그 정보 ===")
+        debug_info.append(f"파싱 시간: {parse_time:.3f}초")
+        debug_info.append(f"페이지 소스 크기: {len(page_source)} characters")
+        debug_info.append(f"추출 시작 시간: {time.strftime('%H:%M:%S')}")
+        debug_info.append(f"")
         
-        # 1단계: 가격/예약 관련 주요 영역 선택
-        price_sections = soup.select([
-            '[class*="price"]',
-            '[class*="booking"]', 
-            '[class*="reservation"]',
-            '[class*="room"]',
-            '[class*="rate"]',
-            '[class*="cost"]',
-            '.property-details',
-            '.hotel-details', 
-            '.accommodation-details',
-            'main',
-            '[role="main"]'
-        ])
+        # 📊 방법1: 전체 텍스트 (기본 방식)
+        method1_start = time.time()
+        all_text_full = soup.get_text()
+        method1_time = time.time() - method1_start
+        debug_info.append(f"방법1 - soup.get_text() 전체:")
+        debug_info.append(f"  시간: {method1_time:.3f}초")
+        debug_info.append(f"  크기: {len(all_text_full)} 글자")
+        debug_info.append(f"  앞쪽 미리보기: {all_text_full[:200]}...")
+        debug_info.append(f"")
         
-        # 선택된 영역들의 텍스트 추출
-        for section in price_sections[:10]:  # 상위 10개 영역만
-            section_text = section.get_text(strip=True)
-            if section_text and len(section_text) > 50:  # 의미있는 텍스트만
-                target_text += section_text + "\n"
+        # 📊 방법2: body 태그만
+        method2_start = time.time()
+        body_tag = soup.find('body')
+        if body_tag:
+            body_text = body_tag.get_text()
+            method2_time = time.time() - method2_start
+            debug_info.append(f"방법2 - body.get_text():")
+            debug_info.append(f"  시간: {method2_time:.3f}초")
+            debug_info.append(f"  크기: {len(body_text)} 글자")
+            debug_info.append(f"  앞쪽 미리보기: {body_text[:200]}...")
+        else:
+            body_text = ""
+            debug_info.append(f"방법2 - body 태그 없음")
+        debug_info.append(f"")
+        
+        # 📊 방법3: 상위 10개 div만
+        method3_start = time.time()
+        top_divs = soup.find_all('div')[:10]
+        div_text = ""
+        for i, div in enumerate(top_divs):
+            div_content = div.get_text(strip=True)
+            if div_content:
+                div_text += f"[DIV{i+1}] {div_content}\n"
+        method3_time = time.time() - method3_start
+        debug_info.append(f"방법3 - 상위 10개 div:")
+        debug_info.append(f"  시간: {method3_time:.3f}초")
+        debug_info.append(f"  크기: {len(div_text)} 글자")
+        debug_info.append(f"  앞쪽 미리보기: {div_text[:200]}...")
+        debug_info.append(f"")
+        
+        # 📊 방법4: JavaScript로 화면에 보이는 텍스트만 추출 시도
+        method4_start = time.time()
+        try:
+            visible_text = driver.execute_script("""
+                // 화면에 보이는 텍스트만 추출
+                var walker = document.createTreeWalker(
+                    document.body,
+                    NodeFilter.SHOW_TEXT,
+                    {
+                        acceptNode: function(node) {
+                            var parent = node.parentElement;
+                            var style = window.getComputedStyle(parent);
+                            
+                            // 숨겨진 요소는 제외
+                            if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+                                return NodeFilter.FILTER_REJECT;
+                            }
+                            
+                            // 화면 영역 밖은 제외 (대략적으로)
+                            var rect = parent.getBoundingClientRect();
+                            if (rect.bottom < 0 || rect.top > window.innerHeight * 2) {
+                                return NodeFilter.FILTER_REJECT;
+                            }
+                            
+                            return NodeFilter.FILTER_ACCEPT;
+                        }
+                    }
+                );
                 
-                # 10KB 제한 확인
-                if len(target_text.encode('utf-8')) >= 10 * 1024:
-                    target_text = target_text.encode('utf-8')[:10*1024].decode('utf-8', errors='ignore')
-                    print("📏 선별적 추출 - 10KB 제한 적용")
-                    break
+                var textNodes = [];
+                var node;
+                while (node = walker.nextNode()) {
+                    if (node.nodeValue.trim()) {
+                        textNodes.push(node.nodeValue.trim());
+                    }
+                }
+                return textNodes.join(' ');
+            """)
+            method4_time = time.time() - method4_start
+            debug_info.append(f"방법4 - JavaScript 화면 텍스트:")
+            debug_info.append(f"  시간: {method4_time:.3f}초")
+            debug_info.append(f"  크기: {len(visible_text)} 글자")
+            debug_info.append(f"  앞쪽 미리보기: {visible_text[:200]}...")
+        except Exception as js_error:
+            visible_text = ""
+            debug_info.append(f"방법4 - JavaScript 실패: {js_error}")
+        debug_info.append(f"")
         
-        # 2단계: 주요 영역에서 못 찾으면 상단 body 내용만 추출
-        if not target_text or len(target_text) < 100:
-            print("⚠️ 주요 영역 추출 실패 - body 상단 추출")
-            # body 전체에서 상위 부분만 (첫 10KB)
-            all_text = soup.get_text()
-            target_text = all_text[:10240]  # 대략 10KB 분량
+        # 🎯 최종 선택: 가장 적절한 텍스트 선택
+        debug_info.append(f"=== 최종 선택 ===")
         
-        all_text = target_text
+        if visible_text and len(visible_text) > 100:
+            all_text = visible_text
+            debug_info.append(f"선택: 방법4 - JavaScript 화면 텍스트")
+        elif body_text and len(body_text) > 100:
+            all_text = body_text[:10240]  # 첫 10KB만
+            debug_info.append(f"선택: 방법2 - body 텍스트 (10KB 제한)")
+        else:
+            all_text = all_text_full[:10240]  # 첫 10KB만
+            debug_info.append(f"선택: 방법1 - 전체 텍스트 (10KB 제한)")
+        
+        debug_info.append(f"최종 크기: {len(all_text)} 글자, {len(all_text.encode('utf-8'))} bytes")
+        debug_info.append(f"=" * 50)
         
         print(f"페이지 크기: {len(all_text)} 글자, {len(all_text.encode('utf-8'))} bytes")
         
@@ -173,7 +248,7 @@ def scrape_prices_simple(url, original_currency_code=None):
                 print(f"✅ 가격 발견: {found_price['price']}")
                 break
         
-        # 파일 저장 (항상 저장)
+        # 파일 저장 (디버그 정보 포함)
         try:
             import os
             if not os.path.exists('downloads'):
@@ -188,13 +263,15 @@ def scrape_prices_simple(url, original_currency_code=None):
                 f.write(f"URL: {url}\n")
                 f.write(f"CID: {cid_value}\n")
                 f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"총 소요 시간: {load_time:.2f}초\n")
                 f.write(f"파일 크기: {len(all_text.encode('utf-8'))} bytes\n")
-                f.write("="*50 + "\n\n")
+                f.write("\n" + "\n".join(debug_info) + "\n\n")
+                f.write("=== 실제 추출된 텍스트 ===\n")
                 f.write(all_text)
                 
-            print(f"파일 저장됨: {filepath}")
-        except:
-            pass
+            print(f"파일 저장됨: {filepath} (디버그 정보 포함)")
+        except Exception as save_error:
+            print(f"파일 저장 오류: {save_error}")
         
         # 결과 반환 (찾으면 반환, 못 찾으면 빈 리스트)
         if found_price:
