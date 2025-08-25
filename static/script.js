@@ -187,6 +187,18 @@ function analyzeCid() {
         })
     })
     .then(response => {
+        console.log('📡 서버 응답 상태:', response.status, response.statusText);
+        console.log('📡 응답 헤더:', response.headers.get('Content-Type'));
+        
+        // 400 에러 등 상세 정보 출력
+        if (!response.ok) {
+            console.error('❌ HTTP 에러:', response.status, response.statusText);
+            return response.text().then(text => {
+                console.error('❌ 서버 에러 내용:', text);
+                throw new Error(`서버 에러 ${response.status}: ${text}`);
+            });
+        }
+        
         // 응답이 JSON인지 확인
         const contentType = response.headers.get('Content-Type');
         if (!contentType || !contentType.includes('application/json')) {
@@ -222,7 +234,12 @@ function analyzeCid() {
     })
     .catch(error => {
         hideLoading();
+        console.error('❌ 클라이언트 fetch 오류:', error);
+        console.error('❌ 오류 유형:', error.constructor.name);
+        console.error('❌ 오류 메시지:', error.message);
+        console.error('❌ 스택 트레이스:', error.stack);
         showError('분석 중 오류가 발생했습니다: ' + error.message);
+        resetUI();
     });
 }
 

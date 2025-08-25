@@ -171,6 +171,17 @@ def guide():
     lang = request.args.get('lang', 'ko')  # 기본값은 한국어
     return render_template('guide.html', lang=lang)
 
+@app.route('/test-server')
+def test_server():
+    """간단한 서버 테스트"""
+    import time
+    return jsonify({
+        'status': 'OK',
+        'message': '서버가 정상 작동 중입니다',
+        'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
+        'server': 'gunicorn'
+    })
+
 @app.route('/debug-files')
 def debug_files():
     """가상서버에서 파일 시스템 디버그"""
