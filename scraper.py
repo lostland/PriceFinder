@@ -171,28 +171,16 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
         
         try:
             # 데스크톱 사이트 직접 접속
-            page_load_start = time.time()
             write_debug_log(f"🖥️ 데스크톱 아고다 페이지 로딩 시작...")
             write_debug_log(f"🌐 데스크톱 URL: {url[:100]}...")
             
-            driver_get_start = time.time()
             try:
                 driver.get(url)
-                driver_get_end = time.time()
-                write_debug_log(f"⏱️ driver.get() 완료: {driver_get_end - driver_get_start:.2f}초")
-            except Exception as get_error:
-                driver_get_end = time.time()
-                write_debug_log(f"⏱️ driver.get() 타임아웃: {driver_get_end - driver_get_start:.2f}초")
-                write_debug_log(f"🚨 driver.get() 오류: {get_error}")
+            except:
                 # 페이지 로딩이 완료되지 않아도 계속 진행
                 pass
             
-            post_get_start = time.time()
-            write_debug_log(f"⏱️ driver.get() 후 시작: {post_get_start - page_load_start:.2f}초 경과")
-            
             write_debug_log("🔍 실시간 페이지 모니터링 시작...")
-            monitoring_start = time.time()
-            write_debug_log(f"⏱️ 모니터링 시작: {monitoring_start - page_load_start:.2f}초 총 경과")
             
             # 실시간 모니터링 시스템
             previous_source = ""
