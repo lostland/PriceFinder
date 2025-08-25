@@ -21,15 +21,26 @@ def scrape_prices_simple(url, original_currency_code=None):
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument('--disable-gpu')
-        chrome_options.add_argument('--disable-images')  # 이미지 차단으로 속도 향상
+        chrome_options.add_argument('--disable-images')  # 이미지 차단
         chrome_options.add_argument('--disable-plugins')
         chrome_options.add_argument('--disable-extensions')
-        chrome_options.add_argument('--window-size=800,600')  # 작은 창으로 메모리 절약
+        chrome_options.add_argument('--disable-web-security')  # 웹 보안 해제로 속도 향상
+        chrome_options.add_argument('--disable-features=VizDisplayCompositor')  # 렌더링 최적화
+        chrome_options.add_argument('--disable-background-timer-throttling')
+        chrome_options.add_argument('--disable-renderer-backgrounding')
+        chrome_options.add_argument('--disable-backgrounding-occluded-windows')
+        chrome_options.add_argument('--disable-features=TranslateUI')
+        chrome_options.add_argument('--disable-default-apps')
+        chrome_options.add_argument('--no-first-run')
+        chrome_options.add_argument('--disable-sync')
+        chrome_options.add_argument('--disable-background-networking')
+        chrome_options.add_argument('--window-size=400,300')  # 더 작은 창
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
+        chrome_options.add_argument('--silent')
         
-        # 봇 탐지 우회
-        chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+        # 봇 탐지 우회 (간단하게)
+        chrome_options.add_argument('--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36')
         chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
         chrome_options.add_experimental_option('useAutomationExtension', False)
         
@@ -38,16 +49,30 @@ def scrape_prices_simple(url, original_currency_code=None):
         start_time = time.time()
         
         driver = webdriver.Chrome(options=chrome_options)
-        driver.set_page_load_timeout(15)  # 15초 타임아웃
+        driver.set_page_load_timeout(10)  # 10초로 단축
         
-        # 봇 탐지 우회 스크립트
+        # 봇 탐지 우회 스크립트 (빠르게)
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
         try:
+            # 페이지 로딩 최적화
             driver.get(url)
-            # 불필요한 대기 시간 제거 - 페이지 로드 완료 후 바로 진행
+            
+            # DOM이 준비되면 즉시 소스 가져오기
+            from selenium.webdriver.common.by import By
+            from selenium.webdriver.support.ui import WebDriverWait
+            from selenium.webdriver.support import expected_conditions as EC
+            
+            # 페이지 기본 로딩 완료 대기 (최소한)
+            WebDriverWait(driver, 3).until(
+                EC.presence_of_element_located((By.TAG_NAME, "body"))
+            )
+            
             page_source = driver.page_source
             
+        except:
+            # 타임아웃되어도 현재까지 로딩된 소스라도 가져오기
+            page_source = driver.page_source
         finally:
             driver.quit()
         
@@ -60,8 +85,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         
         print(f"페이지 크기: {len(all_text)} 글자, {len(all_text.encode('utf-8'))} bytes")
         
-        # 먼저 시작가 검색을 시도 (페이지 크기와 관계없이)
-        starting_price = None
+        # 🎯 핵심 수정: 시작가 검색을 모든 로직보다 우선으로
         pattern = r'시작가\s*₩\s*(\d{1,3}(?:,\d{3})+)'
         match = re.search(pattern, all_text)
         
@@ -73,6 +97,31 @@ def scrape_prices_simple(url, original_currency_code=None):
                 'source': 'starting_price_direct'
             }
             print(f"✅ 시작가 발견: {starting_price['price']}")
+            
+            # 파일 저장 (디버그용)
+            try:
+                import os
+                if not os.path.exists('downloads'):
+                    os.makedirs('downloads')
+                
+                cid_match = re.search(r'cid=([^&]+)', url)
+                cid_value = cid_match.group(1) if cid_match else 'unknown'
+                filename = f"page_text_cid_{cid_value}.txt"
+                filepath = os.path.join('downloads', filename)
+                
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    f.write(f"URL: {url}\n")
+                    f.write(f"CID: {cid_value}\n")
+                    f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                    f.write(f"파일 크기: {len(all_text.encode('utf-8'))} bytes\n")
+                    f.write("="*50 + "\n\n")
+                    f.write(all_text[:5000])  # 처음 5000자만 저장
+                    
+                print(f"파일 저장됨: {filepath}")
+            except:
+                pass
+            
+            # 즉시 결과 반환
             return [starting_price]
         else:
             print("❌ 시작가 패턴 실패 - 일반 가격 검색 진행")
