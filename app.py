@@ -110,10 +110,40 @@ def scrape():
         
         app.logger.info(f"Processing step {step+1}/{len(all_cids)}: CID {current_name}({current_cid})")
         
-        # 스크래핑 실행 (원본 currencyCode 전달)
+        # 첫 번째 CID 접속 직전에 디버그 파일 생성
+        debug_filepath = None
+        if step == 0:
+            import time
+            timestamp = int(time.time())
+            debug_filename = f"debug_session_{timestamp}.txt"
+            debug_filepath = os.path.join('downloads', debug_filename)
+            
+            # downloads 디렉토리 확인/생성
+            if not os.path.exists('downloads'):
+                os.makedirs('downloads')
+                
+            # 디버그 파일 생성
+            try:
+                with open(debug_filepath, 'w', encoding='utf-8') as f:
+                    f.write("="*80 + "\n")
+                    f.write("🔍 AGODA MAGIC PRICE - 상세 디버그 세션\n")
+                    f.write("="*80 + "\n")
+                    f.write(f"📅 세션 시작: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                    f.write(f"🌐 원본 URL: {url}\n")
+                    f.write(f"💱 원본 통화: {original_currency}\n")
+                    f.write(f"📊 처리할 CID 총 개수: {len(all_cids)}\n")
+                    f.write("\n" + "="*80 + "\n")
+                    f.write("🚀 스크래핑 시작\n")
+                    f.write("="*80 + "\n\n")
+                
+                app.logger.info(f"디버그 파일 생성 완료: {debug_filepath}")
+            except Exception as e:
+                app.logger.error(f"디버그 파일 생성 실패: {e}")
+        
+        # 스크래핑 실행 (원본 currencyCode 전달, 디버그 파일 경로도 전달)
         import time
         start_time = time.time()
-        prices = scrape_prices_simple(new_url, original_currency_code=original_currency)
+        prices = scrape_prices_simple(new_url, original_currency_code=original_currency, debug_filepath=debug_filepath, step_info=(step+1, len(all_cids), current_name, current_cid))
         process_time = time.time() - start_time
         
         # 첫번째 CID에서 가격을 찾지 못한 경우 - 잘못된 링크로 판단
