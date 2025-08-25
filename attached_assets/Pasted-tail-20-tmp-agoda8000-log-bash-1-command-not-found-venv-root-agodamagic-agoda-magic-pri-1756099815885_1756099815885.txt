@@ -1,0 +1,150 @@
+tail -20 /tmp/agoda8000.log
+-bash: [1]+: command not found
+(venv) [root@agodamagic agoda-magic-price]# pwd
+/var/www/agoda-magic-price
+(venv) [root@agodamagic agoda-magic-price]# ls -la
+total 196
+drwxr-xr-x. 8 root root   4096 Aug 25 14:26 .
+drwxr-xr-x. 5 root root   4096 Aug 25 11:40 ..
+-rw-r--r--. 1 root root   7734 Aug 25 14:24 app.py
+drwxr-xr-x. 2 root root   4096 Aug 25 14:24 attached_assets
+drwxr-xr-x. 2 root root   4096 Aug 25 14:24 downloads
+drwxr-xr-x. 8 root root   4096 Aug 25 14:24 .git
+-rw-r--r--. 1 root root     34 Aug 25 14:24 main.py
+-rw-r--r--. 1 root root    407 Aug 25 14:24 pyproject.toml
+-rw-r--r--. 1 root root    754 Aug 25 14:24 .replit
+-rw-r--r--. 1 root root   2735 Aug 25 14:24 replit.md
+-rw-r--r--. 1 root root  23814 Aug 25 14:24 scraper.py
+drwxr-xr-x. 3 root root   4096 Aug 25 14:24 static
+drwxr-xr-x. 2 root root   4096 Aug 25 14:24 templates
+-rw-r--r--. 1 root root 116844 Aug 25 14:24 uv.lock
+drwxr-xr-x. 5 root root   4096 Aug 25 14:26 venv
+(venv) [root@agodamagic agoda-magic-price]# ls -la venv/bin/
+total 40
+drwxr-xr-x. 2 root root 4096 Aug 25 14:26 .
+drwxr-xr-x. 5 root root 4096 Aug 25 14:26 ..
+-rw-r--r--. 1 root root 2207 Aug 25 14:26 activate
+-rw-r--r--. 1 root root 1263 Aug 25 14:26 activate.csh
+-rw-r--r--. 1 root root 2427 Aug 25 14:26 activate.fish
+-rwxr-xr-x. 1 root root  261 Aug 25 14:26 easy_install
+-rwxr-xr-x. 1 root root  261 Aug 25 14:26 easy_install-3.6
+-rwxr-xr-x. 1 root root  233 Aug 25 14:26 pip
+-rwxr-xr-x. 1 root root  233 Aug 25 14:26 pip3
+-rwxr-xr-x. 1 root root  233 Aug 25 14:26 pip3.6
+lrwxrwxrwx. 1 root root    7 Aug 25 14:26 python -> python3
+lrwxrwxrwx. 1 root root   16 Aug 25 14:26 python3 -> /usr/bin/python3
+(venv) [root@agodamagic agoda-magic-price]# source venv/bin/activate
+(venv) [root@agodamagic agoda-magic-price]# pip list
+DEPRECATION: The default format will switch to columns in the future. You can use --format=(legacy|columns) (or define a format=(legacy|columns) in your pip.conf under the [list] section) to disable this warning.
+pip (9.0.3)
+setuptools (39.2.0)
+You are using pip version 9.0.3, however version 25.2 is available.
+You should consider upgrading via the 'pip install --upgrade pip' command.
+(venv) [root@agodamagic agoda-magic-price]# pip install -r requirements.txt
+Could not open requirements file: [Errno 2] No such file or directory: 'requirements.txt'
+You are using pip version 9.0.3, however version 25.2 is available.
+You should consider upgrading via the 'pip install --upgrade pip' command.
+(venv) [root@agodamagic agoda-magic-price]# pip install flask gunicorn beautifulsoup4 requests
+Collecting flask
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/cd/77/59df23681f4fd19b7cbbb5e92484d46ad587554f5d490f33ef907e456132/Flask-2.0.3-py3-none-any.whl (95kB)
+    100% |████████████████████████████████| 102kB 10.5MB/s
+Collecting gunicorn
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/0e/2a/c3a878eccb100ccddf45c50b6b8db8cf3301a6adede6e31d48e8531cab13/gunicorn-21.2.0-py3-none-any.whl (80kB)
+    100% |████████████████████████████████| 81kB 12.4MB/s
+Collecting beautifulsoup4
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/b1/fe/e8c672695b37eecc5cbf43e1d0638d88d66ba3a44c4d321c796f4e59167f/beautifulsoup4-4.12.3-py3-none-any.whl (147kB)
+    100% |████████████████████████████████| 153kB 384kB/s
+Collecting requests
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/2d/61/08076519c80041bc0ffa1a8af0cbd3bf3e2b62af10435d269a9d0f40564d/requests-2.27.1-py2.py3-none-any.whl (63kB)
+    100% |████████████████████████████████| 71kB 10.1MB/s
+Collecting Werkzeug>=2.0 (from flask)
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/f4/f3/22afbdb20cc4654b10c98043414a14057cd27fdba9d4ae61cea596000ba2/Werkzeug-2.0.3-py3-none-any.whl (289kB)
+    100% |████████████████████████████████| 296kB 5.4MB/s
+Collecting Jinja2>=3.0 (from flask)
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/20/9a/e5d9ec41927401e41aea8af6d16e78b5e612bca4699d417f646a9610a076/Jinja2-3.0.3-py3-none-any.whl (133kB)
+    100% |████████████████████████████████| 143kB 9.9MB/s
+Collecting click>=7.1.2 (from flask)
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/4a/a8/0b2ced25639fb20cc1c9784de90a8c25f9504a7f18cd8b5397bd61696d7d/click-8.0.4-py3-none-any.whl (97kB)
+    100% |████████████████████████████████| 102kB 12.5MB/s
+Collecting itsdangerous>=2.0 (from flask)
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/9c/96/26f935afba9cd6140216da5add223a0c465b99d0f112b68a4ca426441019/itsdangerous-2.0.1-py3-none-any.whl
+Collecting packaging (from gunicorn)
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/05/8e/8de486cbd03baba4deef4142bd643a3e7bbe954a784dc1bb17142572d127/packaging-21.3-py3-none-any.whl (40kB)
+    100% |████████████████████████████████| 40kB 11.3MB/s
+Collecting importlib-metadata; python_version < "3.8" (from gunicorn)
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/a0/a1/b153a0a4caf7a7e3f15c2cd56c7702e2cf3d89b1b359d1f1c5e59d68f4ce/importlib_metadata-4.8.3-py3-none-any.whl
+Collecting soupsieve>1.2 (from beautifulsoup4)
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/16/e3/4ad79882b92617e3a4a0df1960d6bce08edfb637737ac5c3f3ba29022e25/soupsieve-2.3.2.post1-py3-none-any.whl
+Collecting certifi>=2017.4.17 (from requests)
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/4a/7e/3db2bd1b1f9e95f7cddca6d6e75e2f2bd9f51b1246e546d88addca0106bd/certifi-2025.4.26-py3-none-any.whl (159kB)
+    100% |████████████████████████████████| 163kB 1.7MB/s
+Collecting idna<4,>=2.5; python_version >= "3" (from requests)
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl (70kB)
+    100% |████████████████████████████████| 71kB 12.4MB/s
+Collecting charset-normalizer~=2.0.0; python_version >= "3" (from requests)
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/06/b3/24afc8868eba069a7f03650ac750a778862dc34941a4bebeb58706715726/charset_normalizer-2.0.12-py3-none-any.whl
+Collecting urllib3<1.27,>=1.21.1 (from requests)
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/33/cf/8435d5a7159e2a9c83a95896ed596f68cf798005fe107cc655b5c5c14704/urllib3-1.26.20-py2.py3-none-any.whl (144kB)
+    100% |████████████████████████████████| 153kB 9.1MB/s
+Collecting dataclasses; python_version < "3.7" (from Werkzeug>=2.0->flask)
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/fe/ca/75fac5856ab5cfa51bbbcefa250182e50441074fdc3f803f6e76451fab43/dataclasses-0.8-py3-none-any.whl
+Collecting MarkupSafe>=2.0 (from Jinja2>=3.0->flask)
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/fc/d6/57f9a97e56447a1e340f8574836d3b636e2c14de304943836bd645fa9c7e/MarkupSafe-2.0.1-cp36-cp36m-manylinux1_x86_64.whl
+Collecting pyparsing!=3.0.5,>=2.0.2 (from packaging->gunicorn)
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/e5/0c/0e3c05b1c87bb6a1c76d281b0f35e78d2d80ac91b5f8f524cebf77f51049/pyparsing-3.1.4-py3-none-any.whl (104kB)
+    100% |████████████████████████████████| 112kB 1.8MB/s
+Collecting zipp>=0.5 (from importlib-metadata; python_version < "3.8"->gunicorn)
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/bd/df/d4a4974a3e3957fd1c1fa3082366d7fff6e428ddb55f074bf64876f8e8ad/zipp-3.6.0-py3-none-any.whl
+Collecting typing-extensions>=3.6.4; python_version < "3.8" (from importlib-metadata; python_version < "3.8"->gunicorn)
+  Cache entry deserialization failed, entry ignored
+  Cache entry deserialization failed, entry ignored
+  Downloading https://files.pythonhosted.org/packages/45/6b/44f7f8f1e110027cf88956b59f2fad776cca7e1704396d043f89effd3a0e/typing_extensions-4.1.1-py3-none-any.whl
+Installing collected packages: dataclasses, Werkzeug, MarkupSafe, Jinja2, zipp, typing-extensions, importlib-metadata, click, itsdangerous, flask, pyparsing, packaging, gunicorn, soupsieve, beautifulsoup4, certifi, idna, charset-normalizer, urllib3, requests
+Successfully installed Jinja2-3.0.3 MarkupSafe-2.0.1 Werkzeug-2.0.3 beautifulsoup4-4.12.3 certifi-2025.4.26 charset-normalizer-2.0.12 click-8.0.4 dataclasses-0.8 flask-2.0.3 gunicorn-21.2.0 idna-3.10 importlib-metadata-4.8.3 itsdangerous-2.0.1 packaging-21.3 pyparsing-3.1.4 requests-2.27.1 soupsieve-2.3.2.post1 typing-extensions-4.1.1 urllib3-1.26.20 zipp-3.6.0
+You are using pip version 9.0.3, however version 25.2 is available.
+You should consider upgrading via the 'pip install --upgrade pip' command.
+(venv) [root@agodamagic agoda-magic-price]# ls -la main.py
+-rw-r--r--. 1 root root 34 Aug 25 14:24 main.py
+(venv) [root@agodamagic agoda-magic-price]# cat main.py
+from app import app  # noqa: F401
+(venv) [root@agodamagic agoda-magic-price]# cd /var/www/agoda-magic-price
+(venv) [root@agodamagic agoda-magic-price]# source venv/bin/activate
+(venv) [root@agodamagic agoda-magic-price]# python main.py
+(venv) [root@agodamagic agoda-magic-price]#
