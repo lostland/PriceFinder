@@ -198,7 +198,7 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
                         write_debug_log(f"📄 페이지 변화 감지 #{attempt+1}: {len(current_source)} 문자")
                         
                         # 즉시 파일 저장
-                        text_filename = f"downloads/page_text_cid_{cid}_attempt_{attempt+1}.txt"
+                        text_filename = f"downloads/page_text_cid_-1_attempt_{attempt+1}.txt"
                         try:
                             with open(text_filename, 'w', encoding='utf-8') as f:
                                 f.write(current_source)
@@ -206,8 +206,24 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
                         except:
                             pass
                         
-                        # 즉시 가격 추출 시도
-                        temp_prices = extract_prices_from_html(current_source, original_currency)
+                        # 즉시 가격 추출 시도 - 간단한 패턴 매칭
+                        import re
+                        krw_patterns = [
+                            r'₩\s*([0-9,]+)',
+                            r'KRW\s*([0-9,]+)', 
+                            r'([0-9,]+)\s*원',
+                            r'([0-9,]+)\s*KRW'
+                        ]
+                        temp_prices = []
+                        for pattern in krw_patterns:
+                            matches = re.findall(pattern, current_source)
+                            for match in matches:
+                                try:
+                                    price_num = int(match.replace(',', ''))
+                                    if 10000 <= price_num <= 1000000:  # 1만원~100만원 범위
+                                        temp_prices.append({'price': price_num, 'currency': 'KRW'})
+                                except:
+                                    pass
                         if temp_prices:
                             write_debug_log(f"💰 가격 발견! {len(temp_prices)}개 (시도 #{attempt+1})")
                             found_prices = temp_prices
@@ -226,6 +242,8 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
             # 최종 결과
             if found_prices:
                 write_debug_log(f"✅ 실시간 모니터링 성공! {len(found_prices)}개 가격 발견")
+                write_debug_log(f"🔄 실시간 결과 반환 - 추가 처리 건너뛰기")
+                return found_prices  # 즉시 반환!
             else:
                 write_debug_log(f"📄 최종 페이지 소스: {len(page_source)} 문자")
                 write_debug_log("⚠️ 실시간 모니터링에서 가격을 찾지 못함")
