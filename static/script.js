@@ -10,10 +10,7 @@ let lowestPriceCidName = '';
 const totalSteps = 17; // 검색창리스트(9) + 카드리스트(8)
 let currentLanguage = 'ko'; // 기본값: 한국어
 
-// 부드러운 진행률 애니메이션을 위한 변수들
-let currentProgressPercentage = 0;
-let targetProgressPercentage = 0;
-let progressAnimationInterval = null;
+// 진행률 관리 변수들
 
 // CID 정보 배열
 const searchCids = [
@@ -150,10 +147,7 @@ function handleFormSubmit(e) {
     lowestPriceUrl = '';
     lowestPriceCidName = '';
     
-    // 진행률 애니메이션 초기화 및 시작
-    currentProgressPercentage = 0;
-    targetProgressPercentage = 0;
-    startSmoothProgress();
+    // 진행률 초기화
     
     // UI 초기화
     hideAllSections();
@@ -410,40 +404,16 @@ function continueAnalysis() {
     analyzeCid();
 }
 
-// 부드러운 진행률 애니메이션
-function startSmoothProgress() {
-    if (progressAnimationInterval) {
-        clearInterval(progressAnimationInterval);
-    }
+// 진행률 직접 업데이트 (애니메이션 없음)
+function updateProgressBar(percentage) {
+    const progressText = document.getElementById('progressText');
+    const progressBar = document.getElementById('progressBar');
     
-    progressAnimationInterval = setInterval(() => {
-        if (currentProgressPercentage < targetProgressPercentage) {
-            currentProgressPercentage += 0.01;
-            
-            // 목표값에 도달했다면 정확히 맞춰줌
-            if (currentProgressPercentage >= targetProgressPercentage) {
-                currentProgressPercentage = targetProgressPercentage;
-            }
-            
-            // 진행률 바 업데이트
-            const progressText = document.getElementById('progressText');
-            const progressBar = document.getElementById('progressBar');
-            
-            if (progressText) {
-                progressText.textContent = `${Math.round(currentProgressPercentage)}%`;
-            }
-            if (progressBar) {
-                progressBar.style.width = `${currentProgressPercentage}%`;
-            }
-        }
-    }, 10); // 10ms마다 0.01씩 증가 (약 1초에 1% 증가)
-}
-
-// 부드러운 진행률 애니메이션 중지
-function stopSmoothProgress() {
-    if (progressAnimationInterval) {
-        clearInterval(progressAnimationInterval);
-        progressAnimationInterval = null;
+    if (progressText) {
+        progressText.textContent = `${percentage}%`;
+    }
+    if (progressBar) {
+        progressBar.style.width = `${percentage}%`;
     }
 }
 
@@ -456,8 +426,8 @@ function updateProgress() {
     const step = currentStep + 1;
     const percentage = Math.round((step / totalSteps) * 100);
     
-    // 목표 진행률 설정 (부드러운 애니메이션으로 이동)
-    targetProgressPercentage = percentage;
+    // 진행률 직접 업데이트
+    updateProgressBar(percentage);
     
     // 현재 단계 정보 업데이트
     if (currentStep < allCids.length) {
@@ -497,10 +467,8 @@ function showContinueButton(nextStep) {
 
 // 완료 표시
 function showComplete() {
-    // 부드러운 진행률 애니메이션 중지
-    stopSmoothProgress();
-    
     // 진행률을 100%로 최종 설정
+    updateProgressBar(100);
     const progressText = document.getElementById('progressText');
     const progressBar = document.getElementById('progressBar');
     if (progressText) {
@@ -525,9 +493,6 @@ function showComplete() {
 
 // 새 검색 시작
 function startNewSearch() {
-    // 부드러운 진행률 애니메이션 중지
-    stopSmoothProgress();
-    
     currentUrl = '';
     currentStep = 0;
     allResults = [];
@@ -538,8 +503,7 @@ function startNewSearch() {
     lowestPriceCidName = '';
     
     // 진행률 초기화
-    currentProgressPercentage = 0;
-    targetProgressPercentage = 0;
+    updateProgressBar(0);
     
     hideAllSections();
     urlInput.value = '';
