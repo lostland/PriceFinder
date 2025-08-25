@@ -1,0 +1,53 @@
+ ps aux | grep gunicorn
+root       22776  0.0  2.2 306752 21856 ?        S    13:42   0:00 /var/www/agoda-magic-price/venv/bin/python3 /var/www/agoda-magic-price/venv/bin/gunicorn --bind 0.0.0.0:8000 main:app
+root       22779  0.0  3.8 352204 38112 ?        S    13:42   0:00 /var/www/agoda-magic-price/venv/bin/python3 /var/www/agoda-magic-price/venv/bin/gunicorn --bind 0.0.0.0:8000 main:app
+root       22787  0.0  2.2 306752 22052 ?        S    13:43   0:00 /var/www/agoda-magic-price/venv/bin/python3 /var/www/agoda-magic-price/venv/bin/gunicorn --bind 0.0.0.0:8080 main:app
+root       22802  0.0  3.8 351808 38028 ?        S    13:43   0:00 /var/www/agoda-magic-price/venv/bin/python3 /var/www/agoda-magic-price/venv/bin/gunicorn --bind 0.0.0.0:8080 main:app
+root       23299  0.0  0.1 221944  1104 pts/0    R+   13:55   0:00 grep --color=auto gunicorn
+[root@agodamagic ~]# curl -I http://localhost:8000
+HTTP/1.1 200 OK
+Server: gunicorn
+Date: Mon, 25 Aug 2025 04:55:41 GMT
+Connection: close
+Content-Type: text/html; charset=utf-8
+Content-Length: 9615
+
+[root@agodamagic ~]# sudo tail -10 /var/log/nginx/error.log
+2025/08/25 13:53:59 [crit] 23186#0: *166 connect() to 127.0.0.1:8000 failed (13: Permission denied) while connecting to upstream, client: 93.123.109.175, server: agodamagic.cafe24.com, request: "GET /.git/config HTTP/1.1", upstream: "http://127.0.0.1:8000/.git/config", host: "agodamagic.cafe24.com", referrer: "http://agodamagic.cafe24.com/.git/config"
+2025/08/25 13:54:00 [crit] 23186#0: *168 connect() to 127.0.0.1:8000 failed (13: Permission denied) while connecting to upstream, client: 5.161.204.20, server: agodamagic.cafe24.com, request: "GET / HTTP/1.1", upstream: "http://127.0.0.1:8000/", host: "agodamagic.cafe24.com"
+2025/08/25 13:54:23 [crit] 23186#0: *174 connect() to 127.0.0.1:8000 failed (13: Permission denied) while connecting to upstream, client: 180.149.25.189, server: agodamagic.cafe24.com, request: "GET / HTTP/1.1", upstream: "http://127.0.0.1:8000/", host: "agodamagic.cafe24.com"
+2025/08/25 13:54:23 [crit] 23186#0: *174 connect() to 127.0.0.1:8000 failed (13: Permission denied) while connecting to upstream, client: 180.149.25.189, server: agodamagic.cafe24.com, request: "GET /favicon.ico HTTP/1.1", upstream: "http://127.0.0.1:8000/favicon.ico", host: "agodamagic.cafe24.com", referrer: "https://agodamagic.cafe24.com/"
+2025/08/25 13:54:45 [crit] 23186#0: *178 connect() to 127.0.0.1:8000 failed (13: Permission denied) while connecting to upstream, client: 195.211.77.140, server: agodamagic.cafe24.com, request: "HEAD / HTTP/1.1", upstream: "http://127.0.0.1:8000/", host: "agodamagic.cafe24.com"
+2025/08/25 13:55:05 [crit] 23186#0: *182 connect() to 127.0.0.1:8000 failed (13: Permission denied) while connecting to upstream, client: 128.192.12.111, server: agodamagic.cafe24.com, request: "GET / HTTP/1.1", upstream: "http://127.0.0.1:8000/", host: "agodamagic.cafe24.com"
+2025/08/25 13:55:19 [crit] 23186#0: *185 connect() to 127.0.0.1:8000 failed (13: Permission denied) while connecting to upstream, client: 104.168.71.52, server: agodamagic.cafe24.com, request: "GET / HTTP/1.1", upstream: "http://127.0.0.1:8000/", host: "agodamagic.cafe24.com"
+2025/08/25 13:55:19 [crit] 23186#0: *186 connect() to 127.0.0.1:8000 failed (13: Permission denied) while connecting to upstream, client: 2.57.79.11, server: agodamagic.cafe24.com, request: "GET / HTTP/1.1", upstream: "http://127.0.0.1:8000/", host: "agodamagic.cafe24.com"
+2025/08/25 13:55:19 [crit] 23186#0: *185 connect() to 127.0.0.1:8000 failed (13: Permission denied) while connecting to upstream, client: 104.168.71.52, server: agodamagic.cafe24.com, request: "GET /favicon.ico HTTP/1.1", upstream: "http://127.0.0.1:8000/favicon.ico", host: "agodamagic.cafe24.com", referrer: "https://agodamagic.cafe24.com/"
+2025/08/25 13:55:20 [crit] 23186#0: *186 connect() to 127.0.0.1:8000 failed (13: Permission denied) while connecting to upstream, client: 2.57.79.11, server: agodamagic.cafe24.com, request: "GET /favicon.ico HTTP/1.1", upstream: "http://127.0.0.1:8000/favicon.ico", host: "agodamagic.cafe24.com", referrer: "https://agodamagic.cafe24.com/"
+[root@agodamagic ~]# tail -10 /tmp/agoda8000.log
+nohup: ignoring input
+[2025-08-25 13:42:35 +0900] [22776] [INFO] Starting gunicorn 21.2.0
+[2025-08-25 13:42:35 +0900] [22776] [INFO] Listening at: http://0.0.0.0:8000 (22776)
+[2025-08-25 13:42:35 +0900] [22776] [INFO] Using worker: sync
+[2025-08-25 13:42:35 +0900] [22779] [INFO] Booting worker with pid: 22779
+[root@agodamagic ~]# pkill -f gunicorn
+[root@agodamagic ~]# cd /var/www/agoda-magic-price
+[root@agodamagic agoda-magic-price]# source venv/bin/activate
+(venv) [root@agodamagic agoda-magic-price]# export SESSION_SECRET="agoda-magic"
+(venv) [root@agodamagic agoda-magic-price]# nohup gunicorn --bind 0.0.0.0:8000 main:app > /tmp/agoda8000.log 2>&1 &
+[1] 23387
+(venv) [root@agodamagic agoda-magic-price]# curl -I http://localhost:8000
+HTTP/1.1 200 OK
+Server: gunicorn
+Date: Mon, 25 Aug 2025 04:57:23 GMT
+Connection: close
+Content-Type: text/html; charset=utf-8
+Content-Length: 9615
+
+(venv) [root@agodamagic agoda-magic-price]# curl -I https://agodamagic.cafe24.com
+HTTP/1.1 502 Bad Gateway
+Server: nginx/1.14.1
+Date: Mon, 25 Aug 2025 04:57:28 GMT
+Content-Type: text/html
+Content-Length: 173
+Connection: keep-alive
+
