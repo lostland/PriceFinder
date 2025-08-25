@@ -129,13 +129,40 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
         # 봇 탐지 우회 스크립트
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
+        # 간단한 페이지 테스트
+        write_debug_log("🧪 Chrome 작동 테스트 (Google 접속)...")
         try:
-            write_debug_log(f"🌐 페이지 로딩 시작...")
+            driver.get("https://www.google.com")
+            google_title = driver.title
+            write_debug_log(f"✅ Google 테스트 성공: {google_title}")
+        except Exception as google_error:
+            write_debug_log(f"❌ Google 테스트 실패: {google_error}")
+            write_debug_log("🚨 Chrome 자체에 문제가 있습니다!")
+        
+        try:
+            write_debug_log(f"🌐 아고다 페이지 로딩 시작...")
             driver.get(url)
             write_debug_log("📄 페이지 소스 추출 중...")
             # 불필요한 대기 시간 제거 - 페이지 로드 완료 후 바로 진행
             page_source = driver.page_source
             write_debug_log(f"✅ 페이지 소스 추출 완료 ({len(page_source)} 문자)")
+            
+        except Exception as agoda_error:
+            write_debug_log(f"❌ 아고다 페이지 로딩 실패: {agoda_error}")
+            
+            # 네이버로 한국 사이트 테스트
+            write_debug_log("🧪 네이버 테스트 시도...")
+            try:
+                driver.get("https://www.naver.com")
+                naver_title = driver.title
+                write_debug_log(f"✅ 네이버 테스트 성공: {naver_title}")
+                write_debug_log("🔍 결론: 아고다만 접속 차단당하고 있습니다!")
+            except Exception as naver_error:
+                write_debug_log(f"❌ 네이버 테스트도 실패: {naver_error}")
+                write_debug_log("🚨 모든 사이트 접속 불가 - Chrome 환경 문제!")
+            
+            # 빈 페이지 소스로 설정하여 다음 단계로 진행
+            page_source = "<html><body>페이지 로딩 실패</body></html>"
             
         finally:
             write_debug_log("🔚 Chrome 드라이버 종료...")
