@@ -138,7 +138,7 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
         
         write_debug_log("⚡ Chrome 드라이버 실행 중...")
         driver = webdriver.Chrome(options=chrome_options)
-        driver.set_page_load_timeout(15)  # 15초 타임아웃
+        driver.set_page_load_timeout(10)  # 10초 타임아웃으로 단축
         
         write_debug_log("🖥️ 데스크톱 사이트 접속용 스크립트 실행...")
         
@@ -159,23 +159,15 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
             except:
                 pass  # 스크립트 실행 실패해도 계속 진행
         
-        # 간단한 페이지 테스트
-        write_debug_log("🧪 Chrome 작동 테스트 (Google 접속)...")
-        try:
-            driver.get("https://www.google.com")
-            google_title = driver.title
-            write_debug_log(f"✅ Google 테스트 성공: {google_title}")
-        except Exception as google_error:
-            write_debug_log(f"❌ Google 테스트 실패: {google_error}")
-            write_debug_log("🚨 Chrome 자체에 문제가 있습니다!")
+        # Chrome 작동 확인 완료 - Google 테스트 생략으로 속도 향상
         
         try:
-            # 데스크톱 사이트 직접 접속
-            write_debug_log(f"🖥️ 데스크톱 아고다 페이지 로딩 시작...")
+            # 데스크톱 사이트 직접 접속 및 즉시 모니터링 시작
+            write_debug_log(f"🖥️ 데스크톱 아고다 페이지 로딩 및 모니터링 시작...")
             write_debug_log(f"🌐 데스크톱 URL: {url[:100]}...")
             
             driver.get(url)
-            write_debug_log("🔍 실시간 페이지 모니터링 시작...")
+            write_debug_log("⚡ 실시간 페이지 모니터링 즉시 시작!")
             
             # 실시간 모니터링 시스템
             previous_source = ""
