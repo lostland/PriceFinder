@@ -51,9 +51,9 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
         
-        # 모바일 사이트 접속용 설정
-        chrome_options.add_argument('--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1')
-        chrome_options.add_argument('--window-size=375,812')  # iPhone 13 크기
+        # 데스크톱 사이트 접속용 설정
+        chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+        chrome_options.add_argument('--window-size=1920,1080')  # 데스크톱 해상도
         chrome_options.add_argument('--disable-blink-features=AutomationControlled')
         chrome_options.add_argument('--disable-web-security')
         chrome_options.add_argument('--allow-running-insecure-content')
@@ -70,11 +70,7 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
             "profile.default_content_setting_values.geolocation": 2
         })
         
-        # 모바일 디바이스 에뮬레이션 (Chrome 지원 디바이스 사용)
-        mobile_emulation = {
-            "deviceName": "iPhone 6/7/8"
-        }
-        chrome_options.add_experimental_option("mobileEmulation", mobile_emulation)
+        # 데스크톱 브라우저 설정 (모바일 에뮬레이션 제거)
         
         write_debug_log("✅ Chrome 옵션 설정 완료")
         write_debug_log(f"🚀 웹페이지 접속 시작...")
@@ -144,20 +140,20 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
         driver = webdriver.Chrome(options=chrome_options)
         driver.set_page_load_timeout(15)  # 15초 타임아웃
         
-        write_debug_log("📱 모바일 사이트 접속용 스크립트 실행...")
+        write_debug_log("🖥️ 데스크톱 사이트 접속용 스크립트 실행...")
         
-        # 모바일 전용 봇 탐지 우회 스크립트들
-        mobile_stealth_scripts = [
+        # 데스크톱 전용 봇 탐지 우회 스크립트들
+        desktop_stealth_scripts = [
             "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})",
-            "Object.defineProperty(navigator, 'plugins', {get: () => []})",  # 모바일은 플러그인 없음
-            "Object.defineProperty(navigator, 'languages', {get: () => ['ko-KR', 'ko']})",
-            "Object.defineProperty(navigator, 'platform', {get: () => 'iPhone'})",
-            "Object.defineProperty(navigator, 'maxTouchPoints', {get: () => 5})",  # 터치 지원
-            "Object.defineProperty(screen, 'orientation', {get: () => ({type: 'portrait-primary', angle: 0})})",
+            "Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]})",  # 데스크톱 플러그인 시뮬레이션
+            "Object.defineProperty(navigator, 'languages', {get: () => ['ko-KR', 'ko', 'en-US', 'en']})",
+            "Object.defineProperty(navigator, 'platform', {get: () => 'Win32'})",
+            "Object.defineProperty(navigator, 'maxTouchPoints', {get: () => 0})",  # 터치 지원 없음
+            "window.chrome = { runtime: {} }",
             "delete navigator.__proto__.webdriver"
         ]
         
-        for script in mobile_stealth_scripts:
+        for script in desktop_stealth_scripts:
             try:
                 driver.execute_script(script)
             except:
@@ -174,12 +170,11 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
             write_debug_log("🚨 Chrome 자체에 문제가 있습니다!")
         
         try:
-            # 모바일 사이트 URL로 변경
-            mobile_url = url.replace('www.agoda.com', 'm.agoda.com').replace('/ko-kr/', '/mobile/ko-kr/')
-            write_debug_log(f"📱 모바일 아고다 페이지 로딩 시작...")
-            write_debug_log(f"🌐 모바일 URL: {mobile_url[:100]}...")
+            # 데스크톱 사이트 직접 접속
+            write_debug_log(f"🖥️ 데스크톱 아고다 페이지 로딩 시작...")
+            write_debug_log(f"🌐 데스크톱 URL: {url[:100]}...")
             
-            driver.get(mobile_url)
+            driver.get(url)
             write_debug_log("🔍 실시간 페이지 모니터링 시작...")
             
             # 실시간 모니터링 시스템
@@ -249,30 +244,21 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
                 write_debug_log("⚠️ 실시간 모니터링에서 가격을 찾지 못함")
             
         except Exception as agoda_error:
-            write_debug_log(f"❌ 모바일 아고다 페이지 로딩 실패: {agoda_error}")
+            write_debug_log(f"❌ 데스크톱 아고다 페이지 로딩 실패: {agoda_error}")
             
-            # 데스크톱 아고다로 폴백 시도
-            write_debug_log("🔄 데스크톱 아고다로 폴백 시도...")
+            # 네이버로 한국 사이트 테스트
+            write_debug_log("🧪 네이버 테스트 시도...")
             try:
-                driver.get(url)
-                page_source = driver.page_source
-                write_debug_log(f"✅ 데스크톱 폴백 성공: {len(page_source)} 문자")
-            except Exception as desktop_error:
-                write_debug_log(f"❌ 데스크톱 폴백도 실패: {desktop_error}")
-                
-                # 네이버로 한국 사이트 테스트
-                write_debug_log("🧪 네이버 테스트 시도...")
-                try:
-                    driver.get("https://www.naver.com")
-                    naver_title = driver.title
-                    write_debug_log(f"✅ 네이버 테스트 성공: {naver_title}")
-                    write_debug_log("🔍 결론: 아고다만 접속 차단당하고 있습니다!")
-                except Exception as naver_error:
-                    write_debug_log(f"❌ 네이버 테스트도 실패: {naver_error}")
-                    write_debug_log("🚨 모든 사이트 접속 불가 - Chrome 환경 문제!")
-                
-                # 빈 페이지 소스로 설정하여 다음 단계로 진행
-                page_source = "<html><body>페이지 로딩 실패</body></html>"
+                driver.get("https://www.naver.com")
+                naver_title = driver.title
+                write_debug_log(f"✅ 네이버 테스트 성공: {naver_title}")
+                write_debug_log("🔍 결론: 아고다만 접속 차단당하고 있습니다!")
+            except Exception as naver_error:
+                write_debug_log(f"❌ 네이버 테스트도 실패: {naver_error}")
+                write_debug_log("🚨 모든 사이트 접속 불가 - Chrome 환경 문제!")
+            
+            # 빈 페이지 소스로 설정하여 다음 단계로 진행
+            page_source = "<html><body>페이지 로딩 실패</body></html>"
             
         finally:
             write_debug_log("🔚 Chrome 드라이버 종료...")
