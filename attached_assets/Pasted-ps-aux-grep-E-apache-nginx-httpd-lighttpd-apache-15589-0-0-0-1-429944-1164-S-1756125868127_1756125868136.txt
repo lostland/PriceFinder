@@ -1,0 +1,382 @@
+ps aux | grep -E "(apache|nginx|httpd|lighttpd)"
+apache     15589  0.0  0.1 429944  1164 ?        S    11:06   0:00 php-fpm: pool www
+apache     15590  0.0  0.1 429944  1164 ?        S    11:06   0:00 php-fpm: pool www
+apache     15591  0.0  0.1 429944  1168 ?        S    11:06   0:00 php-fpm: pool www
+apache     15592  0.0  0.1 429944  1168 ?        S    11:06   0:00 php-fpm: pool www
+apache     15593  0.0  0.1 429944  1168 ?        S    11:06   0:00 php-fpm: pool www
+root       22662  0.0  0.2 115392  2216 ?        Ss   13:33   0:00 nginx: master process /usr/sbin/nginx
+nginx      23186  0.0  0.6 147600  6420 ?        S    13:52   0:01 nginx: worker process
+nginx      23187  0.0  0.5 147600  5156 ?        S    13:52   0:00 nginx: worker process
+nginx      23188  0.0  0.1 147600  1500 ?        S    13:52   0:00 nginx: worker process
+nginx      23189  0.0  0.1 147600  1500 ?        S    13:52   0:00 nginx: worker process
+root       40274  0.0  0.1 222076   996 pts/1    S+   21:42   0:00 grep --color=auto -E (apache|nginx|httpd|lighttpd)
+(venv) [root@agodamagic agoda-magic-price]# ps aux | grep -E "(80|443|5000)"
+root         809  0.0  0.2 402028  2960 ?        S    00:05   0:00 /usr/libexec/sssd/sssd_be --domain implicit_files --uid 0 --gid 0 --logger=files
+root       26465  0.0  0.2 141824  2800 ?        S    14:40   0:00 sshd: root@pts/1
+root       29678  0.0  0.0 217124   360 pts/2    S+   15:29   0:00 tail -f /tmp/agoda8000.log
+root       31208  0.0  0.3 33899380 3848 pts/1   Sl   15:55   0:00 chromedriver --port=37665
+root       31441  0.0  0.3 33899380 3912 pts/1   Sl   15:57   0:00 chromedriver --port=37283
+root       32574  0.0  1.7 34334416 17172 pts/1  S    16:10   0:00 /opt/google/chrome/chrome --type=zygote --no-zygote-sandbox --no-sandbox --enable-logging --headless --log-level=0 --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --no-first-run --ozone-platform=headless --ozone-override-screen-size=800,600 --use-angle=swiftshader-webgl
+root       32575  0.0  1.7 34334416 17128 pts/1  S    16:10   0:00 /opt/google/chrome/chrome --type=zygote --no-sandbox --enable-logging --headless --log-level=0 --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --no-first-run --ozone-platform=headless --ozone-override-screen-size=800,600 --use-angle=swiftshader-webgl
+root       32597  1.6  3.6 34595052 35768 pts/1  S<l  16:10   5:34 /opt/google/chrome/chrome --type=gpu-process --no-sandbox --disable-dev-shm-usage --headless --ozone-platform=headless --use-angle=swiftshader-webgl --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --gpu-preferences=UAAAAAAAAAAgAAAIAAAAAAAAAAAAAGAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAAAAAAAABgAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAgAAAAAAAAA --shared-files --field-trial-handle=3,i,17847968052855351459,888844428479363879,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       32598  0.0  4.9 34329272 49252 pts/1  Sl   16:10   0:02 /opt/google/chrome/chrome --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --no-sandbox --disable-dev-shm-usage --use-angle=swiftshader-webgl --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,17847968052855351459,888844428479363879,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       32600  0.0  2.7 34392612 26708 pts/1  Sl   16:10   0:00 /opt/google/chrome/chrome --type=utility --utility-sub-type=storage.mojom.StorageService --lang=en-US --service-sandbox-type=utility --no-sandbox --disable-dev-shm-usage --use-angle=swiftshader-webgl --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,17847968052855351459,888844428479363879,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       32647  0.8  5.4 1476918072 53536 pts/1 S<l 16:10   2:49 /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --no-sandbox --disable-dev-shm-usage --enable-automation --remote-debugging-port=0 --test-type=webdriver --allow-pre-commit-input --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=7 --time-ticks-at-unix-epoch=-1756047897757768 --launch-time-ticks=57928530440 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,17847968052855351459,888844428479363879,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       32670  0.0  4.6 1476856944 45720 pts/1 S<l 16:10   0:00 /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --no-sandbox --disable-dev-shm-usage --enable-automation --remote-debugging-port=0 --test-type=webdriver --allow-pre-commit-input --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=8 --time-ticks-at-unix-epoch=-1756047897757768 --launch-time-ticks=57937148569 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,17847968052855351459,888844428479363879,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       32679  0.0  4.9 1476848748 48488 pts/1 S<l 16:10   0:00 /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=32567 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.wlT4hx --change-stack-guard-on-fork=enable --no-sandbox --disable-dev-shm-usage --enable-automation --remote-debugging-port=0 --test-type=webdriver --allow-pre-commit-input --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=9 --time-ticks-at-unix-epoch=-1756047897757768 --launch-time-ticks=57937460366 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,17847968052855351459,888844428479363879,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       33137  0.0  0.4 33899380 4128 pts/1   Sl   16:14   0:00 chromedriver --port=49667
+root       33143  3.0  7.5 34580720 74672 pts/1  S<l  16:14   9:56 /opt/google/chrome/chrome --allow-pre-commit-input --disable-background-networking --disable-client-side-phishing-detection --disable-default-apps --disable-dev-shm-usage --disable-hang-monitor --disable-popup-blocking --disable-prompt-on-repost --disable-sync --enable-automation --enable-logging --headless --log-level=0 --no-first-run --no-sandbox --no-service-autorun --password-store=basic --remote-debugging-port=0 --test-type=webdriver --use-mock-keychain --user-data-dir=/tmp/.org.chromium.Chromium.15lRre data:,
+root       33152  0.0  1.8 34334420 18224 pts/1  S    16:14   0:00 /opt/google/chrome/chrome --type=zygote --no-zygote-sandbox --no-sandbox --enable-logging --headless --log-level=0 --crashpad-handler-pid=33145 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.15lRre --change-stack-guard-on-fork=enable --no-first-run --ozone-platform=headless --ozone-override-screen-size=800,600 --use-angle=swiftshader-webgl
+root       33153  0.0  1.8 34334420 18708 pts/1  S    16:14   0:00 /opt/google/chrome/chrome --type=zygote --no-sandbox --enable-logging --headless --log-level=0 --crashpad-handler-pid=33145 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.15lRre --change-stack-guard-on-fork=enable --no-first-run --ozone-platform=headless --ozone-override-screen-size=800,600 --use-angle=swiftshader-webgl
+root       33175  8.4  4.3 34587808 42856 pts/1  S<l  16:14  27:39 /opt/google/chrome/chrome --type=gpu-process --no-sandbox --disable-dev-shm-usage --headless --ozone-platform=headless --use-angle=swiftshader-webgl --crashpad-handler-pid=33145 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.15lRre --change-stack-guard-on-fork=enable --gpu-preferences=UAAAAAAAAAAgAAAIAAAAAAAAAAAAAGAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAAAAAAAABgAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAgAAAAAAAAA --shared-files --field-trial-handle=3,i,11968164692511387709,15290558710759411739,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       33253  0.0  5.3 1478569080 52800 pts/1 S<l 16:14   0:00 /opt/google/chrome/chrome --type=renderer --crashpad-handler-pid=33145 --enable-crash-reporter=, --noerrdialogs --user-data-dir=/tmp/.org.chromium.Chromium.15lRre --change-stack-guard-on-fork=enable --no-sandbox --disable-dev-shm-usage --enable-automation --remote-debugging-port=0 --test-type=webdriver --allow-pre-commit-input --ozone-platform=headless --disable-gpu-compositing --lang=en-US --num-raster-threads=2 --enable-main-frame-before-activation --renderer-client-id=8 --time-ticks-at-unix-epoch=-1756047897757768 --launch-time-ticks=58162634801 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,11968164692511387709,15290558710759411739,262144 --disable-features=PaintHolding --variations-seed-version --enable-logging --log-level=0
+root       34485  0.0  0.5 33899380 5496 pts/1   Sl   16:37   0:00 chromedriver --port=60935
+root       40276  0.0  0.1 221944  1176 pts/1    S+   21:42   0:00 grep --color=auto -E (80|443|5000)
+(venv) [root@agodamagic agoda-magic-price]# find /etc -name "*.conf" | grep -E "(apache|nginx|httpd)" 2>/dev/null
+/etc/httpd/modsecurity.d/crs-setup.conf
+/etc/httpd/modsecurity.d/local_rules/modsecurity_localrules.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-911-METHOD-ENFORCEMENT.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-905-COMMON-EXCEPTIONS.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-901-INITIALIZATION.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-930-APPLICATION-ATTACK-LFI.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-921-PROTOCOL-ATTACK.conf
+/etc/httpd/modsecurity.d/activated_rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-934-APPLICATION-ATTACK-NODEJS.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-912-DOS-PROTECTION.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-903.9001-DRUPAL-EXCLUSION-RULES.conf
+/etc/httpd/modsecurity.d/activated_rules/RESPONSE-952-DATA-LEAKAGES-JAVA.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-931-APPLICATION-ATTACK-RFI.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-903.9004-DOKUWIKI-EXCLUSION-RULES.conf
+/etc/httpd/modsecurity.d/activated_rules/RESPONSE-980-CORRELATION.conf
+/etc/httpd/modsecurity.d/activated_rules/RESPONSE-953-DATA-LEAKAGES-PHP.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-903.9006-XENFORO-EXCLUSION-RULES.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-949-BLOCKING-EVALUATION.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-932-APPLICATION-ATTACK-RCE.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-933-APPLICATION-ATTACK-PHP.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-942-APPLICATION-ATTACK-SQLI.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-903.9003-NEXTCLOUD-EXCLUSION-RULES.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-922-MULTIPART-ATTACK.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-920-PROTOCOL-ENFORCEMENT.conf
+/etc/httpd/modsecurity.d/activated_rules/RESPONSE-951-DATA-LEAKAGES-SQL.conf
+/etc/httpd/modsecurity.d/activated_rules/RESPONSE-950-DATA-LEAKAGES.conf
+/etc/httpd/modsecurity.d/activated_rules/RESPONSE-959-BLOCKING-EVALUATION.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-910-IP-REPUTATION.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-943-APPLICATION-ATTACK-SESSION-FIXATION.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-944-APPLICATION-ATTACK-JAVA.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-913-SCANNER-DETECTION.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-941-APPLICATION-ATTACK-XSS.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-903.9005-CPANEL-EXCLUSION-RULES.conf
+/etc/httpd/modsecurity.d/activated_rules/REQUEST-903.9002-WORDPRESS-EXCLUSION-RULES.conf
+/etc/httpd/modsecurity.d/activated_rules/RESPONSE-954-DATA-LEAKAGES-IIS.conf
+/etc/httpd/conf/httpd.conf
+/etc/httpd/conf.d/php.conf
+/etc/httpd/conf.d/welcome.conf
+/etc/httpd/conf.d/autoindex.conf
+/etc/httpd/conf.d/mod_security.conf
+/etc/httpd/conf.d/userdir.conf
+/etc/httpd/conf.modules.d/01-cgi.conf
+/etc/httpd/conf.modules.d/00-base.conf
+/etc/httpd/conf.modules.d/10-proxy_h2.conf
+/etc/httpd/conf.modules.d/15-php.conf
+/etc/httpd/conf.modules.d/00-proxy.conf
+/etc/httpd/conf.modules.d/00-dav.conf
+/etc/httpd/conf.modules.d/00-optional.conf
+/etc/httpd/conf.modules.d/10-mod_security.conf
+/etc/httpd/conf.modules.d/10-h2.conf
+/etc/httpd/conf.modules.d/00-systemd.conf
+/etc/httpd/conf.modules.d/00-lua.conf
+/etc/httpd/conf.modules.d/00-mpm.conf
+/etc/letsencrypt/options-ssl-nginx.conf
+/etc/fail2ban/action.d/nginx-block-map.conf
+/etc/fail2ban/filter.d/nginx-http-auth.conf
+/etc/fail2ban/filter.d/apache-noscript.conf
+/etc/fail2ban/filter.d/nginx-botsearch.conf
+/etc/fail2ban/filter.d/apache-botsearch.conf
+/etc/fail2ban/filter.d/apache-overflows.conf
+/etc/fail2ban/filter.d/nginx-limit-req.conf
+/etc/fail2ban/filter.d/apache-auth.conf
+/etc/fail2ban/filter.d/apache-badbots.conf
+/etc/fail2ban/filter.d/lighttpd-auth.conf
+/etc/fail2ban/filter.d/apache-fakegooglebot.conf
+/etc/fail2ban/filter.d/apache-shellshock.conf
+/etc/fail2ban/filter.d/apache-pass.conf
+/etc/fail2ban/filter.d/apache-nohome.conf
+/etc/fail2ban/filter.d/apache-common.conf
+/etc/fail2ban/filter.d/apache-modsecurity.conf
+/etc/nginx/nginx.conf
+/etc/nginx/fastcgi.conf
+/etc/nginx/default.d/php.conf
+/etc/nginx/conf.d/php-fpm.conf
+/etc/nginx/conf.d/agoda-magic-price.conf
+(venv) [root@agodamagic agoda-magic-price]# find /usr/local -name "*.conf" 2>/dev/null
+(venv) [root@agodamagic agoda-magic-price]# find /opt -name "*.conf" 2>/dev/null
+/opt/rh/gcc-toolset-9/root/usr/share/ltrace/libc.so.conf
+/opt/rh/gcc-toolset-9/root/usr/share/ltrace/syscalls.conf
+/opt/rh/gcc-toolset-9/root/usr/share/ltrace/libacl.so.conf
+/opt/rh/gcc-toolset-9/root/usr/share/ltrace/libm.so.conf
+/opt/rh/gcc-toolset-9/root/usr/lib/dracut/modules.d/99gcc-toolset-9-stap/params.conf
+/opt/rh/gcc-toolset-11/root/usr/share/ltrace/libc.so.conf
+/opt/rh/gcc-toolset-11/root/usr/share/ltrace/syscalls.conf
+/opt/rh/gcc-toolset-11/root/usr/share/ltrace/libacl.so.conf
+/opt/rh/gcc-toolset-11/root/usr/share/ltrace/libm.so.conf
+/opt/rh/gcc-toolset-11/root/usr/lib/dracut/modules.d/99gcc-toolset-11-stap/params.conf
+/opt/rh/gcc-toolset-10/root/usr/share/ltrace/libc.so.conf
+/opt/rh/gcc-toolset-10/root/usr/share/ltrace/syscalls.conf
+/opt/rh/gcc-toolset-10/root/usr/share/ltrace/libacl.so.conf
+/opt/rh/gcc-toolset-10/root/usr/share/ltrace/libm.so.conf
+/opt/rh/gcc-toolset-10/root/usr/lib/dracut/modules.d/99gcc-toolset-10-stap/params.conf
+(venv) [root@agodamagic agoda-magic-price]# netstat -tulpn | grep -E ":80|:443|:5000"
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      22662/nginx: master
+tcp        0      0 0.0.0.0:443             0.0.0.0:*               LISTEN      22662/nginx: master
+tcp6       0      0 :::80                   :::*                    LISTEN      22662/nginx: master
+(venv) [root@agodamagic agoda-magic-price]# pkill -f gunicorn
+(venv) [root@agodamagic agoda-magic-price]# pwd
+/var/www/agoda-magic-price
+(venv) [root@agodamagic agoda-magic-price]# source venv/bin/activate
+(venv) [root@agodamagic agoda-magic-price]# nohup gunicorn --bind 127.0.0.1:5000 --reload main:app > gunicorn.log 2>&1 &
+[1] 40287
+(venv) [root@agodamagic agoda-magic-price]# ps aux | grep gunicorn
+root       40287  1.6  2.1 306784 21632 pts/1    S    21:43   0:00 /var/www/agoda-magic-price/venv/bin/python3 /var/www/agoda-magic-price/venv/bin/gunicorn --bind 127.0.0.1:5000 --reload main:app
+root       40290  5.0  3.7 432140 37488 pts/1    Sl   21:43   0:00 /var/www/agoda-magic-price/venv/bin/python3 /var/www/agoda-magic-price/venv/bin/gunicorn --bind 127.0.0.1:5000 --reload main:app
+root       40294  0.0  0.1 221944  1092 pts/1    S+   21:43   0:00 grep --color=auto gunicorn
+(venv) [root@agodamagic agoda-magic-price]# cat gunicorn.log
+nohup: ignoring input
+[2025-08-25 21:43:20 +0900] [40287] [INFO] Starting gunicorn 21.2.0
+[2025-08-25 21:43:20 +0900] [40287] [INFO] Listening at: http://127.0.0.1:5000 (40287)
+[2025-08-25 21:43:20 +0900] [40287] [INFO] Using worker: sync
+[2025-08-25 21:43:20 +0900] [40290] [INFO] Booting worker with pid: 40290
+(venv) [root@agodamagic agoda-magic-price]# curl http://127.0.0.1:5000/test-server
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<title>404 Not Found</title>
+<h1>Not Found</h1>
+<p>The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>
+(venv) [root@agodamagic agoda-magic-price]#
+(venv) [root@agodamagic agoda-magic-price]# ls -la /etc/
+total 1696
+drwxr-xr-x. 105 root root     12288 Aug 25 15:12 .
+dr-xr-xr-x.  18 root root      4096 Jul  5  2022 ..
+-rw-r--r--.   1 root root        16 Feb 26  2016 adjtime
+-rw-r--r--.   1 root root      1529 Mar 15  2021 aliases
+-rw-r--r--.   1 root root     12288 Jul  5  2022 aliases.db
+drwxr-xr-x.   2 root root      4096 Aug 25 15:12 alternatives
+-rw-r--r--.   1 root root       541 Apr 20  2022 anacrontab
+-rw-r--r--.   1 root root        55 Apr 13  2022 asound.conf
+drwxr-x---.   4 root root      4096 Jul  5  2022 audit
+drwxr-xr-x.   3 root root      4096 Oct 12  2021 authselect
+drwxr-xr-x.   2 root root      4096 Jul  5  2022 avahi
+drwxr-xr-x.   2 root root      4096 Jul  5  2022 bash_completion.d
+-rw-r--r--.   1 root root      3019 Mar 15  2021 bashrc
+-rw-r--r--.   1 root root       535 Apr 20  2022 bindresvport.blacklist
+drwxr-xr-x.   2 root root      4096 May  9  2022 binfmt.d
+lrwxrwxrwx.   1 root root        13 May 21  2022 centos-release -> rocky-release
+drwxr-xr-x.   2 root root      4096 Oct 11  2021 chkconfig.d
+drwxr-xr-x.   2 root root      4096 Jun 29  2022 cifs-utils
+drwxr-xr-x.   2 root root      4096 Apr 20  2022 cron.d
+drwxr-xr-x.   2 root root      4096 Aug 25 15:12 cron.daily
+-rw-r--r--.   1 root root         0 Apr 20  2022 cron.deny
+drwxr-xr-x.   2 root root      4096 Jul  5  2022 cron.hourly
+drwxr-xr-x.   2 root root      4096 May 19  2021 cron.monthly
+-rw-r--r--.   1 root root       451 May 19  2021 crontab
+drwxr-xr-x.   2 root root      4096 May 19  2021 cron.weekly
+drwxr-xr-x.   6 root root      4096 Apr 13  2022 crypto-policies
+-rw-------.   1 root root         0 Feb 26  2016 crypttab
+-rw-r--r--.   1 root root      1629 Mar 15  2021 csh.cshrc
+-rw-r--r--.   1 root root      1078 Mar 15  2021 csh.login
+drwxr-xr-x.   4 root root      4096 Apr 13  2022 dbus-1
+drwxr-xr-x.   4 root root      4096 Aug 25 15:12 dconf
+drwxr-xr-x.   2 root root      4096 Aug 25 15:12 default
+drwxr-xr-x.   2 root root      4096 Jul  5  2022 depmod.d
+drwxr-x---.   3 root root      4096 Apr 17  2024 dhcp
+-rw-r--r--.   1 root root      4536 Oct 21  2021 DIR_COLORS
+-rw-r--r--.   1 root root      5214 Oct 21  2021 DIR_COLORS.256color
+-rw-r--r--.   1 root root      4618 Oct 21  2021 DIR_COLORS.lightbgcolor
+drwxr-xr-x.   8 root root      4096 May 10  2022 dnf
+-rw-r--r--.   1 root dnsmasq  26843 Apr 23  2022 dnsmasq.conf
+drwxr-xr-x.   2 root dnsmasq   4096 Apr 23  2022 dnsmasq.d
+-rw-r--r--.   1 root root       117 Jun 29  2022 dracut.conf
+drwxr-xr-x.   2 root root      4096 Jun 29  2022 dracut.conf.d
+-rw-r--r--.   1 root root         0 Mar 15  2021 environment
+drwxr-xr-x.   2 root root      4096 Jul  5  2022 environment-modules
+-rw-r--r--.   1 root root      1362 Nov 17  2023 ethertypes
+-rw-r--r--.   1 root root         0 Sep 10  2018 exports
+drwxr-xr-x.   6 root root      4096 Jul  5  2022 fail2ban
+lrwxrwxrwx.   1 root root        56 Oct 19  2021 favicon.png -> /usr/share/icons/hicolor/16x16/apps/fedora-logo-icon.png
+-rw-r--r--.   1 root root        66 Sep 10  2018 filesystems
+drwxr-x---.   8 root root      4096 Jul  5  2022 firewalld
+drwxr-xr-x.   3 root root      4096 Aug 25 00:09 fonts
+-rw-r--r--.   1 root root       465 Feb 26  2016 fstab
+drwxr-xr-x.   2 root root      4096 Jun 29  2022 gcrypt
+-rw-r--r--.   1 root root      1704 Apr 19  2021 GeoIP.conf
+drwxr-xr-x.   2 root root      4096 Apr 19  2021 gnupg
+-rw-r--r--.   1 root root        94 Apr 12  2021 GREP_COLORS
+drwxr-xr-x.   4 root root      4096 Apr 21  2021 groff
+-rw-r--r--.   1 root root       759 Aug 25 11:59 group
+-rw-r--r--.   1 root root       743 Aug 25 00:09 group-
+lrwxrwxrwx.   1 root root        22 Jun 23  2022 grub2.cfg -> ../boot/grub2/grub.cfg
+drwx------.   2 root root      4096 Jul  5  2022 grub.d
+----------.   1 root root       614 Aug 25 11:59 gshadow
+----------.   1 root root       601 Aug 25 00:09 gshadow-
+drwxr-xr-x.   3 root root      4096 Jun  4 05:51 gss
+-rw-r--r--.   1 root root         9 Sep 10  2018 host.conf
+-rw-r--r--.   1 root root        22 Aug 25 00:03 hostname
+-rw-r--r--.   1 root root       158 Sep 10  2018 hosts
+drwxr-xr-x.   6 root root      4096 Aug 25 00:09 httpd
+-rw-r--r--.   1 root root      4849 May 10  2022 idmapd.conf
+lrwxrwxrwx.   1 root root        11 Oct 11  2021 init.d -> rc.d/init.d
+-rw-r--r--.   1 root root       490 May  9  2022 inittab
+-rw-r--r--.   1 root root       942 Sep 10  2018 inputrc
+drwxr-xr-x.   2 root root      4096 Jul  5  2022 iproute2
+-rw-r--r--.   1 root root        23 May 21  2022 issue
+-rw-r--r--.   1 root root        22 May 21  2022 issue.net
+drwxr-xr-x.   4 root root      4096 Apr 20  2022 kdump
+-rw-r--r--.   1 root root      8550 Jul  5  2022 kdump.conf
+drwxr-xr-x.   4 root root      4096 May  9  2022 kernel
+-rw-r--r--.   1 root root       812 Jun  4 05:44 krb5.conf
+drwxr-xr-x.   2 root root      4096 Jun  4 05:51 krb5.conf.d
+-rw-r--r--.   1 root root     35519 Aug 25 15:12 ld.so.cache
+-rw-r--r--.   1 root root        28 Jun 17  2022 ld.so.conf
+drwxr-xr-x.   2 root root      4096 Aug 25 15:11 ld.so.conf.d
+drwxr-xr-x.   9 root root      4096 Aug 25 13:52 letsencrypt
+-rw-r-----.   1 root root       191 Jan 24  2022 libaudit.conf
+drwxr-xr-x.   2 root root      4096 Jul  5  2022 libibverbs.d
+drwxr-xr-x.   2 root root      4096 Apr 12  2021 libnl
+drwxr-xr-x.   6 root root      4096 Apr 29  2022 libreport
+drwxr-xr-x.   2 root root      4096 Apr 13  2022 libssh
+-rw-r--r--.   1 root root      2391 Jul 24  2015 libuser.conf
+-rw-r--r--.   1 root root        19 Feb 26  2016 locale.conf
+lrwxrwxrwx.   1 root root        32 Feb 26  2016 localtime -> ../usr/share/zoneinfo/Asia/Seoul
+-rw-r--r--.   1 root root      2512 Apr 12  2022 login.defs
+-rw-r--r--.   1 root root       438 Feb 19  2018 logrotate.conf
+drwxr-xr-x.   2 root root      4096 Aug 25 12:29 logrotate.d
+drwxr-xr-x.   6 root root      4096 Jul  5  2022 lvm
+-r--r--r--.   1 root root        33 Feb 26  2016 machine-id
+-rw-r--r--.   1 root root       111 Oct 12  2021 magic
+-rw-r--r--.   1 root root       272 May 11  2017 mailcap
+-rw-r--r--.   1 root root      5122 Apr 20  2022 makedumpfile.conf.sample
+-rw-r--r--.   1 root root      5165 Oct 13  2021 man_db.conf
+drwxr-xr-x.   3 root root      4096 Apr 13  2022 microcode_ctl
+-rw-r--r--.   1 root root     60352 May 11  2017 mime.types
+-rw-r--r--.   1 root root      1108 Jun  4 01:32 mke2fs.conf
+drwxr-xr-x.   2 root root      4096 Apr 13  2022 modprobe.d
+drwxr-xr-x.   2 root root      4096 Apr 12  2021 modulefiles
+drwxr-xr-x.   2 root root      4096 May  9  2022 modules-load.d
+-rw-r--r--.   1 root root         0 Sep 10  2018 motd
+lrwxrwxrwx.   1 root root        19 Jul  5  2022 mtab -> ../proc/self/mounts
+-rw-r--r--.   1 root root       202 May 17  2021 my.cnf
+drwxr-xr-x.   2 root root      4096 Aug 25 00:09 my.cnf.d
+drwxr-x---.   2 root named     4096 Feb 20  2025 named
+-rw-r-----.   1 root named     1705 Feb 20  2025 named.conf
+-rw-r-----.   1 root named     1029 Feb 20  2025 named.rfc1912.zones
+-rw-r--r--.   1 root named     1070 Feb 20  2025 named.root.key
+-rw-r--r--.   1 root root       767 Apr 20  2022 netconfig
+drwxr-xr-x.   7 root root      4096 Apr 17  2024 NetworkManager
+-rw-r--r--.   1 root root        58 Sep 10  2018 networks
+drwx------.   3 root root      4096 Apr 15  2022 nftables
+drwxr-xr-x.   4 root root      4096 Aug 25 13:52 nginx
+-rw-r--r--.   1 root root      1746 Jul  5  2022 nsswitch.conf
+-rw-r--r--.   1 root root      1728 Jun 20  2017 nsswitch.conf.bak
+-rw-r--r--.   1 root root      2197 Aug 25  2021 nsswitch.conf.rpmnew
+drwxr-xr-x.   2 root root      4096 Jun  2  2021 oddjob
+-rw-r--r--.   1 root root      4922 Jun  2  2021 oddjobd.conf
+drwxr-xr-x.   2 root root      4096 Jun  2  2021 oddjobd.conf.d
+drwxr-xr-x.   3 root root      4096 Oct 12  2021 openldap
+drwxr-xr-x.   2 root root      4096 Oct 11  2021 opt
+lrwxrwxrwx.   1 root root        21 May 21  2022 os-release -> ../usr/lib/os-release
+drwxr-xr-x.   2 root root      4096 Jul  5  2022 pam.d
+-rw-r--r--.   1 root root      1780 Aug 25 11:59 passwd
+-rw-r--r--.   1 root root      1734 Aug 25 00:09 passwd-
+drwxr-xr-x.   2 root root      4096 Aug 25 00:09 php.d
+-rw-r--r--.   1 root root      4023 May 31  2021 php-fpm.conf
+drwxr-xr-x.   2 root root      4096 Aug 25 00:09 php-fpm.d
+-rw-r--r--.   1 root root     62222 Aug 25 00:09 php.ini
+drwxr-xr-x.   3 root root      4096 Jun  2  2021 pkcs11
+drwxr-xr-x.   8 root root      4096 Oct 11  2021 pki
+drwxr-xr-x.   2 root root      4096 Apr 24  2022 plymouth
+drwxr-xr-x.   5 root root      4096 Oct 11  2021 pm
+drwxr-xr-x.   5 root root      4096 Apr 14  2022 polkit-1
+drwxr-xr-x.   2 root root      4096 May 19  2021 popt.d
+drwxr-xr-x.   4 root root      4096 Jul  5  2022 postfix
+drwxr-xr-x.   2 root root      4096 Jul  5  2022 ppp
+drwxr-xr-x.   2 root root      4096 Jul  5  2022 prelink.conf.d
+-rw-r--r--.   1 root root       233 Sep 10  2018 printcap
+-rw-r--r--.   1 root root      2123 Mar 15  2021 profile
+drwxr-xr-x.   2 root root      4096 Aug 25 11:39 profile.d
+-rw-r--r--.   1 root root      6568 Sep 10  2018 protocols
+-rw-------.   1 root root         0 Feb 26  2016 .pwd.lock
+lrwxrwxrwx.   1 root root        10 Oct 11  2021 rc0.d -> rc.d/rc0.d
+lrwxrwxrwx.   1 root root        10 Oct 11  2021 rc1.d -> rc.d/rc1.d
+lrwxrwxrwx.   1 root root        10 Oct 11  2021 rc2.d -> rc.d/rc2.d
+lrwxrwxrwx.   1 root root        10 Oct 11  2021 rc3.d -> rc.d/rc3.d
+lrwxrwxrwx.   1 root root        10 Oct 11  2021 rc4.d -> rc.d/rc4.d
+lrwxrwxrwx.   1 root root        10 Oct 11  2021 rc5.d -> rc.d/rc5.d
+lrwxrwxrwx.   1 root root        10 Oct 11  2021 rc6.d -> rc.d/rc6.d
+drwxr-xr-x.  10 root root      4096 Apr 20  2022 rc.d
+lrwxrwxrwx.   1 root root        13 May  9  2022 rc.local -> rc.d/rc.local
+drwxr-xr-x.   3 root root      4096 Apr 13  2022 rdma
+lrwxrwxrwx.   1 root root        13 May 21  2022 redhat-release -> rocky-release
+-rw-r--r--.   1 root root        69 Jun 20  2017 resolv.conf
+drwxr-xr-x.   3 root root      4096 Jul  5  2022 rhsm
+-rw-r--r--.   1 root root        41 May 21  2022 rocky-release
+-rw-r--r--.   1 root root        42 May 21  2022 rocky-release-upstream
+-rw-r--r--.   1 root root      1634 Aug  1  2018 rpc
+drwxr-xr-x.   2 root root      4096 Jul  5  2022 rpm
+-rw-r--r--.   1 root root      3186 May 31  2022 rsyslog.conf
+drwxr-xr-x.   2 root root      4096 May 31  2022 rsyslog.d
+-rw-r--r--.   1 root root      1037 Jan 24  2022 rwtab
+drwxr-xr-x.   2 root root      4096 Aug 25 00:08 rwtab.d
+drwxr-xr-x.   2 root root      4096 Feb 24  2022 sasl2
+drwxr-xr-x.   4 root root      4096 Jul  5  2022 scl
+drwxr-xr-x.   7 root root      4096 Aug 25 00:09 security
+drwxr-xr-x.   4 root root      4096 Apr 18  2022 selinux
+-rw-r--r--.   1 root root    692252 Mar 15  2021 services
+-rw-r--r--.   1 root root       216 Apr 18  2022 sestatus.conf
+drwxr-xr-x.   3 root root      4096 Jul  5  2022 sgml
+----------.   1 root root       938 Aug 25 11:59 shadow
+----------.   1 root root       914 Aug 25 00:09 shadow-
+-rw-r--r--.   1 root root        44 Sep 10  2018 shells
+drwxr-xr-x.   2 root root      4096 Oct 11  2021 skel
+drwxr-xr-x.   3 root root      4096 Apr 12  2022 ssh
+drwxr-xr-x.   2 root root      4096 Jul  5  2022 ssl
+drwx------.   4 sssd sssd      4096 Jun 29  2022 sssd
+-rw-r--r--.   1 root root       212 Jan 24  2022 statetab
+-rw-r--r--.   1 root root         0 Sep 10  2018 subgid
+-rw-r--r--.   1 root root         0 Sep 10  2018 subuid
+-rw-r-----.   1 root root      1786 Apr 20  2022 sudo.conf
+-r--r-----.   1 root root      4328 Apr 20  2022 sudoers
+drwxr-x---.   2 root root      4096 Apr 20  2022 sudoers.d
+-rw-r-----.   1 root root      3181 Apr 20  2022 sudo-ldap.conf
+drwxr-xr-x.   5 root root      4096 Aug 25 12:30 sysconfig
+-rw-r--r--.   1 root root       471 Jun 20  2019 sysctl.conf
+drwxr-xr-x.   2 root root      4096 May  9  2022 sysctl.d
+drwxr-xr-x.   4 root root      4096 May  9  2022 systemd
+lrwxrwxrwx.   1 root root        13 May 21  2022 system-release -> rocky-release
+-rw-r--r--.   1 root root        24 May 21  2022 system-release-cpe
+-rw-r-----.   1 root tss       7046 May 19  2021 tcsd.conf
+drwxr-xr-x.   2 root root      4096 Oct 13  2021 terminfo
+drwxr-xr-x.   2 root root      4096 May  9  2022 tmpfiles.d
+-rw-r--r--.   1 root root       375 Feb 20  2025 trusted-key.key
+drwxr-xr-x.   3 root root      4096 Jul  5  2022 tuned
+drwxr-xr-x.   4 root root      4096 Jul  5  2022 udev
+drwxr-xr-x.   2 root root      4096 Jul  5  2022 unbound
+-rw-r--r--.   1 root root       208 Jul  5  2022 .updated
+-rw-r--r--.   1 root root        37 Feb 26  2016 vconsole.conf
+-rw-r--r--.   1 root root      1982 Aug  2  2022 vimrc
+-rw-r--r--.   1 root root      1204 Jun 29  2022 virc
+drwxr-xr-x.   2 root root      4096 Aug 25 00:08 vsftpd
+drwxr-xr-x.   5 root root      4096 Aug 25 15:11 vulkan
+-rw-r--r--.   1 root root      4925 Aug 14  2024 wgetrc
+drwxr-xr-x.   2 root root      4096 Apr 21  2022 wpa_supplicant
+drwxr-xr-x.   6 root root      4096 Oct 11  2021 X11
+-rw-r--r--.   1 root root       642 Dec 10  2016 xattr.conf
+drwxr-xr-x.   4 root root      4096 Oct 11  2021 xdg
+drwxr-xr-x.   2 root root      4096 Oct 11  2021 xinetd.d
+drwxr-xr-x.   2 root root      4096 Jul  5  2022 xml
+drwxr-xr-x.   2 root root      4096 Jul  5  2022 yum
+lrwxrwxrwx.   1 root root        12 May 10  2022 yum.conf -> dnf/dnf.conf
+drwxr-xr-x.   3 root root      4096 Aug 25 15:11 yum.repos.d
+(venv) [root@agodamagic agoda-magic-price]# ls -la /usr/local/etc/
+total 8
+drwxr-xr-x.  2 root root 4096 Oct 11  2021 .
+drwxr-xr-x. 12 root root 4096 Oct 11  2021 ..
+(venv) [root@agodamagic agoda-magic-price]#
