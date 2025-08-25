@@ -10,7 +10,10 @@ let lowestPriceCidName = '';
 const totalSteps = 17; // 검색창리스트(9) + 카드리스트(8)
 let currentLanguage = 'ko'; // 기본값: 한국어
 
-// 진행률 관리 변수들
+// 부드러운 진행률 애니메이션을 위한 변수들
+let currentProgressPercentage = 0;
+let targetProgressPercentage = 0;
+let progressAnimationInterval = null;
 
 // CID 정보 배열
 const searchCids = [
@@ -147,7 +150,10 @@ function handleFormSubmit(e) {
     lowestPriceUrl = '';
     lowestPriceCidName = '';
     
-    // 진행률 초기화
+    // 진행률 애니메이션 초기화 및 시작
+    currentProgressPercentage = 0;
+    targetProgressPercentage = 0;
+    startSmoothProgress();
     
     // UI 초기화
     hideAllSections();
@@ -181,18 +187,6 @@ function analyzeCid() {
         })
     })
     .then(response => {
-        console.log('📡 서버 응답 상태:', response.status, response.statusText);
-        console.log('📡 응답 헤더:', response.headers.get('Content-Type'));
-        
-        // 400 에러 등 상세 정보 출력
-        if (!response.ok) {
-            console.error('❌ HTTP 에러:', response.status, response.statusText);
-            return response.text().then(text => {
-                console.error('❌ 서버 에러 내용:', text);
-                throw new Error(`서버 에러 ${response.status}: ${text}`);
-            });
-        }
-        
         // 응답이 JSON인지 확인
         const contentType = response.headers.get('Content-Type');
         if (!contentType || !contentType.includes('application/json')) {
@@ -228,12 +222,7 @@ function analyzeCid() {
     })
     .catch(error => {
         hideLoading();
-        console.error('❌ 클라이언트 fetch 오류:', error);
-        console.error('❌ 오류 유형:', error.constructor.name);
-        console.error('❌ 오류 메시지:', error.message);
-        console.error('❌ 스택 트레이스:', error.stack);
         showError('분석 중 오류가 발생했습니다: ' + error.message);
-        resetUI();
     });
 }
 
@@ -404,16 +393,40 @@ function continueAnalysis() {
     analyzeCid();
 }
 
-// 진행률 직접 업데이트 (애니메이션 없음)
-function updateProgressBar(percentage) {
-    const progressText = document.getElementById('progressText');
-    const progressBar = document.getElementById('progressBar');
-    
-    if (progressText) {
-        progressText.textContent = `${percentage}%`;
+// 부드러운 진행률 애니메이션
+function startSmoothProgress() {
+    if (progressAnimationInterval) {
+        clearInterval(progressAnimationInterval);
     }
-    if (progressBar) {
-        progressBar.style.width = `${percentage}%`;
+    
+    progressAnimationInterval = setInterval(() => {
+        if (currentProgressPercentage < targetProgressPercentage) {
+            currentProgressPercentage += 0.01;
+            
+            // 목표값에 도달했다면 정확히 맞춰줌
+            if (currentProgressPercentage >= targetProgressPercentage) {
+                currentProgressPercentage = targetProgressPercentage;
+            }
+            
+            // 진행률 바 업데이트
+            const progressText = document.getElementById('progressText');
+            const progressBar = document.getElementById('progressBar');
+            
+            if (progressText) {
+                progressText.textContent = `${Math.round(currentProgressPercentage)}%`;
+            }
+            if (progressBar) {
+                progressBar.style.width = `${currentProgressPercentage}%`;
+            }
+        }
+    }, 10); // 10ms마다 0.01씩 증가 (약 1초에 1% 증가)
+}
+
+// 부드러운 진행률 애니메이션 중지
+function stopSmoothProgress() {
+    if (progressAnimationInterval) {
+        clearInterval(progressAnimationInterval);
+        progressAnimationInterval = null;
     }
 }
 
@@ -426,8 +439,8 @@ function updateProgress() {
     const step = currentStep + 1;
     const percentage = Math.round((step / totalSteps) * 100);
     
-    // 진행률 직접 업데이트
-    updateProgressBar(percentage);
+    // 목표 진행률 설정 (부드러운 애니메이션으로 이동)
+    targetProgressPercentage = percentage;
     
     // 현재 단계 정보 업데이트
     if (currentStep < allCids.length) {
@@ -467,8 +480,10 @@ function showContinueButton(nextStep) {
 
 // 완료 표시
 function showComplete() {
+    // 부드러운 진행률 애니메이션 중지
+    stopSmoothProgress();
+    
     // 진행률을 100%로 최종 설정
-    updateProgressBar(100);
     const progressText = document.getElementById('progressText');
     const progressBar = document.getElementById('progressBar');
     if (progressText) {
@@ -493,6 +508,9 @@ function showComplete() {
 
 // 새 검색 시작
 function startNewSearch() {
+    // 부드러운 진행률 애니메이션 중지
+    stopSmoothProgress();
+    
     currentUrl = '';
     currentStep = 0;
     allResults = [];
@@ -503,7 +521,8 @@ function startNewSearch() {
     lowestPriceCidName = '';
     
     // 진행률 초기화
-    updateProgressBar(0);
+    currentProgressPercentage = 0;
+    targetProgressPercentage = 0;
     
     hideAllSections();
     urlInput.value = '';
@@ -515,18 +534,6 @@ function startNewSearch() {
 
 // 숫자 가격 추출 (비교용)
 function extractNumericPrice(priceString) {
-    if (!priceString) return null;
-    
-    // 숫자 타입이면 바로 반환
-    if (typeof priceString === 'number') {
-        return priceString;
-    }
-    
-    // 문자열이 아니면 문자열로 변환
-    if (typeof priceString !== 'string') {
-        priceString = String(priceString);
-    }
-    
     const matches = priceString.match(/[\d,]+/);
     if (matches) {
         return parseInt(matches[0].replace(/,/g, ''));

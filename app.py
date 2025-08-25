@@ -110,58 +110,19 @@ def scrape():
         
         app.logger.info(f"Processing step {step+1}/{len(all_cids)}: CID {current_name}({current_cid})")
         
-        # 첫 번째 CID 접속 직전에 디버그 파일 생성
-        debug_filepath = None
-        if step == 0:
-            import time
-            timestamp = int(time.time())
-            debug_filename = f"debug_session_{timestamp}.txt"
-            debug_filepath = os.path.join('downloads', debug_filename)
-            
-            # downloads 디렉토리 확인/생성
-            if not os.path.exists('downloads'):
-                os.makedirs('downloads')
-                
-            # 디버그 파일 생성
-            try:
-                with open(debug_filepath, 'w', encoding='utf-8') as f:
-                    f.write("="*80 + "\n")
-                    f.write("🔍 AGODA MAGIC PRICE - 상세 디버그 세션\n")
-                    f.write("="*80 + "\n")
-                    f.write(f"📅 세션 시작: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write(f"🌐 원본 URL: {url}\n")
-                    f.write(f"💱 원본 통화: {original_currency}\n")
-                    f.write(f"📊 처리할 CID 총 개수: {len(all_cids)}\n")
-                    f.write("\n" + "="*80 + "\n")
-                    f.write("🚀 스크래핑 시작\n")
-                    f.write("="*80 + "\n\n")
-                
-                app.logger.info(f"디버그 파일 생성 완료: {debug_filepath}")
-            except Exception as e:
-                app.logger.error(f"디버그 파일 생성 실패: {e}")
-        
-        # 스크래핑 실행 (원본 currencyCode 전달, 디버그 파일 경로도 전달)
+        # 스크래핑 실행 (원본 currencyCode 전달)
         import time
         start_time = time.time()
-        prices = scrape_prices_simple(new_url, original_currency_code=original_currency, debug_filepath=debug_filepath, step_info=(step+1, len(all_cids), current_name, current_cid))
+        prices = scrape_prices_simple(new_url, original_currency_code=original_currency)
         process_time = time.time() - start_time
         
         # 첫번째 CID에서 가격을 찾지 못한 경우 - 잘못된 링크로 판단
         if step == 0 and len(prices) == 0:
-            app.logger.warning(f"First CID parsing failed - no prices found")
-            app.logger.warning(f"Original URL: {url}")
-            app.logger.warning(f"Modified URL: {new_url}")
-            app.logger.warning(f"Original Currency: {original_currency}")
-            app.logger.warning(f"Price extraction result: {prices}")
+            app.logger.warning(f"First CID parsing failed - no prices found: {new_url}")
             return jsonify({
                 'error': '잘못된 링크를 입력한 것 같습니다\n사용법을 확인해 주세요',
                 'error_type': 'invalid_link',
-                'step': step,
-                'debug_info': {
-                    'original_url': url,
-                    'modified_url': new_url,
-                    'original_currency': original_currency
-                }
+                'step': step
             }), 400
         
         # 텍스트 파일 다운로드 링크 생성
@@ -200,131 +161,6 @@ def guide():
     """사용방법 가이드 페이지"""
     lang = request.args.get('lang', 'ko')  # 기본값은 한국어
     return render_template('guide.html', lang=lang)
-
-@app.route('/test-server')
-def test_server():
-    """간단한 서버 테스트"""
-    import time
-    return jsonify({
-        'status': 'OK',
-        'message': '서버가 정상 작동 중입니다',
-        'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
-        'server': 'gunicorn'
-    })
-
-@app.route('/debug-files')
-def debug_files():
-    """가상서버에서 파일 시스템 디버그"""
-    import os
-    import time
-    import platform
-    
-    debug_info = []
-    debug_info.append("🔍 가상서버 파일 시스템 디버그")
-    debug_info.append("="*50)
-    
-    # 1. 기본 정보
-    debug_info.append(f"📍 현재 위치: {os.getcwd()}")
-    debug_info.append(f"🖥️  운영체제: {platform.system()} {platform.release()}")
-    debug_info.append(f"✏️  쓰기 권한: {os.access('.', os.W_OK)}")
-    
-    # 2. downloads 폴더 확인
-    downloads_dir = 'downloads'
-    debug_info.append(f"\n📁 downloads 폴더:")
-    
-    if not os.path.exists(downloads_dir):
-        try:
-            os.makedirs(downloads_dir)
-            debug_info.append("   ✅ 새로 생성됨")
-        except Exception as e:
-            debug_info.append(f"   ❌ 생성 실패: {e}")
-    else:
-        debug_info.append("   ✅ 이미 존재")
-    
-    debug_info.append(f"   쓰기 권한: {os.access(downloads_dir, os.W_OK)}")
-    
-    # 3. 간단한 파일 생성 테스트
-    test_file = os.path.join(downloads_dir, f"web_debug_{int(time.time())}.txt")
-    debug_info.append(f"\n✏️  파일 쓰기 테스트:")
-    
-    try:
-        with open(test_file, 'w', encoding='utf-8') as f:
-            f.write(f"웹 디버그 테스트\n생성 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-        
-        if os.path.exists(test_file):
-            size = os.path.getsize(test_file)
-            debug_info.append(f"   ✅ 성공 ({size} bytes)")
-            
-            # 내용 읽기
-            with open(test_file, 'r', encoding='utf-8') as f:
-                content = f.read()
-                debug_info.append(f"   📖 내용: {content[:50]}...")
-            
-        else:
-            debug_info.append("   ❌ 파일이 생성되지 않음")
-            
-    except Exception as e:
-        debug_info.append(f"   ❌ 오류: {e}")
-    
-    # 4. 아고다 방식 파일 생성 테스트
-    debug_info.append(f"\n🏷️  아고다 방식 테스트:")
-    agoda_file = os.path.join(downloads_dir, f"page_text_cid_WEBTEST.txt")
-    
-    try:
-        # 1단계: 기본 생성
-        with open(agoda_file, 'w', encoding='utf-8') as f:
-            f.write("="*80 + "\n")
-            f.write("🔍 AGODA MAGIC PRICE - 웹 디버그\n")
-            f.write("="*80 + "\n")
-            f.write(f"📅 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-        
-        debug_info.append("   ✅ 1단계 성공")
-        
-        # 2단계: 내용 추가
-        with open(agoda_file, 'a', encoding='utf-8') as f:
-            f.write(f"📊 테스트 데이터\n")
-            f.write(f"✅ 2단계 완료\n")
-            
-        debug_info.append("   ✅ 2단계 성공")
-        
-        # 3단계: 대량 텍스트
-        with open(agoda_file, 'a', encoding='utf-8') as f:
-            test_content = "시작가 ₩64,039 한글 테스트 " * 50
-            f.write("="*80 + "\n")
-            f.write(test_content)
-        
-        if os.path.exists(agoda_file):
-            size = os.path.getsize(agoda_file)
-            debug_info.append(f"   ✅ 3단계 성공 ({size:,} bytes)")
-        else:
-            debug_info.append("   ❌ 3단계 실패")
-            
-    except Exception as e:
-        debug_info.append(f"   ❌ 아고다 테스트 실패: {e}")
-    
-    # 5. 기존 파일 목록
-    debug_info.append(f"\n📂 downloads 폴더 내용:")
-    try:
-        files = os.listdir(downloads_dir)
-        if files:
-            for i, filename in enumerate(files[:10]):  # 최대 10개만
-                file_path = os.path.join(downloads_dir, filename)
-                file_size = os.path.getsize(file_path)
-                debug_info.append(f"   {i+1}. {filename} ({file_size:,} bytes)")
-            
-            if len(files) > 10:
-                debug_info.append(f"   ... 총 {len(files)}개 파일")
-        else:
-            debug_info.append("   (파일 없음)")
-                
-    except Exception as e:
-        debug_info.append(f"   ❌ 목록 확인 실패: {e}")
-    
-    debug_info.append(f"\n🎯 결론:")
-    debug_info.append(f"   파일 생성이 정상 작동한다면 스크래퍼 문제입니다.")
-    debug_info.append(f"   파일 생성이 실패한다면 서버 환경 문제입니다.")
-    
-    return "<pre style='font-family: monospace; background: #f5f5f5; padding: 20px; margin: 20px;'>" + "\n".join(debug_info) + "</pre>"
 
 @app.route('/download/<filename>')
 def download_file(filename):

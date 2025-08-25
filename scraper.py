@@ -3,442 +3,573 @@ from bs4 import BeautifulSoup
 import logging
 import requests
 import time
-import threading
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
-def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, step_info=None):
+def scrape_prices_simple(url, original_currency_code=None):
     """
     단순하고 빠른 가격 스크래핑 - 이미지 처리 없음
     Returns a list of dictionaries containing price and context information
     original_currency_code: 원본 URL의 통화 코드 (예: USD, KRW, THB)
-    debug_filepath: 디버그 로그를 저장할 파일 경로 (첫 번째 단계에서만 전달됨)
-    step_info: (step_num, total_steps, cid_name, cid_value) 튜플
     """
-    
-    def write_debug_log(message):
-        """디버그 파일에 로그 기록"""
-        if debug_filepath:
-            try:
-                with open(debug_filepath, 'a', encoding='utf-8') as f:
-                    timestamp = time.strftime('%H:%M:%S')
-                    f.write(f"[{timestamp}] {message}\n")
-            except:
-                pass
-        print(message)  # 콘솔에도 출력
-    
     try:
-        # 단계 정보 기록
-        if step_info:
-            step_num, total_steps, cid_name, cid_value = step_info
-            write_debug_log(f"\n{'='*60}")
-            write_debug_log(f"📍 단계 {step_num}/{total_steps}: {cid_name} (CID: {cid_value})")
-            write_debug_log(f"🌐 접속 URL: {url}")
-            write_debug_log(f"{'='*60}")
-        
-        # 최적화된 Selenium 사용 - Agoda는 JavaScript 실행 필요
+        # Selenium 사용 - 간단한 설정
         from selenium import webdriver
         from selenium.webdriver.chrome.options import Options
-        
-        write_debug_log("🔧 Chrome 브라우저 옵션 설정 중...")
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
         
         chrome_options = Options()
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument('--disable-gpu')
-        chrome_options.add_argument('--disable-images')  # 이미지 차단으로 속도 향상
-        chrome_options.add_argument('--disable-plugins')
-        chrome_options.add_argument('--disable-extensions')
+        chrome_options.add_argument('--window-size=1920,1080')  # 더 큰 화면
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
         
-        # 데스크톱 사이트 접속용 설정
+        # 실제 브라우저처럼 보이게 하는 옵션들
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-        chrome_options.add_argument('--window-size=1920,1080')  # 데스크톱 해상도
-        chrome_options.add_argument('--disable-blink-features=AutomationControlled')
-        chrome_options.add_argument('--disable-web-security')
-        chrome_options.add_argument('--allow-running-insecure-content')
-        chrome_options.add_argument('--disable-features=VizDisplayCompositor')
-        
-        chrome_options.add_experimental_option('excludeSwitches', ['enable-automation', 'enable-logging'])
+        chrome_options.add_argument('--accept-language=en-US,en;q=0.9')
+        chrome_options.add_argument('--accept-encoding=gzip, deflate, br')
+        chrome_options.add_argument('--accept=text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8')
+        chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
         chrome_options.add_experimental_option('useAutomationExtension', False)
-        chrome_options.add_experimental_option("prefs", {
-            "profile.default_content_setting_values.notifications": 2,
-            "profile.default_content_settings.popups": 0,
-            "profile.managed_default_content_settings.images": 2,
-            "profile.default_content_setting_values.media_stream_mic": 2,
-            "profile.default_content_setting_values.media_stream_camera": 2,
-            "profile.default_content_setting_values.geolocation": 2
-        })
         
-        # 데스크톱 브라우저 설정 (모바일 에뮬레이션 제거)
-        
-        write_debug_log("✅ Chrome 옵션 설정 완료")
-        write_debug_log(f"🚀 웹페이지 접속 시작...")
-        
-        start_time = time.time()
-        
-        # 환경 진단 추가
-        import subprocess
-        import sys
-        import os
-        
-        write_debug_log("🔍 환경 진단 시작...")
-        
-        # Chrome 버전 확인
-        try:
-            chrome_version = subprocess.check_output(['google-chrome', '--version']).decode().strip()
-            write_debug_log(f"🌐 Chrome 버전: {chrome_version}")
-        except:
-            try:
-                chrome_version = subprocess.check_output(['chromium-browser', '--version']).decode().strip()
-                write_debug_log(f"🌐 Chromium 버전: {chrome_version}")
-            except:
-                write_debug_log("❌ Chrome/Chromium 버전 확인 실패")
-        
-        # ChromeDriver 버전 확인
-        try:
-            driver_version = subprocess.check_output(['chromedriver', '--version']).decode().strip()
-            write_debug_log(f"🚗 ChromeDriver 버전: {driver_version}")
-        except:
-            write_debug_log("❌ ChromeDriver 버전 확인 실패")
-        
-        # 시스템 정보
-        write_debug_log(f"🐍 Python 버전: {sys.version}")
-        write_debug_log(f"💻 작업 디렉토리: {os.getcwd()}")
-        write_debug_log(f"🔒 실행 사용자: {os.getenv('USER', 'unknown')}")
-        
-        # 메모리 정보
-        try:
-            memory_info = subprocess.check_output(['free', '-h']).decode()
-            write_debug_log(f"💾 메모리 상태:\n{memory_info}")
-        except:
-            write_debug_log("❌ 메모리 정보 확인 실패")
-        
-        # 실행 중인 Chrome 프로세스 정리
-        try:
-            chrome_processes = subprocess.check_output(['pgrep', '-f', 'chrome']).decode().strip().split('\n')
-            chrome_count = len([p for p in chrome_processes if p.strip()])
-            write_debug_log(f"🔄 실행 중인 Chrome 프로세스: {chrome_count}개")
-            
-            # Chrome 프로세스가 5개 이상이면 정리
-            if chrome_count > 5:
-                write_debug_log("🧹 과도한 Chrome 프로세스 정리 시작...")
-                try:
-                    subprocess.run(['pkill', '-f', 'chrome'], check=False)
-                    time.sleep(2)  # 프로세스 종료 대기
-                    
-                    # 정리 후 다시 확인
-                    chrome_processes_after = subprocess.check_output(['pgrep', '-f', 'chrome']).decode().strip().split('\n')
-                    chrome_count_after = len([p for p in chrome_processes_after if p.strip()])
-                    write_debug_log(f"✅ Chrome 프로세스 정리 완료: {chrome_count}개 → {chrome_count_after}개")
-                except:
-                    write_debug_log("⚠️ Chrome 프로세스 정리 중 일부 오류 발생 (정상)")
-        except:
-            write_debug_log("ℹ️ 실행 중인 Chrome 프로세스 없음")
-        
-        write_debug_log("⚡ Chrome 드라이버 실행 중...")
         driver = webdriver.Chrome(options=chrome_options)
-        driver.set_page_load_timeout(5)  # 5초로 적정 복원
         
-        write_debug_log("🖥️ 데스크톱 사이트 접속용 스크립트 실행...")
+        # 봇 탐지 우회
+        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
-        # 데스크톱 전용 봇 탐지 우회 스크립트들
-        desktop_stealth_scripts = [
-            "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})",
-            "Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]})",  # 데스크톱 플러그인 시뮬레이션
-            "Object.defineProperty(navigator, 'languages', {get: () => ['ko-KR', 'ko', 'en-US', 'en']})",
-            "Object.defineProperty(navigator, 'platform', {get: () => 'Win32'})",
-            "Object.defineProperty(navigator, 'maxTouchPoints', {get: () => 0})",  # 터치 지원 없음
-            "window.chrome = { runtime: {} }",
-            "delete navigator.__proto__.webdriver"
-        ]
-        
-        for script in desktop_stealth_scripts:
-            try:
-                driver.execute_script(script)
-            except:
-                pass  # 스크립트 실행 실패해도 계속 진행
-        
-        # 간단한 페이지 테스트
-        write_debug_log("🧪 Chrome 작동 테스트 (Google 접속)...")
+        # URL은 app.py에서 이미 올바르게 처리되었으므로 추가 수정하지 않음
+        print(f"스크래핑 사용 URL: {url}")
+
+        start_time = time.time()
         try:
-            driver.get("https://www.google.com")
-            google_title = driver.title
-            write_debug_log(f"✅ Google 테스트 성공: {google_title}")
-        except Exception as google_error:
-            write_debug_log(f"❌ Google 테스트 실패: {google_error}")
-            write_debug_log("🚨 Chrome 자체에 문제가 있습니다!")
-        
-        try:
-            # 데스크톱 사이트 직접 접속
-            write_debug_log(f"🖥️ 데스크톱 아고다 페이지 로딩 시작...")
-            write_debug_log(f"🌐 데스크톱 URL: {url[:100]}...")
-            
-            # 동기식 페이지 로딩 (안전한 방법)
-            write_debug_log("🌐 동기식 페이지 로딩 시작...")
             driver.get(url)
             
-            # 페이지 로딩 대기 (최대 10초)
-            write_debug_log("⏳ 페이지 로딩 완료 대기...")
-            max_wait = 10
-            for wait_time in range(max_wait):
-                try:
-                    current_source = driver.page_source
-                    if len(current_source) > 100000 and "agoda" in current_source.lower():
-                        write_debug_log(f"✅ 아고다 페이지 로딩 완료: {len(current_source)} 문자 (대기 시간: {wait_time+1}초)")
-                        break
-                    time.sleep(1)
-                except:
-                    time.sleep(1)
+            # 빠른 로딩 전략 (timeout 방지)
+            time.sleep(1.5)  # 로딩 대기 시간 단축
             
-            # 최종 페이지 소스 가져오기
+            # 스크롤로 콘텐츠 로딩
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(0.5)
+            driver.execute_script("window.scrollTo(0, 0);")
+            time.sleep(0.5)
+            
             page_source = driver.page_source
-            write_debug_log(f"📄 최종 페이지 소스: {len(page_source)} 문자")
-            
-            # 페이지 내용 저장 (디버깅용)
-            save_path = f"downloads/page_text_cid_-1_attempt_1.txt"
-            try:
-                os.makedirs("downloads", exist_ok=True)
-                with open(save_path, 'w', encoding='utf-8') as f:
-                    f.write(page_source)
-                write_debug_log(f"💾 페이지 내용 저장: {save_path}")
-            except:
-                pass
-            
-            # 간단한 가격 확인
-            if "agoda" in page_source.lower():
-                write_debug_log("✅ 아고다 페이지 확인됨")
-            else:
-                write_debug_log("⚠️ 아고다 페이지가 아닌 것 같음")
-            
-        except Exception as agoda_error:
-            write_debug_log(f"❌ 데스크톱 아고다 페이지 로딩 실패: {agoda_error}")
-            
-            # 네이버로 한국 사이트 테스트
-            write_debug_log("🧪 네이버 테스트 시도...")
-            try:
-                driver.get("https://www.naver.com")
-                naver_title = driver.title
-                write_debug_log(f"✅ 네이버 테스트 성공: {naver_title}")
-                write_debug_log("🔍 결론: 아고다만 접속 차단당하고 있습니다!")
-            except Exception as naver_error:
-                write_debug_log(f"❌ 네이버 테스트도 실패: {naver_error}")
-                write_debug_log("🚨 모든 사이트 접속 불가 - Chrome 환경 문제!")
-            
-            # 빈 페이지 소스로 설정하여 다음 단계로 진행
-            page_source = "<html><body>페이지 로딩 실패</body></html>"
             
         finally:
-            write_debug_log("🔚 Chrome 드라이버 종료...")
-            try:
-                driver.quit()
-                write_debug_log("✅ Chrome 드라이버 정상 종료")
-                
-                # 종료 후 프로세스 정리 확인
-                time.sleep(1)
-                try:
-                    remaining_processes = subprocess.check_output(['pgrep', '-f', 'chrome']).decode().strip().split('\n')
-                    remaining_count = len([p for p in remaining_processes if p.strip()])
-                    write_debug_log(f"🔍 종료 후 남은 Chrome 프로세스: {remaining_count}개")
-                    
-                    # 프로세스가 남아있으면 강제 종료
-                    if remaining_count > 10:
-                        write_debug_log("🚨 과도한 프로세스 발견 - 추가 정리 실행")
-                        subprocess.run(['pkill', '-9', '-f', 'chrome'], check=False)
-                        time.sleep(1)
-                except:
-                    pass
-                    
-            except Exception as quit_error:
-                write_debug_log(f"⚠️ Chrome 드라이버 종료 중 오류: {quit_error}")
-                # 강제 종료
-                try:
-                    subprocess.run(['pkill', '-9', '-f', 'chrome'], check=False)
-                    write_debug_log("🔨 Chrome 프로세스 강제 종료 완료")
-                except:
-                    pass
-        
-        load_time = time.time() - start_time
-        write_debug_log(f"⏱️ 총 페이지 로딩 시간: {load_time:.2f}초")
+            driver.quit()
         
         # BeautifulSoup으로 파싱
-        write_debug_log("🔍 HTML 파싱 시작...")
         soup = BeautifulSoup(page_source, 'html.parser')
-        all_text = soup.get_text()
         
-        text_size = len(all_text)
-        byte_size = len(all_text.encode('utf-8'))
-        write_debug_log(f"📊 추출된 텍스트: {text_size} 글자, {byte_size} bytes")
-        
-        # 페이지 텍스트 샘플 기록 (처음 500자)
-        text_sample = all_text[:500].replace('\n', ' ').replace('\r', ' ')
-        write_debug_log(f"📝 페이지 텍스트 샘플: {text_sample}...")
-        
-        # 가격 추출 시작
-        write_debug_log("💰 가격 추출 시작...")
-        
-        # 다중 통화 및 지역별 가격 패턴
-        patterns = []
-        
-        # 원화 (KRW) 패턴들
-        if original_currency_code in ['KRW', None]:
-            patterns.extend([
-                r'₩\s*(\d{1,3}(?:,\d{3})+)',
-                r'(\d{1,3}(?:,\d{3})+)\s*원',
-                r'(\d{1,3}(?:,\d{3})+)\s*KRW',
-                r'\b(\d{1,3}(?:,\d{3})+)\b',  # 큰 숫자 패턴 추가
-                r'시작가\s*₩\s*(\d{1,3}(?:,\d{3})+)',
-                r'(\d{1,3}(?:,\d{3})+)\s*KRW'
-            ])
-            write_debug_log("🔍 KRW(원화) 패턴 검색 중...")
-        
-        # 달러 (USD) 패턴들
-        if original_currency_code in ['USD', None]:
-            patterns.extend([
-                r'\$\s*(\d{1,3}(?:,\d{3})*\.?\d*)',
-                r'(\d{1,3}(?:,\d{3})*\.?\d*)\s*USD'
-            ])
-            write_debug_log("🔍 USD(달러) 패턴 검색 중...")
-        
-        # 태국 바트 (THB) 패턴들
-        if original_currency_code in ['THB', None]:
-            patterns.extend([
-                r'฿\s*(\d{1,3}(?:,\d{3})*\.?\d*)',
-                r'(\d{1,3}(?:,\d{3})*\.?\d*)\s*THB'
-            ])
-            write_debug_log("🔍 THB(바트) 패턴 검색 중...")
-        
-        # 유로 (EUR) 패턴들
-        if original_currency_code in ['EUR', None]:
-            patterns.extend([
-                r'€\s*(\d{1,3}(?:,\d{3})*\.?\d*)',
-                r'(\d{1,3}(?:,\d{3})*\.?\d*)\s*EUR'
-            ])
-            write_debug_log("🔍 EUR(유로) 패턴 검색 중...")
-        
-        # 엔 (JPY) 패턴들
-        if original_currency_code in ['JPY', None]:
-            patterns.extend([
-                r'¥\s*(\d{1,3}(?:,\d{3})*)',
-                r'(\d{1,3}(?:,\d{3})*)\s*엔',
-                r'(\d{1,3}(?:,\d{3})*)\s*JPY'
-            ])
-            write_debug_log("🔍 JPY(엔) 패턴 검색 중...")
-        
-        # 파운드 (GBP) 패턴들
-        if original_currency_code in ['GBP', None]:
-            patterns.extend([
-                r'£\s*(\d{1,3}(?:,\d{3})*\.?\d*)',
-                r'(\d{1,3}(?:,\d{3})*\.?\d*)\s*GBP'
-            ])
-            write_debug_log("🔍 GBP(파운드) 패턴 검색 중...")
-        
-        # 패턴 매칭 및 가격 추출
-        found_prices = []
-        
-        for i, pattern in enumerate(patterns):
-            matches = re.finditer(pattern, all_text)
-            for match in matches:
-                price_text = match.group(1)
-                context_start = max(0, match.start() - 30)
-                context_end = min(len(all_text), match.end() + 30)
-                context = all_text[context_start:context_end].strip()
-                
-                found_prices.append({
-                    'price': price_text,
-                    'context': context,
-                    'position': match.start(),
-                    'pattern_index': i
-                })
-        
-        write_debug_log(f"💰 발견된 가격 패턴: {len(found_prices)}개")
-        
-        # 가격별로 디버그 로그 기록
-        for i, price_info in enumerate(found_prices[:5]):  # 상위 5개만 기록
-            write_debug_log(f"  💵 #{i+1}: {price_info['price']} (위치: {price_info['position']})")
-            write_debug_log(f"      📝 컨텍스트: {price_info['context'][:100]}...")
-        
-        # 중복 제거 및 정렬
-        unique_prices = []
+        prices_found = []
         seen_prices = set()
         
-        for price_info in sorted(found_prices, key=lambda x: x['position']):
-            price_key = price_info['price']
-            if price_key not in seen_prices:
-                seen_prices.add(price_key)
-                unique_prices.append(price_info)
-        
-        write_debug_log(f"🔧 중복 제거 후 유니크 가격: {len(unique_prices)}개")
-        
-        # 상위 5개만 반환
-        final_prices = unique_prices[:5]
-        write_debug_log(f"✅ 최종 반환할 가격: {len(final_prices)}개")
-        
-        if final_prices:
-            write_debug_log("🎉 가격 추출 성공!")
-            for i, price in enumerate(final_prices):
-                write_debug_log(f"  🏆 최종 #{i+1}: {price['price']}")
-        else:
-            write_debug_log("😔 가격을 찾을 수 없음")
-            # 디버그: 페이지에서 숫자 패턴 확인
-            number_patterns = re.findall(r'\d{1,3}(?:,\d{3})+', all_text)
-            write_debug_log(f"🔍 페이지의 큰 숫자 패턴: {len(number_patterns)}개 발견")
-            if number_patterns:
-                write_debug_log(f"    예시: {number_patterns[:10]}")
-        
-        write_debug_log(f"✅ 스크래핑 완료 - 처리 시간: {load_time:.2f}초")
-        
-        return final_prices
-        
-    except Exception as e:
-        error_msg = f"❌ 스크래핑 중 오류 발생: {str(e)}"
-        write_debug_log(error_msg)
-        import traceback
-        write_debug_log(f"📋 상세 오류:\n{traceback.format_exc()}")
-        return []
-
-def extract_cid_from_url(url):
-    """URL에서 CID 값을 추출"""
-    cid_match = re.search(r'cid=([^&]+)', url)
-    return cid_match.group(1) if cid_match else None
-
-def reorder_url_parameters(url):
-    """URL 파라미터를 지정된 순서로 재정렬"""
-    try:
-        parsed = urlparse(url)
-        params = parse_qs(parsed.query, keep_blank_values=True)
-        
-        # 파라미터 순서 정의
-        param_order = [
-            'countryId', 'finalPriceView', 'isShowMobileAppPrice', 'familyMode',
-            'adults', 'children', 'maxRooms', 'rooms', 'checkIn', 'isCalendarCallout',
-            'childAges', 'numberOfGuest', 'missingChildAges', 'travellerType',
-            'showReviewSubmissionEntry', 'currencyCode', 'currency', 'isFreeOccSearch',
-            'los', 'searchrequestid', 'cid'
+        # 1단계: 특정 가격 요소들부터 우선 찾기 (실제 예약 가격)
+        price_selectors = [
+            # 일반적인 호텔 예약 사이트 가격 클래스들
+            '[class*="price"]',
+            '[class*="cost"]', 
+            '[class*="rate"]',
+            '[class*="amount"]',
+            '[class*="total"]',
+            '[class*="nightly"]',
+            '[data-testid*="price"]',
+            '[data-price]',
+            # 더 구체적인 셀렉터들
+            '.room-price',
+            '.hotel-price',
+            '.booking-price',
+            '.final-price'
         ]
         
-        # 순서대로 정리된 파라미터
-        ordered_params = []
-        for param in param_order:
-            if param in params:
-                for value in params[param]:
-                    ordered_params.append(f"{param}={value}")
-                del params[param]
+        for selector in price_selectors:
+            try:
+                elements = soup.select(selector)
+                for element in elements:
+                    text = element.get_text(strip=True)
+                    
+                    # 가격 패턴 찾기
+                    price_patterns = [
+                        r'(\$[1-9]\d{2,4}(?:\.\d{2})?)',  # $100-99999.99
+                        r'([1-9]\d{2,4}(?:\.\d{2})?\s*USD)',  # 123.45 USD
+                        r'(\$[1-9]\d{1,2})',  # $10-999
+                    ]
+                    
+                    for pattern in price_patterns:
+                        matches = re.findall(pattern, text, re.IGNORECASE)
+                        for price_text in matches:
+                            if price_text not in seen_prices:
+                                # 평균가격 제외
+                                parent_text = element.parent.get_text(strip=True).lower() if element.parent else text.lower()
+                                
+                                is_average_price = (
+                                    'average' in parent_text or
+                                    'avg' in parent_text or
+                                    'stands at' in parent_text or
+                                    'typical' in parent_text
+                                )
+                                
+                                if not is_average_price:
+                                    seen_prices.add(price_text)
+                                    prices_found.append({
+                                        'price': price_text,
+                                        'context': f"Found in {selector}: {text[:100]}",
+                                        'source': 'targeted_element'
+                                    })
+                                    
+                                    if len(prices_found) >= 3:
+                                        break
+                        
+                        if len(prices_found) >= 3:
+                            break
+                    
+                    if len(prices_found) >= 3:
+                        break
+            except Exception:
+                continue
+            
+            if len(prices_found) >= 3:
+                break
         
-        # 남은 파라미터들 추가
-        for param, values in params.items():
-            for value in values:
-                ordered_params.append(f"{param}={value}")
+        # 2단계: 특정 요소에서 못 찾으면 전체 텍스트 검색
+        if len(prices_found) < 2:
+            # script와 style 태그 제거
+            for element in soup(["script", "style"]):
+                element.decompose()
+            
+            # 텍스트 추출
+            text_content = soup.get_text()
+            
+            # 더 적극적인 가격 패턴 검색
+            price_patterns = [
+                # 실제 예약 가격이 나올 가능성이 높은 패턴들
+                r'(\$[1-9]\d{2,4}(?:\.\d{2})?)\s*(?:per night|night|/night)',  # $123 per night
+                r'(\$[1-9]\d{2,4}(?:\.\d{2})?)\s*(?:total|Total)',  # $123 total
+                r'(?:from|From)\s*(\$[1-9]\d{2,4}(?:\.\d{2})?)',  # from $123
+                r'(\$[1-9]\d{2,4}(?:\.\d{2})?)',  # 일반 $123
+                r'([1-9]\d{2,4}(?:\.\d{2})?\s*USD)',  # 123 USD
+            ]
+            
+            for pattern in price_patterns:
+                matches = re.finditer(pattern, text_content, re.IGNORECASE)
+                
+                for match in matches:
+                    price_text = match.group(1).strip()
+                    
+                    if price_text in seen_prices:
+                        continue
+                    
+                    # 컨텍스트 추출
+                    start_pos = max(0, match.start() - 80)
+                    end_pos = min(len(text_content), match.end() + 80)
+                    context = text_content[start_pos:end_pos].strip()
+                    context_lower = context.lower()
+                    
+                    # 평균가격 및 기타 불필요한 가격 제외
+                    skip_keywords = [
+                        'with an average room price of',
+                        'which stands at',
+                        'average room price',
+                        'typical price',
+                        'generally costs',
+                        'usually costs'
+                    ]
+                    
+                    should_skip = any(keyword in context_lower for keyword in skip_keywords)
+                    
+                    if should_skip:
+                        continue
+                    
+                    context = re.sub(r'\s+', ' ', context)[:150]
+                    
+                    seen_prices.add(price_text)
+                    prices_found.append({
+                        'price': price_text,
+                        'context': context,
+                        'source': 'text_search'
+                    })
+                    
+                    # 최대 5개로 제한
+                    if len(prices_found) >= 5:
+                        break
+                
+                if len(prices_found) >= 5:
+                    break
         
-        new_query = '&'.join(ordered_params)
-        new_url = urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, new_query, parsed.fragment))
+        # 디버그: 실제 페이지에 어떤 가격 정보가 있는지 확인
+        # (실제 배포시에는 제거)
+        debug_patterns = [
+            r'(\$\d+)',  # 모든 $ 가격
+            r'(\d+\.\d+)',  # 소수점 숫자
+            r'(USD)',  # USD 텍스트
+            r'(price|Price|PRICE)',  # price 텍스트
+            r'(total|Total)',  # total 텍스트
+            r'(night|Night)',  # night 텍스트
+        ]
+        
+        debug_info = {}
+        all_text = soup.get_text()
+        
+        # 5KB 제한: 텍스트가 5KB를 넘으면 5KB까지만 자르고 즉시 종료
+        text_size_bytes = len(all_text.encode('utf-8'))
+        if text_size_bytes > 5 * 1024:  # 5KB = 5 * 1024 bytes
+            # UTF-8 기준 5KB까지만 자르기 (안전하게)
+            truncated_text = all_text
+            while len(truncated_text.encode('utf-8')) > 5 * 1024:
+                truncated_text = truncated_text[:-100]  # 100글자씩 줄이기
+            all_text = truncated_text + "... [5KB 제한으로 텍스트 일부만 수집됨]"
+            
+            # 즉시 파일 저장하고 가격 분석 건너뛰기
+            try:
+                import os
+                if not os.path.exists('downloads'):
+                    os.makedirs('downloads')
+                
+                # CID 정보 추출
+                cid_match = re.search(r'cid=([^&]+)', url)
+                cid_value = cid_match.group(1) if cid_match else 'unknown'
+                
+                # 파일명 생성
+                filename = f"page_text_cid_{cid_value}.txt"
+                filepath = os.path.join('downloads', filename)
+                
+                # 전체 텍스트 저장
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    f.write(f"URL: {url}\n")
+                    f.write(f"CID: {cid_value}\n")
+                    f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                    f.write(f"파일 크기: 5KB 제한 적용\n")
+                    f.write("="*50 + "\n\n")
+                    f.write(all_text)
+                
+                print(f"5KB 제한 - 텍스트 파일 저장됨: {filepath}")
+                
+            except Exception as save_error:
+                print(f"텍스트 파일 저장 오류: {save_error}")
+            
+            # txt 파일에서 "시작가" 뒤의 가격 찾기
+            starting_price = None
+            try:
+                # "시작가" 뒤의 가격 패턴 검색 (다양한 통화 단위 지원)
+                starting_price_patterns = [
+                    r'시작가\s*(USD\s+[\d,]+(?:\.\d+)?)',         # USD 46 형태
+                    r'시작가\s*(KRW\s+[\d,]+(?:\.\d+)?)',         # KRW 46000 형태  
+                    r'시작가\s*(THB\s+[\d,]+(?:\.\d+)?)',         # THB 1500 형태
+                    r'시작가\s*([₩]\s*[\d,]+(?:\.\d+)?)',         # ₩ 33,458 형태 (공백 포함)
+                    r'시작가\s*([₩][\d,]+(?:\.\d+)?)',           # ₩46000 형태
+                    r'시작가\s*([฿]\s*[\d,]+(?:\.\d+)?)',         # ฿ 1,500 형태 (공백 포함)
+                    r'시작가\s*([฿][\d,]+(?:\.\d+)?)',           # ฿1500 형태
+                    r'시작가\s*(\$\s*[\d,]+(?:\.\d+)?)',         # $ 46 형태 (공백 포함)
+                    r'시작가\s*(\$[\d,]+(?:\.\d+)?)',            # $46 형태
+                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*USD)',      # 46 USD 형태
+                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*THB)',      # 46 THB 형태
+                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*KRW)',      # 46 KRW 형태
+                ]
+                
+                match = None
+                for pattern in starting_price_patterns:
+                    match = re.search(pattern, all_text, re.IGNORECASE)
+                    if match:
+                        break
+                
+                if match:
+                    price_text = match.group(1).strip()
+                    # 원본 가격 텍스트를 그대로 사용 (통화 단위 포함)
+                    if price_text:
+                        starting_price = {
+                            'price': price_text,  # 원본 형태 그대로 (₩, THB, $ 등 포함)
+                            'context': f"시작가 {price_text}",
+                            'source': 'starting_price_from_file'
+                        }
+                        print(f"시작가 발견: {starting_price['price']}")
+                
+            except Exception as e:
+                print(f"시작가 검색 오류: {e}")
+            
+            # 시작가를 찾았으면 반환, 못 찾았으면 빈 결과
+            if starting_price:
+                return [starting_price]
+            else:
+                return []
+        
+        for pattern in debug_patterns:
+            matches = re.findall(pattern, all_text, re.IGNORECASE)
+            if matches:
+                debug_info[pattern] = matches[:10]  # 처음 10개만
+        
+        # 더 광범위한 가격 패턴 검색
+        all_price_patterns = [
+            # 달러 패턴
+            r'(\$[1-9]\d{2,4}(?:\.\d{2})?)',  # $100-99999.99
+            r'(\$[1-9]\d{1,2})',  # $10-999
+            # USD 패턴
+            r'([1-9]\d{2,4}(?:\.\d{2})?\s*USD)',  # 100-9999.99 USD
+            r'USD\s*([1-9]\d{2,4}(?:\.\d{2})?)',  # USD 100-9999.99
+            r'USD\s*([1-9]\d{1,2})',  # USD 10-999
+            # 순수 숫자 패턴 (가격일 가능성)
+            r'\b([2-9]\d{2})\b',  # 200-999 (3자리)
+            r'\b([1-9]\d{3})\b',  # 1000-9999 (4자리)
+        ]
+        
+        all_prices = []
+        
+        for pattern in all_price_patterns:
+            matches = re.finditer(pattern, all_text, re.IGNORECASE)
+            for match in matches:
+                price_text = match.group(1).strip()
+                
+                if price_text not in seen_prices:
+                    context_start = max(0, match.start() - 60)
+                    context_end = min(len(all_text), match.end() + 60)
+                    context = all_text[context_start:context_end].strip()
+                    context_lower = context.lower()
+                    context = re.sub(r'\s+', ' ', context)[:150]
+                    
+                    # 평균가격 강화 필터링 
+                    is_average_price = (
+                        'with an average room price of' in context_lower or
+                        'which stands at' in context_lower or
+                        '평균 객실 가격은' in context_lower or
+                        'average room price' in context_lower or
+                        '평균 가격' in context_lower or
+                        '평균 객실' in context_lower or
+                        '방콕의 평균' in context_lower
+                    )
+                    
+                    # 명백한 ID나 날짜만 제외
+                    is_not_price = (
+                        any(year in context for year in ['2024', '2025', '2026']) or
+                        (price_text.isdigit() and len(price_text) > 4)  # 긴 ID만 제외
+                    )
+                    
+                    if not is_average_price and not is_not_price:
+                        seen_prices.add(price_text)
+                        all_prices.append({
+                            'price': f"${price_text}" if not price_text.startswith('$') else price_text,
+                            'context': context,
+                            'source': 'all_price_search'
+                        })
+                        
+                        # 더 많이 수집 (두 번째 가격을 찾기 위해)
+                        if len(all_prices) >= 20:
+                            break
+            
+            if len(all_prices) >= 20:
+                break
+        
+        # 가격 분석 전에 먼저 전체 텍스트를 파일로 저장 (다운로드용)
+        try:
+            import os
+            if not os.path.exists('downloads'):
+                os.makedirs('downloads')
+            
+            # CID 정보 추출
+            cid_match = re.search(r'cid=([^&]+)', url)
+            cid_value = cid_match.group(1) if cid_match else 'unknown'
+            
+            # 파일명 생성
+            filename = f"page_text_cid_{cid_value}.txt"
+            filepath = os.path.join('downloads', filename)
+            
+            # 전체 텍스트 저장
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(f"URL: {url}\n")
+                f.write(f"CID: {cid_value}\n")
+                f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write("="*50 + "\n\n")
+                f.write(all_text)
+            
+            print(f"텍스트 파일 저장됨: {filepath}")
+            
+        except Exception as save_error:
+            print(f"텍스트 파일 저장 오류: {save_error}")
+        
+        # 두 번째 가격만 반환 (사용자 요구사항)
+        if len(all_prices) >= 2:
+            prices_found = [all_prices[1]]  # 두 번째 가격만
+        elif len(all_prices) >= 1:
+            prices_found = [all_prices[0]]  # 첫 번째라도 반환
+        else:
+            prices_found = all_prices  # 없으면 빈 리스트
+        
+        return prices_found
+        
+    except Exception as e:
+        return []
+
+def process_all_cids_sequential(base_url, cid_list):
+    """
+    모든 CID를 순차적으로 처리하고 각 결과를 즉시 반환
+    Generator that yields results immediately as they become available
+    """
+    original_cid = extract_cid_from_url(base_url)
+    total_cids = len(cid_list)
+    
+    # 시작 신호
+    yield {
+        'type': 'start',
+        'total_cids': total_cids
+    }
+    
+    # 각 CID를 순차적으로 처리
+    for i, new_cid in enumerate(cid_list, 1):
+        try:
+            # URL 생성
+            if original_cid:
+                new_url = base_url.replace(f"cid={original_cid}", f"cid={new_cid}")
+            else:
+                separator = "&" if "?" in base_url else "?"
+                new_url = f"{base_url}{separator}cid={new_cid}"
+            
+            # CID 라벨 생성
+            if i == 1:
+                cid_label = f"원본({new_cid})"
+            else:
+                cid_label = str(new_cid)
+            
+            # 진행률 정보
+            yield {
+                'type': 'progress',
+                'step': i,
+                'total': total_cids,
+                'cid': cid_label
+            }
+            
+            # 스크래핑 실행
+            start_time = time.time()
+            prices = scrape_prices_simple(new_url)
+            process_time = time.time() - start_time
+            
+            # 즉시 결과 반환
+            result = {
+                'type': 'result',
+                'step': i,
+                'total': total_cids,
+                'cid': cid_label,
+                'url': new_url,
+                'prices': prices,
+                'found_count': len(prices),
+                'process_time': round(process_time, 1)
+            }
+            
+            yield result
+            
+        except Exception as e:
+            yield {
+                'type': 'error',
+                'step': i,
+                'total': total_cids,
+                'cid': new_cid,
+                'error': str(e)
+            }
+    
+    # 완료 신호
+    yield {
+        'type': 'complete',
+        'total_results': total_cids
+    }
+
+def extract_cid_from_url(url):
+    """URL에서 CID 값 추출"""
+    match = re.search(r'cid=([^&]+)', url)
+    return match.group(1) if match else None
+
+def reorder_url_parameters(url):
+    """
+    URL의 파라메터를 지정된 순서로 재정렬하고 필요한 파라메터만 유지
+    """
+    # 지정된 파라메터 순서 (필요한 모든 파라미터 포함)
+    desired_order = [
+        'countryId',
+        'finalPriceView', 
+        'isShowMobileAppPrice',
+        'familyMode',
+        'adults',
+        'children',
+        'childs',  # children의 다른 표현
+        'maxRooms',
+        'rooms',
+        'checkIn',    # 체크인 날짜 (camelCase)
+        'checkin',    # 체크인 날짜 (lowercase)
+        'checkOut',   # 체크아웃 날짜 (camelCase)
+        'checkout',   # 체크아웃 날짜 (lowercase)
+        'isCalendarCallout',
+        'childAges',
+        'numberOfGuest',
+        'missingChildAges',
+        'travellerType',
+        'showReviewSubmissionEntry',
+        'currencyCode',
+        'currency',
+        'isFreeOccSearch',
+        'los',
+        'textToSearch',  # 검색 텍스트 추가
+        'productType',   # 상품 타입 추가
+        'searchrequestid',
+        'ds',           # ds 파라미터 추가
+        'cid'
+    ]
+    
+    try:
+        # URL 파싱
+        parsed_url = urlparse(url)
+        query_string = parsed_url.query
+        
+        # 정규표현식으로 파라메터 추출 (디코딩 없이)
+        params_dict = {}
+        
+        # 쿼리 스트링을 &로 분리하여 파라메터 추출
+        if query_string:
+            param_pairs = query_string.split('&')
+            for pair in param_pairs:
+                if '=' in pair:
+                    key, value = pair.split('=', 1)
+                    params_dict[key] = value
+        
+        # 체크인 관련 파라미터 확인 (간소화)
+        checkin_found = [f"{k}={v}" for k, v in params_dict.items() if 'checkin' in k.lower()]
+        if checkin_found:
+            print(f"체크인 관련 파라미터 발견: {', '.join(checkin_found)}")
+        
+        # currency 파라미터가 없으면 기본값 KRW 추가
+        if 'currency' not in params_dict:
+            params_dict['currency'] = 'KRW'
+            print("currency 파라미터가 없어서 currency=KRW로 기본값 추가")
+        
+        # 새로운 파라메터 딕셔너리 (지정된 순서대로)
+        reordered_params = {}
+        
+        # 지정된 순서대로 파라메터 추가 (존재하는 경우만)
+        for param in desired_order:
+            if param in params_dict:
+                reordered_params[param] = params_dict[param]
+        
+        # 새로운 쿼리 스트링 생성
+        query_parts = []
+        for key, value in reordered_params.items():
+            query_parts.append(f"{key}={value}")
+        new_query = "&".join(query_parts)
+        
+        # 새로운 URL 구성
+        new_url = urlunparse((
+            parsed_url.scheme,
+            parsed_url.netloc,
+            parsed_url.path,
+            parsed_url.params,
+            new_query,
+            parsed_url.fragment
+        ))
         
         return new_url
-    except:
-        return url
+        
+    except Exception as e:
+        print(f"URL 파라메터 재정렬 오류: {e}")
+        return url  # 오류 시 원본 URL 반환
 
-def process_all_cids_sequential(url):
-    """모든 CID를 순차적으로 처리 (기존 함수 유지)"""
-    # 이 함수는 기존 코드 호환성을 위해 유지
-    return []
+def replace_cid_and_scrape(base_url, cid_list):
+    """기존 함수명 호환성을 위한 래퍼"""
+    return process_all_cids_sequential(base_url, cid_list)
