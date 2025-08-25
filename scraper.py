@@ -63,40 +63,65 @@ def scrape_prices_simple(url, original_currency_code=None):
         driver.execute_script("window.scrollTo(0, 0);")
         
         try:
-            # 💡 매 초단위 체크: "시작가" "Start Price" 발견 시 즉시 중단
+            # 💡 JavaScript 실행을 위한 단계별 로딩
+            print("🌐 페이지 로딩 시작...")
             driver.get(url)
             
-            # 최대 10초 대기하면서 매 1초마다 체크
-            max_wait = 10
-            start_wait = time.time()
+            # 1단계: 1초 대기 (JavaScript 실행 시간 확보)
+            print("⏳ JavaScript 실행을 위해 1초 대기...")
+            time.sleep(1)
             
-            while time.time() - start_wait < max_wait:
-                time.sleep(1)  # 1초 대기
-                page_source = driver.page_source
+            # 1초 후 첫 번째 소스 확인
+            initial_source = driver.page_source
+            initial_text = BeautifulSoup(initial_source, 'html.parser').get_text()
+            
+            print(f"1초 후 텍스트 크기: {len(initial_text)} 글자")
+            print(f"1초 후 텍스트 미리보기: {initial_text[:200]}...")
+            
+            # "시작가" 또는 "Start Price" 키워드 체크
+            price_keyword_found = ('시작가' in initial_text or 'Start Price' in initial_text)
+            
+            if price_keyword_found:
+                print("🎯 1초 후 가격 키워드 발견!")
+                page_source = initial_source
+            else:
+                print("⏰ 가격 키워드 없음 - 추가 대기...")
                 
-                # "시작가" 또는 "Start Price" 키워드만 체크
-                price_keyword_found = ('시작가' in page_source or 'Start Price' in page_source)
+                # 2단계: 최대 5초 더 대기하면서 매 1초마다 체크
+                max_additional_wait = 5
+                start_additional = time.time()
                 
-                if price_keyword_found:
-                    print("🎯 가격 키워드 발견 - 바로 추출 진행")
-                    break
+                while time.time() - start_additional < max_additional_wait:
+                    time.sleep(1)
+                    current_source = driver.page_source
+                    current_text = BeautifulSoup(current_source, 'html.parser').get_text()
                     
-                # 10KB 넘으면 중단
-                if len(page_source.encode('utf-8')) >= 10 * 1024:
-                    print("📏 10KB 도달 - 로딩 중단")
-                    break
+                    elapsed = int(time.time() - start_additional)
+                    print(f"⏰ +{elapsed}초 경과 - 텍스트 크기: {len(current_text)} 글자")
                     
-                print(f"⏰ {int(time.time() - start_wait)}초 경과 - 가격 키워드 대기 중...")
+                    # 키워드 체크
+                    if '시작가' in current_text or 'Start Price' in current_text:
+                        print("🎯 가격 키워드 발견 - 바로 추출 진행")
+                        page_source = current_source
+                        break
+                        
+                    # 10KB 넘으면 중단
+                    if len(current_text.encode('utf-8')) >= 10 * 1024:
+                        print("📏 10KB 도달 - 로딩 중단")
+                        page_source = current_source
+                        break
+                        
+                    page_source = current_source
+                
+                if time.time() - start_additional >= max_additional_wait:
+                    print("⏰ 최대 대기 시간 도달")
             
-            # 최대 시간 도달
-            if time.time() - start_wait >= max_wait:
-                print("⏰ 최대 대기 시간 도달")
-            
-            # 최종 소스 크기 제한
-            if len(page_source.encode('utf-8')) > 10 * 1024:
-                # 10KB로 자르기
+            # 최종 소스 크기 제한 (10KB)
+            final_text = BeautifulSoup(page_source, 'html.parser').get_text()
+            if len(final_text.encode('utf-8')) > 10 * 1024:
+                # HTML 소스 자체를 10KB로 제한
                 page_source = page_source.encode('utf-8')[:10*1024].decode('utf-8', errors='ignore')
-                print(f"📏 10KB로 텍스트 잘라내기 완료")
+                print(f"📏 10KB로 소스 잘라내기 완료")
             
         except:
             # 타임아웃되어도 현재까지 로딩된 소스라도 가져오기
