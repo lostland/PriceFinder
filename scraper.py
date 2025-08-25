@@ -48,14 +48,27 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
         chrome_options.add_argument('--disable-images')  # 이미지 차단으로 속도 향상
         chrome_options.add_argument('--disable-plugins')
         chrome_options.add_argument('--disable-extensions')
-        chrome_options.add_argument('--window-size=800,600')  # 작은 창으로 메모리 절약
+        chrome_options.add_argument('--window-size=1366,768')  # 일반적인 데스크톱 해상도
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
         
-        # 봇 탐지 우회
+        # 아고다 전용 봇 탐지 우회 강화
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-        chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+        chrome_options.add_argument('--disable-web-security')
+        chrome_options.add_argument('--allow-running-insecure-content')
+        chrome_options.add_argument('--disable-features=VizDisplayCompositor')
+        
+        chrome_options.add_experimental_option('excludeSwitches', ['enable-automation', 'enable-logging'])
         chrome_options.add_experimental_option('useAutomationExtension', False)
+        chrome_options.add_experimental_option("prefs", {
+            "profile.default_content_setting_values.notifications": 2,
+            "profile.default_content_settings.popups": 0,
+            "profile.managed_default_content_settings.images": 2,
+            "profile.default_content_setting_values.media_stream_mic": 2,
+            "profile.default_content_setting_values.media_stream_camera": 2,
+            "profile.default_content_setting_values.geolocation": 2
+        })
         
         write_debug_log("✅ Chrome 옵션 설정 완료")
         write_debug_log(f"🚀 웹페이지 접속 시작...")
@@ -125,9 +138,24 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
         driver = webdriver.Chrome(options=chrome_options)
         driver.set_page_load_timeout(15)  # 15초 타임아웃
         
-        write_debug_log("🔐 봇 탐지 우회 스크립트 실행...")
-        # 봇 탐지 우회 스크립트
-        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        write_debug_log("🔐 아고다 전용 봇 탐지 우회 스크립트 실행...")
+        
+        # 강화된 봇 탐지 우회 스크립트들
+        stealth_scripts = [
+            "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})",
+            "Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]})",
+            "Object.defineProperty(navigator, 'languages', {get: () => ['ko-KR', 'ko', 'en-US', 'en']})",
+            "Object.defineProperty(navigator, 'platform', {get: () => 'Win32'})",
+            "window.chrome = { runtime: {} }",
+            "Object.defineProperty(navigator, 'permissions', {get: () => ({query: () => Promise.resolve({state: 'granted'})})})",
+            "delete navigator.__proto__.webdriver"
+        ]
+        
+        for script in stealth_scripts:
+            try:
+                driver.execute_script(script)
+            except:
+                pass  # 스크립트 실행 실패해도 계속 진행
         
         # 간단한 페이지 테스트
         write_debug_log("🧪 Chrome 작동 테스트 (Google 접속)...")

@@ -1,0 +1,60 @@
+ cat downloads/debug_session_1756129405.txt
+================================================================================
+🔍 AGODA MAGIC PRICE - 상세 디버그 세션
+================================================================================
+📅 세션 시작: 2025-08-25 22:43:25
+🌐 원본 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&familyMode=false&adults=2&children=0&maxRooms=0&rooms=1&checkIn=2025-09-9&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&currency=KRW&isFreeOccSearch=false&los=1&searchrequestid=202d2d4d-1971-4cbf-9b96-5b5618413438&cid=-1&ds=oX9RoM3RB4QVw94V
+💱 원본 통화: KRW
+📊 처리할 CID 총 개수: 17
+
+================================================================================
+🚀 스크래핑 시작
+================================================================================
+
+[22:43:25]
+============================================================
+[22:43:25] 📍 단계 1/17: 시크릿창 (CID: -1)
+[22:43:25] 🌐 접속 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&familyMode=false&adults=2&children=0&maxRooms=0&rooms=1&checkIn=2025-09-9&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&currency=KRW&isFreeOccSearch=false&los=1&searchrequestid=202d2d4d-1971-4cbf-9b96-5b5618413438&cid=-1&ds=oX9RoM3RB4QVw94V
+[22:43:25] ============================================================
+[22:43:25] 🔧 Chrome 브라우저 옵션 설정 중...
+[22:43:25] ✅ Chrome 옵션 설정 완료
+[22:43:25] 🚀 웹페이지 접속 시작...
+[22:43:25] 🔍 환경 진단 시작...
+[22:43:25] 🌐 Chrome 버전: Google Chrome 139.0.7258.138
+[22:43:25] 🚗 ChromeDriver 버전: ChromeDriver 139.0.7258.138 (884e54ea8d42947ed636779015c5b4815e069838-refs/branch-heads/7258@{#2631})
+[22:43:25] 🐍 Python 버전: 3.6.8 (default, Jul  1 2025, 19:01:16)
+[GCC 8.5.0 20210514 (Red Hat 8.5.0-26)]
+[22:43:25] 💻 작업 디렉토리: /var/www/agoda-magic-price
+[22:43:25] 🔒 실행 사용자: root
+[22:43:25] 💾 메모리 상태:
+              total        used        free      shared  buff/cache   available
+Mem:          964Mi       140Mi       449Mi       4.0Mi       373Mi       678Mi
+Swap:         4.0Gi        95Mi       3.9Gi
+
+[22:43:25] ℹ️ 실행 중인 Chrome 프로세스 없음
+[22:43:25] ⚡ Chrome 드라이버 실행 중...
+[22:43:26] 🔐 봇 탐지 우회 스크립트 실행...
+[22:43:26] 🧪 Chrome 작동 테스트 (Google 접속)...
+[22:43:28] ✅ Google 테스트 성공: Google
+[22:43:28] 🌐 아고다 페이지 로딩 시작...
+[22:43:43] ❌ 아고다 페이지 로딩 실패: Message: timeout: Timed out receiving message from renderer: 14.721
+  (Session info: chrome=139.0.7258.138)
+
+[22:43:43] 🧪 네이버 테스트 시도...
+[22:43:53] ✅ 네이버 테스트 성공: NAVER
+[22:43:53] 🔍 결론: 아고다만 접속 차단당하고 있습니다!
+[22:43:53] 🔚 Chrome 드라이버 종료...
+[22:43:53] ✅ Chrome 드라이버 정상 종료
+[22:43:54] ⏱️ 총 페이지 로딩 시간: 29.33초
+[22:43:54] 🔍 HTML 파싱 시작...
+[22:43:54] 📊 추출된 텍스트: 9 글자, 23 bytes
+[22:43:54] 📝 페이지 텍스트 샘플: 페이지 로딩 실패...
+[22:43:54] 💰 가격 추출 시작...
+[22:43:54] 🔍 KRW(원화) 패턴 검색 중...
+[22:43:54] 💰 발견된 가격 패턴: 0개
+[22:43:54] 🔧 중복 제거 후 유니크 가격: 0개
+[22:43:54] ✅ 최종 반환할 가격: 0개
+[22:43:54] 😔 가격을 찾을 수 없음
+[22:43:54] 🔍 페이지의 큰 숫자 패턴: 0개 발견
+[22:43:54] ✅ 스크래핑 완료 - 처리 시간: 29.33초
+(venv) [root@agodamagic agoda-magic-price]#
