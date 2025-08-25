@@ -12,58 +12,70 @@ def scrape_prices_simple(url, original_currency_code=None):
     original_currency_code: 원본 URL의 통화 코드 (예: USD, KRW, THB)
     """
     try:
-        # Selenium 사용 - 간단한 설정
+        # 최적화된 Selenium 사용 - Agoda는 JavaScript 실행 필요
         from selenium import webdriver
         from selenium.webdriver.chrome.options import Options
-        from selenium.webdriver.common.by import By
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
         
         chrome_options = Options()
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument('--disable-gpu')
-        chrome_options.add_argument('--window-size=1920,1080')  # 더 큰 화면
+        chrome_options.add_argument('--disable-images')  # 이미지 차단으로 속도 향상
+        chrome_options.add_argument('--disable-plugins')
+        chrome_options.add_argument('--disable-extensions')
+        chrome_options.add_argument('--window-size=800,600')  # 작은 창으로 메모리 절약
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
         
-        # 실제 브라우저처럼 보이게 하는 옵션들
+        # 봇 탐지 우회
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-        chrome_options.add_argument('--accept-language=en-US,en;q=0.9')
-        chrome_options.add_argument('--accept-encoding=gzip, deflate, br')
-        chrome_options.add_argument('--accept=text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8')
         chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
         chrome_options.add_experimental_option('useAutomationExtension', False)
         
-        driver = webdriver.Chrome(options=chrome_options)
+        print(f"스크래핑 사용 URL: {url}")
         
-        # 봇 탐지 우회
+        start_time = time.time()
+        
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.set_page_load_timeout(15)  # 15초 타임아웃
+        
+        # 봇 탐지 우회 스크립트
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
-        # URL은 app.py에서 이미 올바르게 처리되었으므로 추가 수정하지 않음
-        print(f"스크래핑 사용 URL: {url}")
-
-        start_time = time.time()
         try:
             driver.get(url)
-            
-            # 빠른 로딩 전략 (timeout 방지)
-            time.sleep(1.5)  # 로딩 대기 시간 단축
-            
-            # 스크롤로 콘텐츠 로딩
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(0.5)
-            driver.execute_script("window.scrollTo(0, 0);")
-            time.sleep(0.5)
-            
+            # 불필요한 대기 시간 제거 - 페이지 로드 완료 후 바로 진행
             page_source = driver.page_source
             
         finally:
             driver.quit()
         
+        load_time = time.time() - start_time
+        print(f"✅ 페이지 로딩 완료: {load_time:.2f}초")
+        
         # BeautifulSoup으로 파싱
         soup = BeautifulSoup(page_source, 'html.parser')
+        all_text = soup.get_text()
+        
+        print(f"페이지 크기: {len(all_text)} 글자, {len(all_text.encode('utf-8'))} bytes")
+        
+        # 먼저 시작가 검색을 시도 (페이지 크기와 관계없이)
+        starting_price = None
+        pattern = r'시작가\s*₩\s*(\d{1,3}(?:,\d{3})+)'
+        match = re.search(pattern, all_text)
+        
+        if match:
+            price_number = match.group(1)
+            starting_price = {
+                'price': f"₩{price_number}",
+                'context': f"시작가 ₩{price_number}",
+                'source': 'starting_price_direct'
+            }
+            print(f"✅ 시작가 발견: {starting_price['price']}")
+            return [starting_price]
+        else:
+            print("❌ 시작가 패턴 실패 - 일반 가격 검색 진행")
         
         prices_found = []
         seen_prices = set()
@@ -254,38 +266,20 @@ def scrape_prices_simple(url, original_currency_code=None):
             # txt 파일에서 "시작가" 뒤의 가격 찾기
             starting_price = None
             try:
-                # "시작가" 뒤의 가격 패턴 검색 (다양한 통화 단위 지원)
-                starting_price_patterns = [
-                    r'시작가\s*(USD\s+[\d,]+(?:\.\d+)?)',         # USD 46 형태
-                    r'시작가\s*(KRW\s+[\d,]+(?:\.\d+)?)',         # KRW 46000 형태  
-                    r'시작가\s*(THB\s+[\d,]+(?:\.\d+)?)',         # THB 1500 형태
-                    r'시작가\s*([₩]\s*[\d,]+(?:\.\d+)?)',         # ₩ 33,458 형태 (공백 포함)
-                    r'시작가\s*([₩][\d,]+(?:\.\d+)?)',           # ₩46000 형태
-                    r'시작가\s*([฿]\s*[\d,]+(?:\.\d+)?)',         # ฿ 1,500 형태 (공백 포함)
-                    r'시작가\s*([฿][\d,]+(?:\.\d+)?)',           # ฿1500 형태
-                    r'시작가\s*(\$\s*[\d,]+(?:\.\d+)?)',         # $ 46 형태 (공백 포함)
-                    r'시작가\s*(\$[\d,]+(?:\.\d+)?)',            # $46 형태
-                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*USD)',      # 46 USD 형태
-                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*THB)',      # 46 THB 형태
-                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*KRW)',      # 46 KRW 형태
-                ]
-                
-                match = None
-                for pattern in starting_price_patterns:
-                    match = re.search(pattern, all_text, re.IGNORECASE)
-                    if match:
-                        break
+                # 더 간단하고 확실한 패턴으로 수정
+                simple_pattern = r'시작가\s*₩\s*(\d{1,3}(?:,\d{3})+)'
+                match = re.search(simple_pattern, all_text)
                 
                 if match:
-                    price_text = match.group(1).strip()
-                    # 원본 가격 텍스트를 그대로 사용 (통화 단위 포함)
-                    if price_text:
-                        starting_price = {
-                            'price': price_text,  # 원본 형태 그대로 (₩, THB, $ 등 포함)
-                            'context': f"시작가 {price_text}",
-                            'source': 'starting_price_from_file'
-                        }
-                        print(f"시작가 발견: {starting_price['price']}")
+                    price_number = match.group(1)  # 숫자 부분만 (예: "63,084")
+                    starting_price = {
+                        'price': f"₩{price_number}",  # ₩ 포함한 완전한 가격
+                        'context': f"시작가 ₩{price_number}",
+                        'source': 'starting_price_from_file'
+                    }
+                    print(f"✅ 시작가 발견: {starting_price['price']}")
+                else:
+                    print("❌ 시작가 패턴 매칭 실패")
                 
             except Exception as e:
                 print(f"시작가 검색 오류: {e}")
@@ -294,6 +288,7 @@ def scrape_prices_simple(url, original_currency_code=None):
             if starting_price:
                 return [starting_price]
             else:
+                print("❌ 시작가를 찾지 못함 - 빈 결과 반환")
                 return []
         
         for pattern in debug_patterns:
