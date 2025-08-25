@@ -48,14 +48,24 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
         chrome_options.add_argument('--disable-images')  # 이미지 차단으로 속도 향상
         chrome_options.add_argument('--disable-plugins')
         chrome_options.add_argument('--disable-extensions')
-        chrome_options.add_argument('--window-size=800,600')  # 작은 창으로 메모리 절약
+        chrome_options.add_argument('--window-size=1200,800')  # 창 크기 늘림
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
+        chrome_options.add_argument('--disable-background-timer-throttling')
+        chrome_options.add_argument('--disable-backgrounding-occluded-windows')
+        chrome_options.add_argument('--disable-renderer-backgrounding')
+        chrome_options.add_argument('--disable-features=TranslateUI')
+        chrome_options.add_argument('--disable-component-extensions-with-background-pages')
         
-        # 봇 탐지 우회
-        chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-        chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        # 봇 탐지 우회 강화
+        chrome_options.add_argument('--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+        chrome_options.add_experimental_option('excludeSwitches', ['enable-automation', 'enable-logging'])
         chrome_options.add_experimental_option('useAutomationExtension', False)
+        chrome_options.add_experimental_option("prefs", {
+            "profile.default_content_setting_values.notifications": 2,
+            "profile.default_content_settings.popups": 0,
+            "profile.managed_default_content_settings.images": 2
+        })
         
         write_debug_log("✅ Chrome 옵션 설정 완료")
         write_debug_log(f"🚀 웹페이지 접속 시작...")
@@ -64,7 +74,8 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
         
         write_debug_log("⚡ Chrome 드라이버 실행 중...")
         driver = webdriver.Chrome(options=chrome_options)
-        driver.set_page_load_timeout(15)  # 15초 타임아웃
+        driver.set_page_load_timeout(30)  # 30초로 타임아웃 연장
+        driver.implicitly_wait(10)  # 요소 대기 시간 추가
         
         write_debug_log("🔐 봇 탐지 우회 스크립트 실행...")
         # 봇 탐지 우회 스크립트
@@ -72,9 +83,34 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
         
         try:
             write_debug_log(f"🌐 페이지 로딩 시작...")
-            driver.get(url)
+            
+            # 페이지 로딩 전략 변경 - none으로 설정해서 기본 HTML 로딩 후 즉시 진행
+            driver.execute_cdp_cmd('Page.setLoadEventFired', {})
+            
+            try:
+                driver.get(url)
+                write_debug_log("✅ 초기 페이지 로딩 완료")
+                
+                # JavaScript 로딩 대기 (최대 10초)
+                write_debug_log("⏳ JavaScript 처리 대기 중...")
+                time.sleep(5)  # 5초 기본 대기
+                
+                # 추가 JavaScript 완료 확인
+                for i in range(5):  # 최대 5번 시도
+                    try:
+                        ready_state = driver.execute_script("return document.readyState")
+                        write_debug_log(f"📊 페이지 상태 확인 #{i+1}: {ready_state}")
+                        if ready_state == 'complete':
+                            break
+                        time.sleep(1)
+                    except:
+                        break
+                        
+            except Exception as load_error:
+                write_debug_log(f"⚠️ 페이지 로딩 중 오류: {load_error}")
+                write_debug_log("🔄 오류에도 불구하고 소스 추출 시도...")
+            
             write_debug_log("📄 페이지 소스 추출 중...")
-            # 불필요한 대기 시간 제거 - 페이지 로드 완료 후 바로 진행
             page_source = driver.page_source
             write_debug_log(f"✅ 페이지 소스 추출 완료 ({len(page_source)} 문자)")
             
