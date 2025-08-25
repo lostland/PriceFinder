@@ -175,103 +175,42 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
             write_debug_log(f"🖥️ 데스크톱 아고다 페이지 로딩 시작...")
             write_debug_log(f"🌐 데스크톱 URL: {url[:100]}...")
             
-            # 페이지 로딩을 별도 스레드에서 실행
-            page_loading_complete = threading.Event()
-            loading_error = None
+            # 동기식 페이지 로딩 (안전한 방법)
+            write_debug_log("🌐 동기식 페이지 로딩 시작...")
+            driver.get(url)
             
-            def load_page():
-                nonlocal loading_error
+            # 페이지 로딩 대기 (최대 10초)
+            write_debug_log("⏳ 페이지 로딩 완료 대기...")
+            max_wait = 10
+            for wait_time in range(max_wait):
                 try:
-                    driver.get(url)
-                    page_loading_complete.set()
-                except Exception as e:
-                    loading_error = e
-                    page_loading_complete.set()
-            
-            # 페이지 로딩 스레드 시작
-            loading_thread = threading.Thread(target=load_page)
-            loading_thread.daemon = True
-            loading_thread.start()
-            
-            write_debug_log("🔍 실시간 페이지 모니터링 시작...")
-            
-            # 실시간 모니터링 시스템
-            previous_source = ""
-            page_source = ""
-            max_attempts = 20  # 최대 20번 시도 (10초)
-            found_prices = []
-            
-            for attempt in range(max_attempts):
-                try:
-                    # 현재 페이지 소스 가져오기
                     current_source = driver.page_source
-                    
-                    # 페이지가 변화했으면 처리
-                    if len(current_source) > len(previous_source) + 1000:  # 1KB 이상 변화
-                        write_debug_log(f"📄 페이지 변화 감지 #{attempt+1}: {len(current_source)} 문자")
-                        
-                        # 즉시 파일 저장
-                        text_filename = f"downloads/page_text_cid_-1_attempt_{attempt+1}.txt"
-                        try:
-                            with open(text_filename, 'w', encoding='utf-8') as f:
-                                f.write(current_source)
-                            write_debug_log(f"💾 페이지 내용 저장: {text_filename}")
-                        except:
-                            pass
-                        
-                        # 즉시 가격 추출 시도 - 간단한 패턴 매칭
-                        krw_patterns = [
-                            r'₩\s*([0-9,]+)',
-                            r'KRW\s*([0-9,]+)', 
-                            r'([0-9,]+)\s*원',
-                            r'([0-9,]+)\s*KRW',
-                            r'\b(\d{1,3}(?:,\d{3})+)\b'  # 큰 숫자 패턴 추가
-                        ]
-                        temp_prices = []
-                        for pattern in krw_patterns:
-                            matches = re.findall(pattern, current_source)
-                            for match in matches:
-                                try:
-                                    price_num = int(match.replace(',', ''))
-                                    if 10000 <= price_num <= 1000000:  # 1만원~100만원 범위
-                                        temp_prices.append({'price': price_num, 'currency': 'KRW'})
-                                except:
-                                    pass
-                        if temp_prices:
-                            write_debug_log(f"💰 가격 발견! {len(temp_prices)}개 (시도 #{attempt+1})")
-                            found_prices = temp_prices
-                            page_source = current_source
-                            break
-                        
-                        previous_source = current_source
-                        # 가격이 발견되지 않았으면 소스 업데이트 안함 (Google 페이지 방지)
-                    
-                    time.sleep(0.5)  # 0.5초마다 체크
-                    
-                except Exception as monitor_error:
-                    write_debug_log(f"⚠️ 모니터링 중 오류 #{attempt+1}: {monitor_error}")
-                    continue
-            
-            # 페이지 로딩 스레드 완료 대기
-            page_loading_complete.wait(timeout=5)
-            
-            # 가격이 발견되지 않았으면 스레드 완료 후 최종 소스 시도
-            if not found_prices and not page_source:
-                try:
-                    final_source = driver.page_source
-                    if len(final_source) > 100000:
-                        page_source = final_source
-                        write_debug_log(f"📄 스레드 완료 후 최종 소스 사용: {len(page_source)} 문자")
+                    if len(current_source) > 100000 and "agoda" in current_source.lower():
+                        write_debug_log(f"✅ 아고다 페이지 로딩 완료: {len(current_source)} 문자 (대기 시간: {wait_time+1}초)")
+                        break
+                    time.sleep(1)
                 except:
-                    write_debug_log("⚠️ 최종 소스 가져오기 실패")
+                    time.sleep(1)
             
-            # 최종 결과
-            if found_prices:
-                write_debug_log(f"✅ 실시간 모니터링 성공! {len(found_prices)}개 가격 발견")
-                write_debug_log(f"📄 가격 발견된 소스 사용: {len(page_source)} 문자")
+            # 최종 페이지 소스 가져오기
+            page_source = driver.page_source
+            write_debug_log(f"📄 최종 페이지 소스: {len(page_source)} 문자")
+            
+            # 페이지 내용 저장 (디버깅용)
+            save_path = f"downloads/page_text_cid_-1_attempt_1.txt"
+            try:
+                os.makedirs("downloads", exist_ok=True)
+                with open(save_path, 'w', encoding='utf-8') as f:
+                    f.write(page_source)
+                write_debug_log(f"💾 페이지 내용 저장: {save_path}")
+            except:
+                pass
+            
+            # 간단한 가격 확인
+            if "agoda" in page_source.lower():
+                write_debug_log("✅ 아고다 페이지 확인됨")
             else:
-                write_debug_log(f"📄 최종 페이지 소스: {len(page_source)} 문자")
-                write_debug_log("⚠️ 실시간 모니터링에서 가격을 찾지 못함")
+                write_debug_log("⚠️ 아고다 페이지가 아닌 것 같음")
             
         except Exception as agoda_error:
             write_debug_log(f"❌ 데스크톱 아고다 페이지 로딩 실패: {agoda_error}")
