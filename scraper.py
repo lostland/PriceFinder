@@ -138,7 +138,7 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
         
         write_debug_log("⚡ Chrome 드라이버 실행 중...")
         driver = webdriver.Chrome(options=chrome_options)
-        driver.set_page_load_timeout(0.5)  # 0.5초 초단축 타임아웃
+        driver.set_page_load_timeout(5)  # 5초로 적정 복원
         
         write_debug_log("🖥️ 데스크톱 사이트 접속용 스크립트 실행...")
         
