@@ -220,12 +220,12 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
                             pass
                         
                         # 즉시 가격 추출 시도 - 간단한 패턴 매칭
-                        import re
                         krw_patterns = [
                             r'₩\s*([0-9,]+)',
                             r'KRW\s*([0-9,]+)', 
                             r'([0-9,]+)\s*원',
-                            r'([0-9,]+)\s*KRW'
+                            r'([0-9,]+)\s*KRW',
+                            r'\b(\d{1,3}(?:,\d{3})+)\b'  # 큰 숫자 패턴 추가
                         ]
                         temp_prices = []
                         for pattern in krw_patterns:
@@ -335,6 +335,8 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
             patterns.extend([
                 r'₩\s*(\d{1,3}(?:,\d{3})+)',
                 r'(\d{1,3}(?:,\d{3})+)\s*원',
+                r'(\d{1,3}(?:,\d{3})+)\s*KRW',
+                r'\b(\d{1,3}(?:,\d{3})+)\b',  # 큰 숫자 패턴 추가
                 r'시작가\s*₩\s*(\d{1,3}(?:,\d{3})+)',
                 r'(\d{1,3}(?:,\d{3})+)\s*KRW'
             ])
