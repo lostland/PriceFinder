@@ -1,0 +1,69 @@
+sudo ss -tulpn | grep :80
+tcp   LISTEN 0      128          0.0.0.0:80        0.0.0.0:*    users:(("nginx",pid=22566,fd=6),("nginx",pid=22565,fd=6),("nginx",pid=22564,fd=6),("nginx",pid=22563,fd=6),("nginx",pid=22057,fd=6))
+tcp   LISTEN 0      128             [::]:80           [::]:*    users:(("nginx",pid=22566,fd=7),("nginx",pid=22565,fd=7),("nginx",pid=22564,fd=7),("nginx",pid=22563,fd=7),("nginx",pid=22057,fd=7))
+(venv) [root@agodamagic agoda-magic-price]# sudo fuser 80/tcp
+80/tcp:              22057 22563 22564 22565 22566
+(venv) [root@agodamagic agoda-magic-price]# ps aux | grep nginx
+root       22057  0.0  1.0 105072  9948 ?        Ss   12:35   0:00 nginx: master process /usr/sbin/nginx
+nginx      22563  0.0  0.9 137280  9212 ?        S    13:30   0:00 nginx: worker process
+nginx      22564  0.0  0.9 137280  9212 ?        S    13:30   0:00 nginx: worker process
+nginx      22565  0.0  0.9 137280  9212 ?        S    13:30   0:00 nginx: worker process
+nginx      22566  0.0  0.9 137280  9212 ?        S    13:30   0:00 nginx: worker process
+root       22598  0.0  0.1 221944  1204 pts/0    S+   13:31   0:00 grep --color=auto nginx
+(venv) [root@agodamagic agoda-magic-price]# ps aux | grep openresty
+root       22601  0.0  0.1 221944  1208 pts/0    S+   13:31   0:00 grep --color=auto openresty
+(venv) [root@agodamagic agoda-magic-price]# sudo netstat -tulpn | grep nginx
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      22057/nginx: master
+tcp6       0      0 :::80                   :::*                    LISTEN      22057/nginx: master
+(venv) [root@agodamagic agoda-magic-price]# curl -I http://localhost:80
+HTTP/1.1 200 OK
+Server: nginx/1.14.1
+Date: Mon, 25 Aug 2025 04:31:36 GMT
+Content-Type: text/html
+Content-Length: 3429
+Last-Modified: Thu, 10 Jun 2021 09:09:03 GMT
+Connection: keep-alive
+ETag: "60c1d6af-d65"
+Accept-Ranges: bytes
+
+(venv) [root@agodamagic agoda-magic-price]# curl -I http://127.0.0.1:80
+HTTP/1.1 200 OK
+Server: nginx/1.14.1
+Date: Mon, 25 Aug 2025 04:31:40 GMT
+Content-Type: text/html
+Content-Length: 3429
+Last-Modified: Thu, 10 Jun 2021 09:09:03 GMT
+Connection: keep-alive
+ETag: "60c1d6af-d65"
+Accept-Ranges: bytes
+
+(venv) [root@agodamagic agoda-magic-price]# curl -I http://localhost:5000
+HTTP/1.1 200 OK
+Server: gunicorn
+Date: Mon, 25 Aug 2025 04:31:49 GMT
+Connection: close
+Content-Type: text/html; charset=utf-8
+Content-Length: 9615
+
+(venv) [root@agodamagic agoda-magic-price]# sudo systemctl list-units | grep -i web
+(venv) [root@agodamagic agoda-magic-price]# sudo systemctl list-units | grep -i proxy
+  nginx.service                                                                             loaded active running   The nginx HTTP and reverse proxy server
+(venv) [root@agodamagic agoda-magic-price]# sudo systemctl list-units | grep -i openresty
+(venv) [root@agodamagic agoda-magic-price]# sudo find /etc -name "*openresty*" 2>/dev/null
+(venv) [root@agodamagic agoda-magic-price]# sudo find /usr -name "*openresty*" 2>/dev/null
+(venv) [root@agodamagic agoda-magic-price]# sudo find /opt -name "*openresty*" 2>/dev/null
+(venv) [root@agodamagic agoda-magic-price]# sudo systemctl stop nginx
+(venv) [root@agodamagic agoda-magic-price]# sudo certbot certonly --standalone -d agodamagic.mycafe24.com --preferred-challenges http --http-01-port 80
+Saving debug log to /var/log/letsencrypt/letsencrypt.log
+Requesting a certificate for agodamagic.mycafe24.com
+
+Certbot failed to authenticate some domains (authenticator: standalone). The Certificate Authority reported these problems:
+  Domain: agodamagic.mycafe24.com
+  Type:   unauthorized
+  Detail: 222.122.39.64: Invalid response from http://agodamagic.mycafe24.com/.well-known/acme-challenge/vGkmvWhL-8vUY5MJFTEJOGZ4yIJWvCX1bynEF-bTdDY: 404
+
+Hint: The Certificate Authority failed to download the challenge files from the temporary standalone webserver started by Certbot on port 80. Ensure that the listed domains point to this machine and that it can accept inbound connections from the internet.
+
+Some challenges have failed.
+Ask for help or search for solutions at https://community.letsencrypt.org. See the logfile /var/log/letsencrypt/letsencrypt.log or re-run Certbot with -v for more details.
+(venv) [root@agodamagic agoda-magic-price]#
