@@ -1,0 +1,54 @@
+ cat downloads/debug_session_1756129046.txt
+================================================================================
+🔍 AGODA MAGIC PRICE - 상세 디버그 세션
+================================================================================
+📅 세션 시작: 2025-08-25 22:37:26
+🌐 원본 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&cid=1729471&numberOfBedrooms=&familyMode=false&adults=2&children=0&rooms=1&maxRooms=0&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8
+💱 원본 통화: KRW
+📊 처리할 CID 총 개수: 17
+
+================================================================================
+🚀 스크래핑 시작
+================================================================================
+
+[22:37:26]
+============================================================
+[22:37:26] 📍 단계 1/17: 시크릿창 (CID: -1)
+[22:37:26] 🌐 접속 URL: https://www.agoda.com/ko-kr/galleria-10-sukhumvit-by-compass-hospitality/hotel/bangkok-th.html?countryId=106&finalPriceView=1&isShowMobileAppPrice=false&familyMode=false&adults=2&children=0&maxRooms=0&rooms=1&checkIn=2025-09-10&isCalendarCallout=false&childAges=&numberOfGuest=0&missingChildAges=false&travellerType=1&showReviewSubmissionEntry=false&currencyCode=KRW&isFreeOccSearch=false&los=1&searchrequestid=85c08a46-cfe1-43d2-a2b6-f2cfe97594d8&cid=-1&numberOfBedrooms=
+[22:37:26] ============================================================
+[22:37:26] 🔧 Chrome 브라우저 옵션 설정 중...
+[22:37:26] ✅ Chrome 옵션 설정 완료
+[22:37:26] 🚀 웹페이지 접속 시작...
+[22:37:26] 🔍 환경 진단 시작...
+[22:37:26] 🌐 Chrome 버전: Google Chrome 139.0.7258.138
+[22:37:26] 🚗 ChromeDriver 버전: ChromeDriver 139.0.7258.138 (884e54ea8d42947ed636779015c5b4815e069838-refs/branch-heads/7258@{#2631})
+[22:37:26] 🐍 Python 버전: 3.6.8 (default, Jul  1 2025, 19:01:16)
+[GCC 8.5.0 20210514 (Red Hat 8.5.0-26)]
+[22:37:26] 💻 작업 디렉토리: /var/www/agoda-magic-price
+[22:37:26] 🔒 실행 사용자: root
+[22:37:26] 💾 메모리 상태:
+              total        used        free      shared  buff/cache   available
+Mem:          964Mi       307Mi       274Mi       5.0Mi       382Mi       509Mi
+Swap:         4.0Gi       1.0Gi       3.0Gi
+
+[22:37:26] 🔄 실행 중인 Chrome 프로세스: 25개
+[22:37:26] ⚡ Chrome 드라이버 실행 중...
+[22:37:27] 🔐 봇 탐지 우회 스크립트 실행...
+[22:37:27] 🌐 페이지 로딩 시작...
+[22:37:42] 🔚 Chrome 드라이버 종료...
+[22:37:42] ❌ 스크래핑 중 오류 발생: Message: timeout: Timed out receiving message from renderer: 14.637
+  (Session info: chrome=139.0.7258.138)
+
+[22:37:42] 📋 상세 오류:
+Traceback (most recent call last):
+  File "/var/www/agoda-magic-price/scraper.py", line 120, in scrape_prices_simple
+    driver.get(url)
+  File "/var/www/agoda-magic-price/venv/lib64/python3.6/site-packages/selenium/webdriver/remote/webdriver.py", line 333, in get
+    self.execute(Command.GET, {'url': url})
+  File "/var/www/agoda-magic-price/venv/lib64/python3.6/site-packages/selenium/webdriver/remote/webdriver.py", line 321, in execute
+    self.error_handler.check_response(response)
+  File "/var/www/agoda-magic-price/venv/lib64/python3.6/site-packages/selenium/webdriver/remote/errorhandler.py", line 242, in check_response
+    raise exception_class(message, screen, stacktrace)
+selenium.common.exceptions.TimeoutException: Message: timeout: Timed out receiving message from renderer: 14.637
+  (Session info: chrome=139.0.7258.138)
+

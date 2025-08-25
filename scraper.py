@@ -99,11 +99,25 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
         except:
             write_debug_log("❌ 메모리 정보 확인 실패")
         
-        # 실행 중인 Chrome 프로세스 수
+        # 실행 중인 Chrome 프로세스 정리
         try:
             chrome_processes = subprocess.check_output(['pgrep', '-f', 'chrome']).decode().strip().split('\n')
             chrome_count = len([p for p in chrome_processes if p.strip()])
             write_debug_log(f"🔄 실행 중인 Chrome 프로세스: {chrome_count}개")
+            
+            # Chrome 프로세스가 5개 이상이면 정리
+            if chrome_count > 5:
+                write_debug_log("🧹 과도한 Chrome 프로세스 정리 시작...")
+                try:
+                    subprocess.run(['pkill', '-f', 'chrome'], check=False)
+                    time.sleep(2)  # 프로세스 종료 대기
+                    
+                    # 정리 후 다시 확인
+                    chrome_processes_after = subprocess.check_output(['pgrep', '-f', 'chrome']).decode().strip().split('\n')
+                    chrome_count_after = len([p for p in chrome_processes_after if p.strip()])
+                    write_debug_log(f"✅ Chrome 프로세스 정리 완료: {chrome_count}개 → {chrome_count_after}개")
+                except:
+                    write_debug_log("⚠️ Chrome 프로세스 정리 중 일부 오류 발생 (정상)")
         except:
             write_debug_log("ℹ️ 실행 중인 Chrome 프로세스 없음")
         
@@ -125,7 +139,33 @@ def scrape_prices_simple(url, original_currency_code=None, debug_filepath=None, 
             
         finally:
             write_debug_log("🔚 Chrome 드라이버 종료...")
-            driver.quit()
+            try:
+                driver.quit()
+                write_debug_log("✅ Chrome 드라이버 정상 종료")
+                
+                # 종료 후 프로세스 정리 확인
+                time.sleep(1)
+                try:
+                    remaining_processes = subprocess.check_output(['pgrep', '-f', 'chrome']).decode().strip().split('\n')
+                    remaining_count = len([p for p in remaining_processes if p.strip()])
+                    write_debug_log(f"🔍 종료 후 남은 Chrome 프로세스: {remaining_count}개")
+                    
+                    # 프로세스가 남아있으면 강제 종료
+                    if remaining_count > 10:
+                        write_debug_log("🚨 과도한 프로세스 발견 - 추가 정리 실행")
+                        subprocess.run(['pkill', '-9', '-f', 'chrome'], check=False)
+                        time.sleep(1)
+                except:
+                    pass
+                    
+            except Exception as quit_error:
+                write_debug_log(f"⚠️ Chrome 드라이버 종료 중 오류: {quit_error}")
+                # 강제 종료
+                try:
+                    subprocess.run(['pkill', '-9', '-f', 'chrome'], check=False)
+                    write_debug_log("🔨 Chrome 프로세스 강제 종료 완료")
+                except:
+                    pass
         
         load_time = time.time() - start_time
         write_debug_log(f"⏱️ 총 페이지 로딩 시간: {load_time:.2f}초")
