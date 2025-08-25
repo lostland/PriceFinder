@@ -34,10 +34,15 @@ def scrape_prices_simple(url, original_currency_code=None):
         chrome_options.add_argument('--no-first-run')
         chrome_options.add_argument('--disable-sync')
         chrome_options.add_argument('--disable-background-networking')
-        chrome_options.add_argument('--window-size=400,300')  # 더 작은 창
+        chrome_options.add_argument('--disable-features=NetworkService')  # 네트워크 최적화
+        chrome_options.add_argument('--disable-ipc-flooding-protection')  # IPC 최적화
+        chrome_options.add_argument('--window-size=320,240')  # 더더욱 작은 창  
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
         chrome_options.add_argument('--silent')
+        chrome_options.add_argument('--no-zygote')  # 프로세스 최적화
+        chrome_options.add_argument('--single-process')  # 단일 프로세스
+        chrome_options.add_argument('--disable-blink-features=AutomationControlled')  # 봇 감지 우회
         
         # 봇 탐지 우회 (간단하게)
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36')
@@ -49,7 +54,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         start_time = time.time()
         
         driver = webdriver.Chrome(options=chrome_options)
-        driver.set_page_load_timeout(10)  # 10초로 단축
+        driver.set_page_load_timeout(6)  # 6초로 적당히 단축
         
         # 봇 탐지 우회 스크립트 (빠르게)
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
