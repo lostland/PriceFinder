@@ -60,36 +60,34 @@ def scrape_prices_simple(url, original_currency_code=None):
         driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
         try:
-            # 💡 단계별 로딩: 빠른 확인 후 필요시에만 더 기다리기
+            # 💡 매 초단위 체크: "시작가" "Start Price" 발견 시 즉시 중단
             driver.get(url)
             
-            # 1단계: 1초 대기 후 첫 체크
-            time.sleep(1)
-            page_source = driver.page_source
+            # 최대 10초 대기하면서 매 1초마다 체크
+            max_wait = 10
+            start_wait = time.time()
             
-            # 가격 관련 키워드가 있는지 빠른 체크
-            quick_check = any(keyword in page_source for keyword in [
-                '시작가', 'Start Price', '₩', '$', 'USD', 'KRW', 'THB'
-            ])
-            
-            if quick_check:
-                print("💰 가격 관련 키워드 발견 - 추가 대기")
-                # 2단계: 가격 정보 로딩을 위해 최대 3초 더 대기
-                max_additional_wait = 3
-                start_additional = time.time()
+            while time.time() - start_wait < max_wait:
+                time.sleep(1)  # 1초 대기
+                page_source = driver.page_source
                 
-                while time.time() - start_additional < max_additional_wait:
-                    time.sleep(0.5)
-                    new_source = driver.page_source
-                    if len(new_source) > len(page_source):
-                        page_source = new_source  # 더 많은 내용이 로딩되면 업데이트
+                # "시작가" 또는 "Start Price" 키워드만 체크
+                price_keyword_found = ('시작가' in page_source or 'Start Price' in page_source)
+                
+                if price_keyword_found:
+                    print("🎯 가격 키워드 발견 - 바로 추출 진행")
+                    break
                     
-                    # 10KB가 넘으면 중단
-                    if len(page_source.encode('utf-8')) >= 10 * 1024:
-                        print("📏 10KB 도달 - 로딩 중단")
-                        break
-            else:
-                print("⚠️ 가격 키워드 없음 - 짧은 대기만")
+                # 10KB 넘으면 중단
+                if len(page_source.encode('utf-8')) >= 10 * 1024:
+                    print("📏 10KB 도달 - 로딩 중단")
+                    break
+                    
+                print(f"⏰ {int(time.time() - start_wait)}초 경과 - 가격 키워드 대기 중...")
+            
+            # 최대 시간 도달
+            if time.time() - start_wait >= max_wait:
+                print("⏰ 최대 대기 시간 도달")
             
             # 최종 소스 크기 제한
             if len(page_source.encode('utf-8')) > 10 * 1024:
