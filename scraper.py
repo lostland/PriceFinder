@@ -27,6 +27,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         chrome_options.add_argument('--window-size=1028,720')  # 더 큰 화면
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
+        chrome_options.add_argument('--blink-setting=imagesEnable=false')
         #chrome_options.page_load_strategy = 'eager' # 또는 'none'으로 변경 가능
         chrome_options.add_argument('--disable-extensions')
         # 실제 브라우저처럼 보이게 하는 옵션들
