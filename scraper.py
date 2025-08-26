@@ -2,7 +2,7 @@ import re
 from bs4 import BeautifulSoup
 import logging
 import requests
-import time
+import time  
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 def scrape_prices_simple(url, original_currency_code=None):
@@ -61,7 +61,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         f = open(filepath, 'w', encoding='utf-8')
         f.write(f"start-------------------------------------\n")
         f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-
+        f.flush()
 #        except Exception as save_error:
 #            print(f"텍스트 파일 저장 오류: {save_error}")
 
@@ -69,7 +69,13 @@ def scrape_prices_simple(url, original_currency_code=None):
         print(f"driver.get() start\n")
         start_time = time.time()
         try:
+            f.write(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.flush()
+            driver.set_script_timeout(1)
+            driver.set_page_load_timeout(5)
             driver.get(url)
+            f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.flush()
             print(f"driver.get() end\n")
 
             # 빠른 로딩 전략 (timeout 방지)
@@ -78,13 +84,17 @@ def scrape_prices_simple(url, original_currency_code=None):
             # 스크롤로 콘텐츠 로딩
             #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             #time.sleep(0.5)
-            driver.execute_script("window.scrollTo(0, 0);")
+            #driver.execute_script("window.scrollTo(0, 0);")
             #time.sleep(0.5)
-            
-            page_source = driver.page_source
+            #page_source = driver.page_source
             
         finally:
-            driver.quit()
+            f.write(f"driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.flush()
+            #driver.quit()
+
+        #driver.execute_script("window.scrollTo(0, 0);")
+        page_source = driver.page_source
         
         # BeautifulSoup으로 파싱
         soup = BeautifulSoup(page_source, 'html.parser')
