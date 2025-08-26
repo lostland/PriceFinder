@@ -23,14 +23,14 @@ def scrape_prices_simple(url, original_currency_code=None):
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
-        chrome_options.add_argument('--disable-gpu')
-        chrome_options.add_argument('--window-size=1920,1080')  # 더 큰 화면
-        chrome_options.add_argument('--disable-logging')
+        #chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--window-size=1028,720')  # 더 큰 화면
+        #chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
         
         # 실제 브라우저처럼 보이게 하는 옵션들
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-        chrome_options.add_argument('--accept-language=en-US,en;q=0.9')
+        #chrome_options.add_argument('--accept-language=en-US,en;q=0.9')
         chrome_options.add_argument('--accept-encoding=gzip, deflate, br')
         chrome_options.add_argument('--accept=text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8')
         chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
@@ -44,18 +44,42 @@ def scrape_prices_simple(url, original_currency_code=None):
         # URL은 app.py에서 이미 올바르게 처리되었으므로 추가 수정하지 않음
         print(f"스크래핑 사용 URL: {url}")
 
+#        try:
+        import os
+        if not os.path.exists('downloads'):
+            os.makedirs('downloads')
+
+        # CID 정보 추출
+        cid_match = re.search(r'cid=([^&]+)', url)
+        cid_value = cid_match.group(1) if cid_match else 'unknown'
+
+        # 파일명 생성
+        filename = f"page_text_cid_{cid_value}.txt"
+        filepath = os.path.join('downloads', filename)
+
+        # 전체 텍스트 저장
+        f = open(filepath, 'w', encoding='utf-8')
+        f.write(f"start-------------------------------------\n")
+        f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+
+#        except Exception as save_error:
+#            print(f"텍스트 파일 저장 오류: {save_error}")
+
+
+        print(f"driver.get() start\n")
         start_time = time.time()
         try:
             driver.get(url)
-            
+            print(f"driver.get() end\n")
+
             # 빠른 로딩 전략 (timeout 방지)
-            time.sleep(1.5)  # 로딩 대기 시간 단축
+            #time.sleep(1.5)  # 로딩 대기 시간 단축
             
             # 스크롤로 콘텐츠 로딩
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(0.5)
+            #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            #time.sleep(0.5)
             driver.execute_script("window.scrollTo(0, 0);")
-            time.sleep(0.5)
+            #time.sleep(0.5)
             
             page_source = driver.page_source
             
@@ -225,28 +249,29 @@ def scrape_prices_simple(url, original_currency_code=None):
             
             # 즉시 파일 저장하고 가격 분석 건너뛰기
             try:
-                import os
-                if not os.path.exists('downloads'):
-                    os.makedirs('downloads')
+                #import os
+                #if not os.path.exists('downloads'):
+                #    os.makedirs('downloads')
                 
                 # CID 정보 추출
-                cid_match = re.search(r'cid=([^&]+)', url)
-                cid_value = cid_match.group(1) if cid_match else 'unknown'
+                #cid_match = re.search(r'cid=([^&]+)', url)
+                #cid_value = cid_match.group(1) if cid_match else 'unknown'
                 
                 # 파일명 생성
-                filename = f"page_text_cid_{cid_value}.txt"
-                filepath = os.path.join('downloads', filename)
+                #filename = f"page_text_cid_{cid_value}.txt"
+                #filepath = os.path.join('downloads', filename)
                 
                 # 전체 텍스트 저장
-                with open(filepath, 'w', encoding='utf-8') as f:
-                    f.write(f"URL: {url}\n")
-                    f.write(f"CID: {cid_value}\n")
-                    f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write(f"파일 크기: 5KB 제한 적용\n")
-                    f.write("="*50 + "\n\n")
-                    f.write(all_text)
+                #with open(filepath, 'w', encoding='utf-8') as f:
+                f.write(f"2----------------------------------\n")
+                f.write(f"URL: {url}\n")
+                f.write(f"CID: {cid_value}\n")
+                f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                #f.write(f"파일 크기: 5KB 제한 적용\n")
+                f.write("="*50 + "\n\n")
+                f.write(all_text)
                 
-                print(f"5KB 제한 - 텍스트 파일 저장됨: {filepath}")
+                #print(f"5KB 제한 - 텍스트 파일 저장됨: {filepath}")
                 
             except Exception as save_error:
                 print(f"텍스트 파일 저장 오류: {save_error}")
@@ -359,29 +384,31 @@ def scrape_prices_simple(url, original_currency_code=None):
                             break
             
             if len(all_prices) >= 20:
+                print("20개 이상의 가격 발견 - 수집 중지")
                 break
         
         # 가격 분석 전에 먼저 전체 텍스트를 파일로 저장 (다운로드용)
         try:
-            import os
-            if not os.path.exists('downloads'):
-                os.makedirs('downloads')
+            #import os
+            #if not os.path.exists('downloads'):
+            #    os.makedirs('downloads')
             
             # CID 정보 추출
-            cid_match = re.search(r'cid=([^&]+)', url)
-            cid_value = cid_match.group(1) if cid_match else 'unknown'
+            #cid_match = re.search(r'cid=([^&]+)', url)
+            #cid_value = cid_match.group(1) if cid_match else 'unknown'
             
             # 파일명 생성
-            filename = f"page_text_cid_{cid_value}.txt"
-            filepath = os.path.join('downloads', filename)
+            #filename = f"page_text_cid_{cid_value}.txt"
+            #filepath = os.path.join('downloads', filename)
             
             # 전체 텍스트 저장
-            with open(filepath, 'w', encoding='utf-8') as f:
-                f.write(f"URL: {url}\n")
-                f.write(f"CID: {cid_value}\n")
-                f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                f.write("="*50 + "\n\n")
-                f.write(all_text)
+            #with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(f"3------------------------\n")
+            f.write(f"URL: {url}\n")
+            f.write(f"CID: {cid_value}\n")
+            f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write("="*50 + "\n\n")
+            f.write(all_text)
             
             print(f"텍스트 파일 저장됨: {filepath}")
             
