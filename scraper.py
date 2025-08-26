@@ -20,10 +20,11 @@ def scrape_prices_simple(url, original_currency_code=None):
         from selenium.webdriver.support import expected_conditions as EC
         
         chrome_options = Options()
-        chrome_options.add_argument('--headless')
+        #chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
-        #chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--disable-javascript')
+#chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument('--window-size=1028,720')  # 더 큰 화면
         #chrome_options.add_argument('--disable-logging')
         #chrome_options.add_argument('--log-level=3')
@@ -36,7 +37,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         chrome_options.add_argument('--accept-encoding=gzip, deflate, br')
         chrome_options.add_argument('--accept=text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8')
         chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
-        chrome_options.add_experimental_option('useAutomationExtension', False)
+        #chrome_options.add_experimental_option('useAutomationExtension', False)
         
         driver = webdriver.Chrome(options=chrome_options)
         
