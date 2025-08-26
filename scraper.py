@@ -74,7 +74,7 @@ def scrape_prices_simple(url, original_currency_code=None):
             f.flush()
 
             #driver.set_script_timeout(5)
-            driver.set_page_load_timeout(3)
+            driver.set_page_load_timeout(6)
             driver.get(url)
             f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.flush()
