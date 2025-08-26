@@ -445,6 +445,8 @@ def scrape_prices_simple(url, original_currency_code=None):
         
     except Exception as e:
         return []
+    finally:
+        driver.quit()
 
 def process_all_cids_sequential(base_url, cid_list):
     """
