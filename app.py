@@ -193,6 +193,11 @@ def info_page():
     """정보 페이지 라우트"""
     return send_file('static/pages/info.html')
 
+@app.route('/split')
+def split_view_page():
+    """분할 뷰 페이지 라우트"""
+    return send_file('static/pages/split_view.html')
+
 @app.route('/status')
 def status_page():
     """시스템 상태 페이지"""
@@ -208,10 +213,12 @@ def status_page():
         'domain': 'https://agodamagic.cafe24.com',
         'static_pages': [
             '/test - 테스트 페이지',
-            '/info - 정보 페이지', 
+            '/info - 정보 페이지',
+            '/split - 분할 뷰 페이지', 
             '/status - 상태 페이지',
             '/static/pages/test.html - 직접 접근',
-            '/static/pages/info.html - 직접 접근'
+            '/static/pages/info.html - 직접 접근',
+            '/static/pages/split_view.html - 직접 접근'
         ]
     }
     
@@ -260,7 +267,8 @@ def status_page():
                             <div class="text-center mt-4">
                                 <a href="/" class="btn btn-custom me-2">메인 페이지</a>
                                 <a href="/test" class="btn btn-custom me-2">테스트 페이지</a>
-                                <a href="/info" class="btn btn-custom">정보 페이지</a>
+                                <a href="/info" class="btn btn-custom me-2">정보 페이지</a>
+                                <a href="/split" class="btn btn-custom">분할 뷰</a>
                             </div>
                         </div>
                     </div>
