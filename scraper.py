@@ -596,7 +596,8 @@ def reorder_url_parameters(url):
         reordered_params = {}
         
         # 지정된 순서대로 파라메터 추가 (존재하는 경우만)
-        for param in desired_order:
+        #for param in desired_order:
+        for param in params_dict:
             if param in params_dict:
                 reordered_params[param] = params_dict[param]
         
