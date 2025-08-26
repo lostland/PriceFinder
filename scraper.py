@@ -23,8 +23,8 @@ def scrape_prices_simple(url, original_currency_code=None):
         #chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
-        chrome_options.add_argument('--disable-javascript')
-#chrome_options.add_argument('--disable-gpu')
+        #chrome_options.add_argument('--disable-javascript')
+        #chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument('--window-size=1028,720')  # 더 큰 화면
         #chrome_options.add_argument('--disable-logging')
         #chrome_options.add_argument('--log-level=3')
@@ -42,7 +42,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         driver = webdriver.Chrome(options=chrome_options)
         
         # 봇 탐지 우회
-        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        #driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
         # URL은 app.py에서 이미 올바르게 처리되었으므로 추가 수정하지 않음
         print(f"스크래핑 사용 URL: {url}")
