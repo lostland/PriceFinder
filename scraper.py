@@ -23,9 +23,9 @@ def scrape_prices_simple(url, original_currency_code=None):
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
-        #chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument('--window-size=1028,720')  # 더 큰 화면
-        #chrome_options.add_argument('--disable-logging')
+        chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
         
         # 실제 브라우저처럼 보이게 하는 옵션들
@@ -71,8 +71,8 @@ def scrape_prices_simple(url, original_currency_code=None):
         try:
             f.write(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.flush()
-            driver.set_script_timeout(1)
-            driver.set_page_load_timeout(5)
+            driver.set_script_timeout(2)
+            driver.set_page_load_timeout(10)
             driver.get(url)
             f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.flush()
