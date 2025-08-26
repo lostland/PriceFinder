@@ -107,7 +107,10 @@ def scrape_prices_simple(url, original_currency_code=None):
 
         f.write( soup.get_text() )
         f.flush()
-    
+
+        f.write(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.flush()
+        
         prices_found = []
         seen_prices = set()
         
