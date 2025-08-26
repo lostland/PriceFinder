@@ -183,5 +183,94 @@ def download_file(filename):
         app.logger.error(f"Error downloading file: {str(e)}")
         return jsonify({'error': f'다운로드 실패: {str(e)}'}), 500
 
+@app.route('/test')
+def test_page():
+    """테스트 페이지 라우트"""
+    return send_file('static/pages/test.html')
+
+@app.route('/info')
+def info_page():
+    """정보 페이지 라우트"""
+    return send_file('static/pages/info.html')
+
+@app.route('/status')
+def status_page():
+    """시스템 상태 페이지"""
+    import platform
+    import sys
+    import os
+    
+    status_info = {
+        'app_status': 'Running',
+        'python_version': sys.version,
+        'platform': platform.platform(),
+        'server_port': '8000 (프록시 연결)',
+        'domain': 'https://agodamagic.cafe24.com',
+        'static_pages': [
+            '/test - 테스트 페이지',
+            '/info - 정보 페이지', 
+            '/status - 상태 페이지',
+            '/static/pages/test.html - 직접 접근',
+            '/static/pages/info.html - 직접 접근'
+        ]
+    }
+    
+    # 간단한 HTML 응답
+    html = f"""
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>시스템 상태 - agoda-magic-price</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {{ background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%); min-height: 100vh; color: white; }}
+            .card {{ background: rgba(255,255,255,0.1); border: none; border-radius: 15px; }}
+            .btn-custom {{ background: linear-gradient(45deg, #4299e1, #3182ce); border: none; color: white; }}
+        </style>
+    </head>
+    <body>
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body p-5">
+                            <h1 class="text-center mb-4">⚙️ 시스템 상태</h1>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>📊 앱 상태</h5>
+                                    <p>✅ {status_info['app_status']}</p>
+                                    <h5>🌐 접속 정보</h5>
+                                    <p>도메인: {status_info['domain']}</p>
+                                    <p>포트: {status_info['server_port']}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>🖥️ 시스템 정보</h5>
+                                    <p>Python: {status_info['python_version'].split()[0]}</p>
+                                    <p>OS: {status_info['platform']}</p>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <h5>📄 사용 가능한 페이지</h5>
+                                <ul class="list-unstyled">
+                                    {''.join(f'<li>• {page}</li>' for page in status_info['static_pages'])}
+                                </ul>
+                            </div>
+                            <div class="text-center mt-4">
+                                <a href="/" class="btn btn-custom me-2">메인 페이지</a>
+                                <a href="/test" class="btn btn-custom me-2">테스트 페이지</a>
+                                <a href="/info" class="btn btn-custom">정보 페이지</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return html
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
