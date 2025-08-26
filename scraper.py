@@ -73,9 +73,8 @@ def scrape_prices_simple(url, original_currency_code=None):
             f.write(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.flush()
 
-            
             #driver.set_script_timeout(5)
-            driver.set_page_load_timeout(4)
+            driver.set_page_load_timeout(3)
             driver.get(url)
             f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.flush()
@@ -101,13 +100,13 @@ def scrape_prices_simple(url, original_currency_code=None):
 
         #driver.execute_script("window.scrollTo(0, 0);")
         page_source = driver.page_source
-        driver.quit()
+        #driver.quit()
         # BeautifulSoup으로 파싱
         soup = BeautifulSoup(page_source, 'html.parser')
 
         f.write( soup.get_text() )
         f.flush()
-
+    
         prices_found = []
         seen_prices = set()
         
