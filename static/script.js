@@ -112,6 +112,16 @@ document.addEventListener('DOMContentLoaded', function() {
     scrapeForm.addEventListener('submit', handleFormSubmit);
     continueBtn.addEventListener('click', continueAnalysis);
     newSearchBtn.addEventListener('click', startNewSearch);
+
+// 최저가 버튼 이벤트 리스너
+const openLowestPriceBtnEl = document.getElementById('openLowestPriceBtn');
+if (openLowestPriceBtnEl) {
+    openLowestPriceBtnEl.addEventListener('click', function() {
+        if (lowestPriceUrl) {
+            window.open(lowestPriceUrl, '_blank');
+        }
+    });
+}
     
     // 언어 전환 버튼
     const languageToggle = document.getElementById('languageToggle');
@@ -264,6 +274,9 @@ function processSearchResult(data) {
             lowestPrice = numericPrice;
             lowestPriceUrl = data.url;
             lowestPriceCidName = data.cid_name;
+            
+            // 최저가 표시 업데이트
+            updateLowestPriceDisplay();
         }
     }
     
