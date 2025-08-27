@@ -361,6 +361,7 @@ body {
     border-radius: 8px;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
     display: inline-block;
+    color: white !important;
     /* 배경색은 discount-positive, discount-negative 클래스에서 상속받음 */
 }
 

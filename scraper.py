@@ -80,7 +80,7 @@ def scrape_prices_simple(url, original_currency_code=None):
                 print(f"count = {tt}\n")
                 start_time = time.time()
                 print(f"driver.get() start: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                driver.set_page_load_timeout(6)
+                driver.set_page_load_timeout(7)
                 driver.get(url)
                 #f.flush()
                 process_time = time.time() - start_time
