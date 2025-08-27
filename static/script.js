@@ -46,7 +46,7 @@ const scrapeForm = document.getElementById('scrapeForm');
 const urlInput = document.getElementById('urlInput');
 const scrapeBtn = document.getElementById('scrapeBtn');
 const progressSection = document.getElementById('progressSection');
-const loadingIndicator = document.getElementById('loadingIndicator');
+const analysisStatusCard = document.getElementById('analysisStatusCard');
 const errorMessage = document.getElementById('errorMessage');
 const lowestPriceSection = document.getElementById('lowestPriceSection');
 const cardResultsSection = document.getElementById('cardResultsSection');
@@ -70,7 +70,7 @@ const translations = {
         searchPhase: '검색창리스트',
         cardPhase: '카드리스트',
         analyzing: '분석 중...',
-        loading: '가격 정보를 분석 중입니다. 잠시만 기다려주세요.',
+        loading: '가격 정보를 분석 중입니다.',
         currentLowest: '현재 최저가',
         openLink: '창열기',
         cardComparison: '카드별 가격 비교',
@@ -172,7 +172,12 @@ function analyzeCid() {
     
     // UI 업데이트
     updateProgress();
-    showLoading();
+    showAnalysisStatus();
+    // CID 이름 업데이트
+    const currentCidNameEl = document.getElementById('currentCidName');
+    if (currentCidNameEl && allCids[currentStep]) {
+        currentCidNameEl.textContent = allCids[currentStep].name;
+    }
     hideError();
     
     // API 호출
@@ -195,7 +200,7 @@ function analyzeCid() {
         return response.json();
     })
     .then(data => {
-        hideLoading();
+        // 분석 상태 카드는 계속 유지
         
         if (data.error) {
             // 첫번째 CID에서 가격을 찾지 못한 경우 - 잘못된 링크로 판단
@@ -221,7 +226,7 @@ function analyzeCid() {
         }
     })
     .catch(error => {
-        hideLoading();
+        // 분석 상태 카드는 계속 유지
         showError('분석 중 오류가 발생했습니다: ' + error.message);
     });
 }
@@ -502,6 +507,10 @@ function showComplete() {
     completeSection.style.display = 'block';
     hideContinueButton();
     hideProgressSection();
+    // 분석 완료 시 분석 상태 카드 숨기기
+    if (analysisStatusCard) {
+        analysisStatusCard.style.display = 'none';
+    }
     
     completeSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
@@ -555,12 +564,15 @@ function hideProgressSection() {
     progressSection.style.display = 'none';
 }
 
-function showLoading() {
-    loadingIndicator.style.display = 'block';
+function showAnalysisStatus() {
+    if (analysisStatusCard) {
+        analysisStatusCard.style.display = 'block';
+    }
 }
 
-function hideLoading() {
-    loadingIndicator.style.display = 'none';
+function hideAnalysisStatus() {
+    // 분석 상태 카드는 고정으로 유지 (숨기지 않음)
+    // 필요 시 여기서 특정 상황에만 숨길 수 있음
 }
 
 function showError(message) {
@@ -598,7 +610,7 @@ function hideContinueButton() {
 
 function hideAllSections() {
     hideProgressSection();
-    hideLoading();
+    hideAnalysisStatus();
     hideError();
     hideLowestPriceSection();
     hideCardResultsSection();

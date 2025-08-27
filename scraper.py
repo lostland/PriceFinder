@@ -76,7 +76,7 @@ def scrape_prices_simple(url, original_currency_code=None):
             f.flush()
 
             #driver.set_script_timeout(5)
-            driver.set_page_load_timeout(10)
+            driver.set_page_load_timeout(5)
             driver.get(url)
             f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.flush()
@@ -106,11 +106,11 @@ def scrape_prices_simple(url, original_currency_code=None):
         # BeautifulSoup으로 파싱
         soup = BeautifulSoup(page_source, 'html.parser')
 
-        f.write( soup.get_text() )
-        f.flush()
+        #f.write( soup.get_text() )
+        #f.flush()
 
-        f.write(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.flush()
+        #f.write(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        #f.flush()
         
         prices_found = []
         seen_prices = set()
@@ -596,8 +596,8 @@ def reorder_url_parameters(url):
         reordered_params = {}
         
         # 지정된 순서대로 파라메터 추가 (존재하는 경우만)
-        #for param in desired_order:
-        for param in params_dict:
+        #for param in params_dict:
+        for param in desired_order:
             if param in params_dict:
                 reordered_params[param] = params_dict[param]
         
