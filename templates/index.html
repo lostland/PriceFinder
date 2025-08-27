@@ -101,13 +101,13 @@
             <div class="col-lg-10 mx-auto">
                 <div class="card border-info">
                     <div class="card-body py-3">
-                        <div class="d-flex align-items-center">
-                            <div class="spinner-border spinner-border-sm text-info me-3" role="status">
+                        <div class="text-center">
+                            <div class="spinner-border spinner-border-sm text-info mb-2" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
                             <div>
-                                <span id="currentCidName" class="badge bg-secondary me-2">시크릿창</span>
-                                <span class="text-muted">분석 중...</span>
+                                <span id="currentCidName" class="badge bg-secondary me-2 fs-6">시크릿창</span>
+                                <span class="fs-5">분석 중...</span>
                             </div>
                         </div>
                     </div>
@@ -129,28 +129,17 @@
             </div>
         </div>
 
-        <!-- Lowest Price Section (검색창리스트 결과) -->
+        <!-- Search Results Section (검색창리스트 결과) -->
         <div id="lowestPriceSection" class="row mb-4" style="display: none;">
             <div class="col-lg-10 mx-auto">
-                <div class="card border-success">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="mb-0">
-                            <i class="fas fa-trophy"></i>
-                            현재 최저가
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h4 id="lowestPrice" class="text-success mb-1">-</h4>
-                                <p id="lowestCidName" class="text-muted mb-0">-</p>
-                            </div>
-                            <button id="openLowestPriceBtn" class="btn btn-success" disabled>
-                                <i class="fas fa-external-link-alt"></i>
-                                창열기
-                            </button>
-                        </div>
-                    </div>
+                <div class="text-center">
+                    <h5 class="mb-3">
+                        <i class="fas fa-search"></i>
+                        검색창리스트 결과
+                    </h5>
+                </div>
+                <div id="searchResultsContainer" class="row">
+                    <!-- 검색 결과들이 여기에 동적으로 추가됩니다 -->
                 </div>
             </div>
         </div>

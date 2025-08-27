@@ -252,6 +252,9 @@ function processResult(data) {
 function processSearchResult(data) {
     searchResults.push(data);
     
+    // 검색 결과를 작은 카드로 표시
+    displaySearchResult(data);
+    
     // 가격이 있는 경우 최저가 업데이트
     if (data.prices && data.prices.length > 0) {
         const price = data.prices[0];  // 첫 번째 가격 사용
@@ -261,11 +264,10 @@ function processSearchResult(data) {
             lowestPrice = numericPrice;
             lowestPriceUrl = data.url;
             lowestPriceCidName = data.cid_name;
-            updateLowestPriceDisplay();
         }
     }
     
-    // 최저가 섹션 표시
+    // 검색창리스트 섹션 표시
     showLowestPriceSection();
 }
 
@@ -286,6 +288,36 @@ function updateLowestPriceDisplay() {
         lowestCidNameEl.textContent = lowestPriceCidName;
         openLowestPriceBtnEl.disabled = false;
     }
+}
+
+// 검색 결과 표시 (카드 사이즈 절반)
+function displaySearchResult(data) {
+    const container = document.getElementById('searchResultsContainer');
+    const t = translations[currentLanguage];
+    
+    const cardCol = document.createElement('div');
+    cardCol.className = 'col-md-6 col-xl-3 mb-3';
+    
+    const hasPrice = data.prices && data.prices.length > 0;
+    const price = hasPrice ? data.prices[0].price : t.noPrice;
+    const cardClass = hasPrice ? 'border-success' : 'border-warning';
+    const badgeClass = hasPrice ? 'bg-success' : 'bg-warning';
+    
+    cardCol.innerHTML = `
+        <div class="card h-100 ${cardClass}">
+            <div class="card-body p-3">
+                <div class="text-center">
+                    <div class="badge ${badgeClass} mb-2">${data.cid_name}</div>
+                    <h6 class="card-title">${price}</h6>
+                    <button class="btn btn-sm btn-outline-success" onclick="window.open('${data.url}', '_blank')">
+                        <i class="fas fa-external-link-alt"></i> ${t.openLink}
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(cardCol);
 }
 
 // 카드 결과 표시
@@ -539,6 +571,10 @@ function startNewSearch() {
     
     // 결과 컨테이너 초기화
     document.getElementById('cardResultsContainer').innerHTML = '';
+    const searchContainer = document.getElementById('searchResultsContainer');
+    if (searchContainer) {
+        searchContainer.innerHTML = '';
+    }
 }
 
 // 숫자 가격 추출 (비교용)
