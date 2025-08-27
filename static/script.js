@@ -305,19 +305,25 @@ function updateLowestPriceDisplay() {
     const openLowestPriceBtnEl = document.getElementById('openLowestPriceBtn');
     
     if (lowestPrice !== null && lowestPriceEl && lowestCidNameEl && openLowestPriceBtnEl) {
-        let priceText = ''//formatPrice(lowestPrice);
+        let discountText = '';
         
-        // 기준 가격과 비교하여 할인율 표시
+        // 기준 가격과 비교하여 할인율만 표시
         if (basePrice !== null && lowestPrice !== basePrice) {
             const discountPercentage = Math.round(((basePrice - lowestPrice) / basePrice) * 100);
             if (discountPercentage > 0) {
-                priceText += ` ${discountPercentage}% 저렴`;
+                discountText = `${discountPercentage}% 저렴`;
             } else {
-                priceText += ` ${Math.abs(discountPercentage)}% 비쌈`;
+                discountText = `${Math.abs(discountPercentage)}% 비쌈`;
             }
+        } else {
+            discountText = '0% (기준가)';
         }
         
-        lowestPriceEl.textContent = priceText;
+        // 할인율을 강조하는 HTML로 변경
+        const discountClass = basePrice !== null && lowestPrice < basePrice ? 'discount-positive' : 
+                             basePrice !== null && lowestPrice > basePrice ? 'discount-negative' : 'discount-neutral';
+        
+        lowestPriceEl.innerHTML = `<span class="lowest-price-discount ${discountClass}">${discountText}</span>`;
         lowestCidNameEl.textContent = lowestPriceCidName;
         openLowestPriceBtnEl.disabled = false;
     }
@@ -355,12 +361,26 @@ function displaySearchResult(data) {
         <div class="search-result-card">
             <div class="text-center">
                 ${priceDisplay}
-                <div class="search-result-name">${data.cid_name}</div>
+                <div class="search-result-name mb-2">${data.cid_name}</div>
+                <button class="btn btn-outline-primary btn-sm search-open-btn" 
+                        data-url="${data.url}" 
+                        ${!hasPrice ? 'disabled' : ''}>
+                    <i class="fas fa-external-link-alt"></i>
+                    ${t.openLink}
+                </button>
             </div>
         </div>
     `;
     
     container.appendChild(cardCol);
+    
+    // 창열기 버튼 이벤트 추가
+    const openBtn = cardCol.querySelector('.search-open-btn');
+    if (openBtn && !openBtn.disabled) {
+        openBtn.addEventListener('click', function() {
+            window.open(data.url, '_blank');
+        });
+    }
 }
 
 // 카드 결과 표시 (기존 크기)
@@ -593,6 +613,9 @@ function showComplete() {
     if (totalResultsEl) {
         totalResultsEl.textContent = totalResults;
     }
+    
+    // 분석중 창 숨기기
+    loadingIndicator.style.display = 'none';
     
     completeSection.style.display = 'block';
     hideContinueButton();

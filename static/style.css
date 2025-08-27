@@ -351,6 +351,22 @@ body {
     padding: 0.7rem;
 }
 
+/* 최저가 할인율 강조 스타일 */
+.lowest-price-discount {
+    font-size: 1.3rem !important;
+    font-weight: bold !important;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    display: inline-block;
+}
+
+.discount-neutral {
+    background: linear-gradient(135deg, #6c757d, #495057) !important;
+    color: white !important;
+    box-shadow: 0 3px 10px rgba(108, 117, 125, 0.4);
+}
+
 /* 전체 테마 색상 오버라이드 */
 .btn-info {
     background: var(--magic-gradient) !important;
