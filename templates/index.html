@@ -100,16 +100,19 @@
             </div>
         </div>
 
-        <!-- Loading Indicator -->
+        <!-- Loading Indicator (고정 표시) -->
         <div id="loadingIndicator" class="row mb-4" style="display: none;">
             <div class="col-lg-10 mx-auto">
-                <div class="card">
-                    <div class="card-body text-center py-4">
-                        <div class="spinner-border text-info mb-3" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                <div class="card analyzing-card">
+                    <div class="card-body py-3">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <div class="spinner-border text-info me-3" role="status" style="width: 1.5rem; height: 1.5rem;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <div class="analyzing-text">
+                                <span id="loadingCid">시크릿창</span> 분석 중
+                            </div>
                         </div>
-                        <h5><span id="loadingCid"></span> 분석 중...</h5>
-                        <p class="text-muted mb-0">웹페이지에서 가격 정보를 추출하는 중입니다. 잠시만 기다려주세요.</p>
                     </div>
                 </div>
             </div>
@@ -128,7 +131,22 @@
             </div>
         </div>
 
-        <!-- Lowest Price Section (검색창리스트 결과) -->
+        <!-- Search Results Section (검색창리스트 결과) -->
+        <div id="searchResultsSection" class="row mb-4" style="display: none;">
+            <div class="col-lg-10 mx-auto">
+                <div class="text-center mb-3">
+                    <h6 class="mb-0">
+                        <i class="fas fa-search text-info"></i>
+                        검색창리스트 결과
+                    </h6>
+                </div>
+                <div id="searchResultsContainer" class="row">
+                    <!-- 검색창리스트 결과들이 여기에 동적으로 추가됩니다 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Lowest Price Section (현재 최저가) -->
         <div id="lowestPriceSection" class="row mb-4" style="display: none;">
             <div class="col-lg-10 mx-auto">
                 <div class="card border-success">

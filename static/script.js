@@ -166,6 +166,8 @@ function handleFormSubmit(e) {
 // CID 분석 실행
 function analyzeCid() {
     if (currentStep >= totalSteps) {
+        // 분석 완료 시 로딩 인디케이터 숨김
+        loadingIndicator.style.display = 'none';
         showComplete();
         return;
     }
@@ -195,7 +197,7 @@ function analyzeCid() {
         return response.json();
     })
     .then(data => {
-        hideLoading();
+        // hideLoading(); // 고정 디스플레이를 위해 주석 처리
         
         if (data.error) {
             // 첫번째 CID에서 가격을 찾지 못한 경우 - 잘못된 링크로 판단
@@ -221,7 +223,7 @@ function analyzeCid() {
         }
     })
     .catch(error => {
-        hideLoading();
+        // hideLoading(); // 고정 디스플레이를 위해 주석 처리
         showError('분석 중 오류가 발생했습니다: ' + error.message);
     });
 }
@@ -247,6 +249,9 @@ function processResult(data) {
 function processSearchResult(data) {
     searchResults.push(data);
     
+    // 검색창리스트 결과를 작은 카드로 표시
+    displaySearchResult(data);
+    
     // 가격이 있는 경우 최저가 업데이트
     if (data.prices && data.prices.length > 0) {
         const price = data.prices[0];  // 첫 번째 가격 사용
@@ -260,7 +265,8 @@ function processSearchResult(data) {
         }
     }
     
-    // 최저가 섹션 표시
+    // 검색창리스트 결과 섹션과 최저가 섹션 표시
+    showSearchResultsSection();
     showLowestPriceSection();
 }
 
@@ -283,7 +289,30 @@ function updateLowestPriceDisplay() {
     }
 }
 
-// 카드 결과 표시
+// 검색창리스트 결과 표시 (작은 카드)
+function displaySearchResult(data) {
+    const container = document.getElementById('searchResultsContainer');
+    const t = translations[currentLanguage];
+    
+    const cardCol = document.createElement('div');
+    cardCol.className = 'col-md-4 col-lg-3 mb-2';
+    
+    const hasPrice = data.prices && data.prices.length > 0;
+    const price = hasPrice ? data.prices[0].price : t.noPrice;
+    
+    cardCol.innerHTML = `
+        <div class="search-result-card">
+            <div class="text-center">
+                <div class="search-result-price mb-1">${price}</div>
+                <div class="search-result-name">${data.cid_name}</div>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(cardCol);
+}
+
+// 카드 결과 표시 (기존 크기)
 function displayCardResult(data) {
     const container = document.getElementById('cardResultsContainer');
     const t = translations[currentLanguage];
@@ -298,16 +327,14 @@ function displayCardResult(data) {
     const badgeText = hasPrice ? '' : t.noPrice;
     
     cardCol.innerHTML = `
-        <div class="card ${cardClass}">
-            <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card-result-item ${cardClass}">
+            <div class="d-flex justify-content-between align-items-center mb-2">
                 <h6 class="mb-0">${data.cid_name}</h6>
                 ${badgeText ? `<span class="badge ${badgeClass}">${badgeText}</span>` : ''}
             </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <h5 class="text-primary">${price}</h5>
-                </div>
-                <button class="btn btn-outline-primary btn-sm w-100 card-open-btn" 
+            <div class="text-center">
+                <div class="card-result-price mb-2">${price}</div>
+                <button class="btn btn-outline-primary btn-sm card-open-btn" 
                         data-url="${data.url}" 
                         ${!hasPrice ? 'disabled' : ''}>
                     <i class="fas fa-external-link-alt"></i>
@@ -530,6 +557,7 @@ function startNewSearch() {
     
     // 결과 컨테이너 초기화
     document.getElementById('cardResultsContainer').innerHTML = '';
+    document.getElementById('searchResultsContainer').innerHTML = '';
 }
 
 // 숫자 가격 추출 (비교용)
@@ -560,7 +588,22 @@ function showLoading() {
 }
 
 function hideLoading() {
-    loadingIndicator.style.display = 'none';
+    // 분석 중 카드를 고정으로 두고 숨기지 않음
+    // loadingIndicator.style.display = 'none';
+}
+
+function showSearchResultsSection() {
+    const searchResultsSection = document.getElementById('searchResultsSection');
+    if (searchResultsSection) {
+        searchResultsSection.style.display = 'block';
+    }
+}
+
+function hideSearchResultsSection() {
+    const searchResultsSection = document.getElementById('searchResultsSection');
+    if (searchResultsSection) {
+        searchResultsSection.style.display = 'none';
+    }
 }
 
 function showError(message) {
@@ -600,6 +643,7 @@ function hideAllSections() {
     hideProgressSection();
     hideLoading();
     hideError();
+    hideSearchResultsSection();
     hideLowestPriceSection();
     hideCardResultsSection();
     hideContinueButton();
