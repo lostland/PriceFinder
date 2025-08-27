@@ -305,15 +305,15 @@ function updateLowestPriceDisplay() {
     const openLowestPriceBtnEl = document.getElementById('openLowestPriceBtn');
     
     if (lowestPrice !== null && lowestPriceEl && lowestCidNameEl && openLowestPriceBtnEl) {
-        let priceText = formatPrice(lowestPrice);
+        let priceText = ''//formatPrice(lowestPrice);
         
         // 기준 가격과 비교하여 할인율 표시
         if (basePrice !== null && lowestPrice !== basePrice) {
             const discountPercentage = Math.round(((basePrice - lowestPrice) / basePrice) * 100);
             if (discountPercentage > 0) {
-                priceText += ` (${discountPercentage}% 저렴)`;
+                priceText += ` ${discountPercentage}% 저렴`;
             } else {
-                priceText += ` (${Math.abs(discountPercentage)}% 비쌈)`;
+                priceText += ` ${Math.abs(discountPercentage)}% 비쌈`;
             }
         }
         
