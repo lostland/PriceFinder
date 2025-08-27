@@ -316,6 +316,41 @@ body {
     --magic-gradient: linear-gradient(135deg, #ffd700 0%, #20b2aa 50%, #9370db 100%);
 }
 
+/* 할인율 강조 스타일 */
+.search-result-discount-big, .card-result-discount-big {
+    font-size: 1.4rem !important;
+    font-weight: bold !important;
+    text-align: center;
+    padding: 0.5rem;
+    border-radius: 8px;
+    margin: 0.3rem 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.discount-positive {
+    background: linear-gradient(135deg, #28a745, #20c997) !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+}
+
+.discount-negative {
+    background: linear-gradient(135deg, #dc3545, #e74c3c) !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+}
+
+/* 검색 결과 카드 할인율 특별 크기 */
+.search-result-discount-big {
+    font-size: 1.1rem !important;
+    padding: 0.3rem;
+}
+
+/* 카드 결과 할인율 더 큰 크기 */
+.card-result-discount-big {
+    font-size: 1.6rem !important;
+    padding: 0.7rem;
+}
+
 /* 전체 테마 색상 오버라이드 */
 .btn-info {
     background: var(--magic-gradient) !important;

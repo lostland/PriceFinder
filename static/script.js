@@ -340,13 +340,12 @@ function displaySearchResult(data) {
                 `${data.discount_percentage}% 저렴` : 
                 `${Math.abs(data.discount_percentage)}% 비쌈`;
             priceDisplay = `
-                <div class="search-result-price mb-1">${data.prices[0].price}</div>
-                <div class="search-result-discount ${data.discount_percentage >= 0 ? 'text-success' : 'text-danger'}">
+                <div class="search-result-discount-big ${data.discount_percentage >= 0 ? 'discount-positive' : 'discount-negative'}">
                     ${discountText}
                 </div>
             `;
         } else {
-            priceDisplay = `<div class="search-result-price mb-1">${data.prices[0].price}</div>`;
+            priceDisplay = `<div class="search-result-price mb-1">0% (기준가)</div>`;
         }
     } else {
         priceDisplay = `<div class="search-result-price mb-1">${t.noPrice}</div>`;
@@ -384,13 +383,12 @@ function displayCardResult(data) {
                 `${data.discount_percentage}% 저렴` : 
                 `${Math.abs(data.discount_percentage)}% 비쌈`;
             priceDisplay = `
-                <div class="card-result-price mb-1">${data.prices[0].price}</div>
-                <div class="card-result-discount ${data.discount_percentage >= 0 ? 'text-success' : 'text-danger'} mb-2">
+                <div class="card-result-discount-big ${data.discount_percentage >= 0 ? 'discount-positive' : 'discount-negative'} mb-2">
                     ${discountText}
                 </div>
             `;
         } else {
-            priceDisplay = `<div class="card-result-price mb-2">${data.prices[0].price}</div>`;
+            priceDisplay = `<div class="card-result-price mb-2">0% (기준가)</div>`;
         }
     } else {
         priceDisplay = `<div class="card-result-price mb-2">${t.noPrice}</div>`;

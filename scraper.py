@@ -20,7 +20,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         from selenium.webdriver.support import expected_conditions as EC
         
         chrome_options = Options()
-        chrome_options.add_argument('--headless')
+        #chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         #chrome_options.add_argument('--disable-javascript')
@@ -71,16 +71,16 @@ def scrape_prices_simple(url, original_currency_code=None):
 
         print(f"driver.get() start\n")
         start_time = time.time()
-        #try:
+        try:
             #f.write(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
 
             #driver.set_script_timeout(5)
-        driver.set_page_load_timeout(10)
-        driver.get(url)
+            driver.set_page_load_timeout(10)
+            driver.get(url)
             #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
-        print(f"driver.get() end\n")
+            print(f"driver.get() end\n")
 
         
             # 빠른 로딩 전략 (timeout 방지)
@@ -93,7 +93,8 @@ def scrape_prices_simple(url, original_currency_code=None):
             #time.sleep(0.5)
             #page_source = driver.page_source
             
-        #except:
+        except:
+           print(f"driver.get() fail\n")
             #f.write(f"driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
 
@@ -102,10 +103,10 @@ def scrape_prices_simple(url, original_currency_code=None):
 
         #driver.execute_script("window.scrollTo(0, 0);")
         page_source = driver.page_source
-        #driver.quit()
         # BeautifulSoup으로 파싱
         soup = BeautifulSoup(page_source, 'html.parser')
 
+        driver.quit()
         #f.write( soup.get_text() )
         #f.flush()
 
@@ -450,9 +451,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         
     except Exception as e:
         return []
-    finally:
-        driver.quit()
-
+ 
 def process_all_cids_sequential(base_url, cid_list):
     """
     모든 CID를 순차적으로 처리하고 각 결과를 즉시 반환
