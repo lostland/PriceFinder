@@ -110,7 +110,41 @@ def scrape():
         
         app.logger.info(f"Processing step {step+1}/{len(all_cids)}: CID {current_name}({current_cid})")
         
-        # 스크래핑 실행 (원본 currencyCode 전달)
+        # 기준 가격 계산 (첫 번째 스큭에서 원본 URL의 CID 가격을 기준으로 설정)
+        base_price = None
+        base_price_cid_name = ''
+        
+        if step == 0:
+            # 원본 URL의 CID로 기준 가격 추출
+            if original_cid:
+                # 원본 URL에 CID가 있으면 그것으로 기준 가격 추출
+                base_url = url  # 원본 URL 사용
+                # 원본 CID의 이름 찾기
+                for cid_value, cid_name in all_cids:
+                    if cid_value == original_cid:
+                        base_price_cid_name = cid_name
+                        break
+                if not base_price_cid_name:
+                    base_price_cid_name = f'원본 CID({original_cid})'
+            else:
+                # CID가 없으면 첫 번째 CID(시크릿창)로 기준 설정
+                base_url = new_url
+                base_price_cid_name = current_name
+            
+            # 기준 가격 스크래핑
+            import time
+            start_time = time.time()
+            base_prices = scrape_prices_simple(base_url, original_currency_code=original_currency)
+            if base_prices:
+                base_price_str = base_prices[0]['price']
+                # 숫자만 추출하여 기준 가격 설정
+                import re
+                base_price_match = re.search(r'[\d,]+', base_price_str)
+                if base_price_match:
+                    base_price = int(base_price_match.group().replace(',', ''))
+                    app.logger.info(f"기준 가격 설정: {base_price_str} ({base_price}) - {base_price_cid_name}")
+        
+        # 현재 CID 스크래핑 실행
         import time
         start_time = time.time()
         prices = scrape_prices_simple(new_url, original_currency_code=original_currency)
@@ -129,6 +163,27 @@ def scrape():
         download_filename = f"page_text_cid_{current_cid}.txt"
         download_link = f"/download/{download_filename}"
         
+        # 할인율 계산
+        discount_percentage = None
+        current_price = None
+        
+        if prices and base_price:
+            current_price_str = prices[0]['price']
+            # 숫자만 추출
+            import re
+            current_price_match = re.search(r'[\d,]+', current_price_str)
+            if current_price_match:
+                current_price = int(current_price_match.group().replace(',', ''))
+                if current_price < base_price:
+                    discount_percentage = round(((base_price - current_price) / base_price) * 100, 1)
+                    app.logger.info(f"할인율: {discount_percentage}% (기준: {base_price}, 현재: {current_price})")
+                elif current_price > base_price:
+                    # 더 비싼 경우 음수로 표시 (예: -5%)
+                    discount_percentage = round(((base_price - current_price) / base_price) * 100, 1)
+                    app.logger.info(f"가격 상승: {discount_percentage}% (기준: {base_price}, 현재: {current_price})")
+                else:
+                    discount_percentage = 0
+        
         # 결과 반환
         result = {
             'step': step + 1,
@@ -145,7 +200,11 @@ def scrape():
             'phase_name': phase_name,
             'search_phase_completed': step + 1 == len(search_cids),
             'download_link': download_link,
-            'download_filename': download_filename
+            'download_filename': download_filename,
+            'base_price': base_price,
+            'base_price_cid_name': base_price_cid_name,
+            'current_price': current_price,
+            'discount_percentage': discount_percentage
         }
         
         return jsonify(result)

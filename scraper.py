@@ -20,14 +20,14 @@ def scrape_prices_simple(url, original_currency_code=None):
         from selenium.webdriver.support import expected_conditions as EC
         
         chrome_options = Options()
-        #chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         #chrome_options.add_argument('--disable-javascript')
-        #chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument('--window-size=1028,720')  # 더 큰 화면
-        #chrome_options.add_argument('--disable-logging')
-        #chrome_options.add_argument('--log-level=3')
+        chrome_options.add_argument('--disable-logging')
+        chrome_options.add_argument('--log-level=3')
         #chrome_options.add_argument('--blink-setting=imagesEnable=false')
         #chrome_options.page_load_strategy = 'eager' # 또는 'none'으로 변경 가능
         #chrome_options.add_argument('--disable-extensions')
@@ -57,30 +57,30 @@ def scrape_prices_simple(url, original_currency_code=None):
         cid_value = cid_match.group(1) if cid_match else 'unknown'
 
         # 파일명 생성
-        filename = f"page_text_cid_{cid_value}.txt"
-        filepath = os.path.join('downloads', filename)
+        #filename = f"page_text_cid_{cid_value}.txt"
+        #filepath = os.path.join('downloads', filename)
 
         # 전체 텍스트 저장
-        f = open(filepath, 'w', encoding='utf-8')
-        f.write(f"start-------------------------------------\n")
-        f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.flush()
+        #f = open(filepath, 'w', encoding='utf-8')
+        #f.write(f"start-------------------------------------\n")
+        #f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        #f.flush()
 #        except Exception as save_error:
 #            print(f"텍스트 파일 저장 오류: {save_error}")
 
 
         print(f"driver.get() start\n")
         start_time = time.time()
-        try:
-            f.write(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-            f.flush()
+        #try:
+            #f.write(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            #f.flush()
 
             #driver.set_script_timeout(5)
-            driver.set_page_load_timeout(10)
-            driver.get(url)
-            f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-            f.flush()
-            print(f"driver.get() end\n")
+        driver.set_page_load_timeout(10)
+        driver.get(url)
+            #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            #f.flush()
+        print(f"driver.get() end\n")
 
         
             # 빠른 로딩 전략 (timeout 방지)
@@ -93,12 +93,12 @@ def scrape_prices_simple(url, original_currency_code=None):
             #time.sleep(0.5)
             #page_source = driver.page_source
             
-        except:
-            f.write(f"driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-            f.flush()
+        #except:
+            #f.write(f"driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            #f.flush()
 
-        f.write(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.flush()
+        #f.write(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        #f.flush()
 
         #driver.execute_script("window.scrollTo(0, 0);")
         page_source = driver.page_source
@@ -106,11 +106,11 @@ def scrape_prices_simple(url, original_currency_code=None):
         # BeautifulSoup으로 파싱
         soup = BeautifulSoup(page_source, 'html.parser')
 
-        f.write( soup.get_text() )
-        f.flush()
+        #f.write( soup.get_text() )
+        #f.flush()
 
-        f.write(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.flush()
+        #f.write(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        #f.flush()
         
         prices_found = []
         seen_prices = set()
@@ -271,7 +271,7 @@ def scrape_prices_simple(url, original_currency_code=None):
             all_text = truncated_text + "... [5KB 제한으로 텍스트 일부만 수집됨]"
             
             # 즉시 파일 저장하고 가격 분석 건너뛰기
-            try:
+            #try:
                 #import os
                 #if not os.path.exists('downloads'):
                 #    os.makedirs('downloads')
@@ -286,18 +286,18 @@ def scrape_prices_simple(url, original_currency_code=None):
                 
                 # 전체 텍스트 저장
                 #with open(filepath, 'w', encoding='utf-8') as f:
-                f.write(f"2----------------------------------\n")
-                f.write(f"URL: {url}\n")
-                f.write(f"CID: {cid_value}\n")
-                f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                #f.write(f"2----------------------------------\n")
+                #f.write(f"URL: {url}\n")
+                ##f.write(f"CID: {cid_value}\n")
+                #f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
                 #f.write(f"파일 크기: 5KB 제한 적용\n")
-                f.write("="*50 + "\n\n")
-                f.write(all_text)
+                #f.write("="*50 + "\n\n")
+                #f.write(all_text)
                 
                 #print(f"5KB 제한 - 텍스트 파일 저장됨: {filepath}")
                 
-            except Exception as save_error:
-                print(f"텍스트 파일 저장 오류: {save_error}")
+            #except Exception as save_error:
+                #print(f"텍스트 파일 저장 오류: {save_error}")
             
             # txt 파일에서 "시작가" 뒤의 가격 찾기
             starting_price = None
@@ -411,7 +411,7 @@ def scrape_prices_simple(url, original_currency_code=None):
                 break
         
         # 가격 분석 전에 먼저 전체 텍스트를 파일로 저장 (다운로드용)
-        try:
+        #try:
             #import os
             #if not os.path.exists('downloads'):
             #    os.makedirs('downloads')
@@ -426,17 +426,17 @@ def scrape_prices_simple(url, original_currency_code=None):
             
             # 전체 텍스트 저장
             #with open(filepath, 'w', encoding='utf-8') as f:
-            f.write(f"3------------------------\n")
-            f.write(f"URL: {url}\n")
-            f.write(f"CID: {cid_value}\n")
-            f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-            f.write("="*50 + "\n\n")
-            f.write(all_text)
+            #f.write(f"3------------------------\n")
+            #f.write(f"URL: {url}\n")
+            #f.write(f"CID: {cid_value}\n")
+            #f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            #f.write("="*50 + "\n\n")
+            #f.write(all_text)
             
-            print(f"텍스트 파일 저장됨: {filepath}")
+            #print(f"텍스트 파일 저장됨: {filepath}")
             
-        except Exception as save_error:
-            print(f"텍스트 파일 저장 오류: {save_error}")
+        #except Exception as save_error:
+            #print(f"텍스트 파일 저장 오류: {save_error}")
         
         # 두 번째 가격만 반환 (사용자 요구사항)
         if len(all_prices) >= 2:

@@ -7,6 +7,8 @@ let cardResults = [];
 let lowestPrice = null;
 let lowestPriceUrl = '';
 let lowestPriceCidName = '';
+let basePrice = null; // 기준 가격 (원본 URL의 CID 가격)
+let basePriceCidName = ''; // 기준 가격의 CID 이름
 const totalSteps = 17; // 검색창리스트(9) + 카드리스트(8)
 let currentLanguage = 'ko'; // 기본값: 한국어
 
@@ -149,6 +151,8 @@ function handleFormSubmit(e) {
     lowestPrice = null;
     lowestPriceUrl = '';
     lowestPriceCidName = '';
+    basePrice = null;
+    basePriceCidName = '';
     
     // 진행률 애니메이션 초기화 및 시작
     currentProgressPercentage = 0;
@@ -232,6 +236,24 @@ function analyzeCid() {
 function processResult(data) {
     allResults.push(data);
     
+    // 첫 번째 결과에서 기준 가격 설정
+    if (data.step === 1 && data.base_price) {
+        basePrice = data.base_price;
+        basePriceCidName = data.base_price_cid_name;
+        console.log(`기준 가격 설정: ${basePrice} (${basePriceCidName})`);
+        
+        // 기준 가격 정보 표시
+        const basePriceInfo = document.getElementById('basePriceInfo');
+        const basePriceText = document.getElementById('basePriceText');
+        const basePriceCid = document.getElementById('basePriceCid');
+        
+        if (basePriceInfo && basePriceText && basePriceCid) {
+            basePriceText.textContent = formatPrice(basePrice);
+            basePriceCid.textContent = basePriceCidName;
+            basePriceInfo.style.display = 'block';
+        }
+    }
+    
     // 검색창리스트 단계인지 카드리스트 단계인지 확인
     if (data.is_search_phase) {
         processSearchResult(data);
@@ -283,7 +305,19 @@ function updateLowestPriceDisplay() {
     const openLowestPriceBtnEl = document.getElementById('openLowestPriceBtn');
     
     if (lowestPrice !== null && lowestPriceEl && lowestCidNameEl && openLowestPriceBtnEl) {
-        lowestPriceEl.textContent = formatPrice(lowestPrice);
+        let priceText = formatPrice(lowestPrice);
+        
+        // 기준 가격과 비교하여 할인율 표시
+        if (basePrice !== null && lowestPrice !== basePrice) {
+            const discountPercentage = Math.round(((basePrice - lowestPrice) / basePrice) * 100);
+            if (discountPercentage > 0) {
+                priceText += ` (${discountPercentage}% 저렴)`;
+            } else {
+                priceText += ` (${Math.abs(discountPercentage)}% 비쌈)`;
+            }
+        }
+        
+        lowestPriceEl.textContent = priceText;
         lowestCidNameEl.textContent = lowestPriceCidName;
         openLowestPriceBtnEl.disabled = false;
     }
@@ -298,12 +332,30 @@ function displaySearchResult(data) {
     cardCol.className = 'col-md-4 col-lg-3 mb-2';
     
     const hasPrice = data.prices && data.prices.length > 0;
-    const price = hasPrice ? data.prices[0].price : t.noPrice;
+    let priceDisplay = '';
+    
+    if (hasPrice) {
+        if (data.discount_percentage !== null && data.discount_percentage !== undefined) {
+            const discountText = data.discount_percentage >= 0 ? 
+                `${data.discount_percentage}% 저렴` : 
+                `${Math.abs(data.discount_percentage)}% 비쌈`;
+            priceDisplay = `
+                <div class="search-result-price mb-1">${data.prices[0].price}</div>
+                <div class="search-result-discount ${data.discount_percentage >= 0 ? 'text-success' : 'text-danger'}">
+                    ${discountText}
+                </div>
+            `;
+        } else {
+            priceDisplay = `<div class="search-result-price mb-1">${data.prices[0].price}</div>`;
+        }
+    } else {
+        priceDisplay = `<div class="search-result-price mb-1">${t.noPrice}</div>`;
+    }
     
     cardCol.innerHTML = `
         <div class="search-result-card">
             <div class="text-center">
-                <div class="search-result-price mb-1">${price}</div>
+                ${priceDisplay}
                 <div class="search-result-name">${data.cid_name}</div>
             </div>
         </div>
@@ -321,10 +373,28 @@ function displayCardResult(data) {
     cardCol.className = 'col-md-6 col-lg-4 mb-3';
     
     const hasPrice = data.prices && data.prices.length > 0;
-    const price = hasPrice ? data.prices[0].price : t.noPrice;
     const cardClass = hasPrice ? 'border-success' : 'border-warning';
     const badgeClass = hasPrice ? 'bg-success' : 'bg-warning';
     const badgeText = hasPrice ? '' : t.noPrice;
+    
+    let priceDisplay = '';
+    if (hasPrice) {
+        if (data.discount_percentage !== null && data.discount_percentage !== undefined) {
+            const discountText = data.discount_percentage >= 0 ? 
+                `${data.discount_percentage}% 저렴` : 
+                `${Math.abs(data.discount_percentage)}% 비쌈`;
+            priceDisplay = `
+                <div class="card-result-price mb-1">${data.prices[0].price}</div>
+                <div class="card-result-discount ${data.discount_percentage >= 0 ? 'text-success' : 'text-danger'} mb-2">
+                    ${discountText}
+                </div>
+            `;
+        } else {
+            priceDisplay = `<div class="card-result-price mb-2">${data.prices[0].price}</div>`;
+        }
+    } else {
+        priceDisplay = `<div class="card-result-price mb-2">${t.noPrice}</div>`;
+    }
     
     cardCol.innerHTML = `
         <div class="card-result-item ${cardClass}">
@@ -333,7 +403,7 @@ function displayCardResult(data) {
                 ${badgeText ? `<span class="badge ${badgeClass}">${badgeText}</span>` : ''}
             </div>
             <div class="text-center">
-                <div class="card-result-price mb-2">${price}</div>
+                ${priceDisplay}
                 <button class="btn btn-outline-primary btn-sm card-open-btn" 
                         data-url="${data.url}" 
                         ${!hasPrice ? 'disabled' : ''}>
@@ -546,6 +616,8 @@ function startNewSearch() {
     lowestPrice = null;
     lowestPriceUrl = '';
     lowestPriceCidName = '';
+    basePrice = null;
+    basePriceCidName = '';
     
     // 진행률 초기화
     currentProgressPercentage = 0;
