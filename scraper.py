@@ -20,14 +20,14 @@ def scrape_prices_simple(url, original_currency_code=None):
         from selenium.webdriver.support import expected_conditions as EC
         
         chrome_options = Options()
-        #chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         #chrome_options.add_argument('--disable-javascript')
-        #chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument('--window-size=1028,720')  # 더 큰 화면
-        #chrome_options.add_argument('--disable-logging')
-        #chrome_options.add_argument('--log-level=3')
+        chrome_options.add_argument('--disable-logging')
+        chrome_options.add_argument('--log-level=3')
         #chrome_options.add_argument('--blink-setting=imagesEnable=false')
         #chrome_options.page_load_strategy = 'eager' # 또는 'none'으로 변경 가능
         #chrome_options.add_argument('--disable-extensions')
@@ -42,7 +42,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         driver = webdriver.Chrome(options=chrome_options)
         
         # 봇 탐지 우회
-        #driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
         # URL은 app.py에서 이미 올바르게 처리되었으므로 추가 수정하지 않음
         print(f"스크래핑 사용 URL: {url}")
@@ -62,9 +62,10 @@ def scrape_prices_simple(url, original_currency_code=None):
 
         # 전체 텍스트 저장
         f = open(filepath, 'w', encoding='utf-8')
+        f.write(f"스크래핑 사용 URL: {url}\n")
         f.write(f"start-------------------------------------\n")
-        f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.flush()
+        #f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        #f.flush()
 #        except Exception as save_error:
 #            print(f"텍스트 파일 저장 오류: {save_error}")
 
@@ -76,7 +77,8 @@ def scrape_prices_simple(url, original_currency_code=None):
             f.flush()
 
             #driver.set_script_timeout(5)
-            driver.set_page_load_timeout(5)
+            #time.sleep(2)
+            driver.set_page_load_timeout(10)
             driver.get(url)
             f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.flush()
@@ -87,27 +89,31 @@ def scrape_prices_simple(url, original_currency_code=None):
             #time.sleep(1.5)  # 로딩 대기 시간 단축
             
             # 스크롤로 콘텐츠 로딩
-            #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            #time.sleep(0.5)
-            #driver.execute_script("window.scrollTo(0, 0);")
-            #time.sleep(0.5)
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(0.5)
+            driver.execute_script("window.scrollTo(0, 0);")
+            time.sleep(0.5)
             #page_source = driver.page_source
             
         except:
             f.write(f"driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.flush()
 
-        f.write(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.flush()
-
-        #driver.execute_script("window.scrollTo(0, 0);")
+        #f.write(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        #f.flush()
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(0.5)
+        driver.execute_script("window.scrollTo(0, 0);")
+        time.sleep(0.5)
         page_source = driver.page_source
-        #driver.quit()
+        time.sleep(0.5)
         # BeautifulSoup으로 파싱
         soup = BeautifulSoup(page_source, 'html.parser')
 
-        #f.write( soup.get_text() )
-        #f.flush()
+        f.write( soup.get_text() )
+        f.flush()
+
+        driver.quit()
 
         #f.write(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
         #f.flush()
@@ -263,87 +269,51 @@ def scrape_prices_simple(url, original_currency_code=None):
         
         # 5KB 제한: 텍스트가 5KB를 넘으면 5KB까지만 자르고 즉시 종료
         text_size_bytes = len(all_text.encode('utf-8'))
-        if text_size_bytes > 5 * 1024:  # 5KB = 5 * 1024 bytes
-            # UTF-8 기준 5KB까지만 자르기 (안전하게)
-            truncated_text = all_text
-            while len(truncated_text.encode('utf-8')) > 5 * 1024:
-                truncated_text = truncated_text[:-100]  # 100글자씩 줄이기
-            all_text = truncated_text + "... [5KB 제한으로 텍스트 일부만 수집됨]"
             
-            # 즉시 파일 저장하고 가격 분석 건너뛰기
-            try:
-                #import os
-                #if not os.path.exists('downloads'):
-                #    os.makedirs('downloads')
-                
-                # CID 정보 추출
-                #cid_match = re.search(r'cid=([^&]+)', url)
-                #cid_value = cid_match.group(1) if cid_match else 'unknown'
-                
-                # 파일명 생성
-                #filename = f"page_text_cid_{cid_value}.txt"
-                #filepath = os.path.join('downloads', filename)
-                
-                # 전체 텍스트 저장
-                #with open(filepath, 'w', encoding='utf-8') as f:
-                f.write(f"2----------------------------------\n")
-                f.write(f"URL: {url}\n")
-                f.write(f"CID: {cid_value}\n")
-                f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-                #f.write(f"파일 크기: 5KB 제한 적용\n")
-                f.write("="*50 + "\n\n")
-                f.write(all_text)
-                
-                #print(f"5KB 제한 - 텍스트 파일 저장됨: {filepath}")
-                
-            except Exception as save_error:
-                print(f"텍스트 파일 저장 오류: {save_error}")
+        starting_price = None
+        try:
+            # "시작가" 뒤의 가격 패턴 검색 (다양한 통화 단위 지원)
+            starting_price_patterns = [
+                r'시작가\s*(USD\s+[\d,]+(?:\.\d+)?)',         # USD 46 형태
+                r'시작가\s*(KRW\s+[\d,]+(?:\.\d+)?)',         # KRW 46000 형태  
+                r'시작가\s*(THB\s+[\d,]+(?:\.\d+)?)',         # THB 1500 형태
+                r'시작가\s*([₩]\s*[\d,]+(?:\.\d+)?)',         # ₩ 33,458 형태 (공백 포함)
+                r'시작가\s*([₩][\d,]+(?:\.\d+)?)',           # ₩46000 형태
+                r'시작가\s*([฿]\s*[\d,]+(?:\.\d+)?)',         # ฿ 1,500 형태 (공백 포함)
+                r'시작가\s*([฿][\d,]+(?:\.\d+)?)',           # ฿1500 형태
+                r'시작가\s*(\$\s*[\d,]+(?:\.\d+)?)',         # $ 46 형태 (공백 포함)
+                r'시작가\s*(\$[\d,]+(?:\.\d+)?)',            # $46 형태
+                r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*USD)',      # 46 USD 형태
+                r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*THB)',      # 46 THB 형태
+                r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*KRW)',      # 46 KRW 형태
+            ]
             
-            # txt 파일에서 "시작가" 뒤의 가격 찾기
-            starting_price = None
-            try:
-                # "시작가" 뒤의 가격 패턴 검색 (다양한 통화 단위 지원)
-                starting_price_patterns = [
-                    r'시작가\s*(USD\s+[\d,]+(?:\.\d+)?)',         # USD 46 형태
-                    r'시작가\s*(KRW\s+[\d,]+(?:\.\d+)?)',         # KRW 46000 형태  
-                    r'시작가\s*(THB\s+[\d,]+(?:\.\d+)?)',         # THB 1500 형태
-                    r'시작가\s*([₩]\s*[\d,]+(?:\.\d+)?)',         # ₩ 33,458 형태 (공백 포함)
-                    r'시작가\s*([₩][\d,]+(?:\.\d+)?)',           # ₩46000 형태
-                    r'시작가\s*([฿]\s*[\d,]+(?:\.\d+)?)',         # ฿ 1,500 형태 (공백 포함)
-                    r'시작가\s*([฿][\d,]+(?:\.\d+)?)',           # ฿1500 형태
-                    r'시작가\s*(\$\s*[\d,]+(?:\.\d+)?)',         # $ 46 형태 (공백 포함)
-                    r'시작가\s*(\$[\d,]+(?:\.\d+)?)',            # $46 형태
-                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*USD)',      # 46 USD 형태
-                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*THB)',      # 46 THB 형태
-                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*KRW)',      # 46 KRW 형태
-                ]
-                
-                match = None
-                for pattern in starting_price_patterns:
-                    match = re.search(pattern, all_text, re.IGNORECASE)
-                    if match:
-                        break
-                
+            match = None
+            for pattern in starting_price_patterns:
+                match = re.search(pattern, all_text, re.IGNORECASE)
                 if match:
-                    price_text = match.group(1).strip()
-                    # 원본 가격 텍스트를 그대로 사용 (통화 단위 포함)
-                    if price_text:
-                        starting_price = {
-                            'price': price_text,  # 원본 형태 그대로 (₩, THB, $ 등 포함)
-                            'context': f"시작가 {price_text}",
-                            'source': 'starting_price_from_file'
-                        }
-                        print(f"시작가 발견: {starting_price['price']}")
-                
-            except Exception as e:
-                print(f"시작가 검색 오류: {e}")
+                    break
             
-            # 시작가를 찾았으면 반환, 못 찾았으면 빈 결과
-            if starting_price:
-                return [starting_price]
-            else:
-                return []
+            if match:
+                price_text = match.group(1).strip()
+                # 원본 가격 텍스트를 그대로 사용 (통화 단위 포함)
+                if price_text:
+                    starting_price = {
+                        'price': price_text,  # 원본 형태 그대로 (₩, THB, $ 등 포함)
+                        'context': f"시작가 {price_text}",
+                        'source': 'starting_price_from_file'
+                    }
+                    print(f"시작가 발견: {starting_price['price']}")
+            
+        except Exception as e:
+            print(f"시작가 검색 오류: {e}")
         
+        # 시작가를 찾았으면 반환, 못 찾았으면 빈 결과
+        if starting_price:
+            return [starting_price]
+        else:
+            return []
+    
         for pattern in debug_patterns:
             matches = re.findall(pattern, all_text, re.IGNORECASE)
             if matches:
@@ -450,8 +420,6 @@ def scrape_prices_simple(url, original_currency_code=None):
         
     except Exception as e:
         return []
-    finally:
-        driver.quit()
 
 def process_all_cids_sequential(base_url, cid_list):
     """
@@ -559,8 +527,8 @@ def reorder_url_parameters(url):
         'currency',
         'isFreeOccSearch',
         'los',
-        'textToSearch',  # 검색 텍스트 추가
-        'productType',   # 상품 타입 추가
+        #'textToSearch',  # 검색 텍스트 추가
+        #'productType',   # 상품 타입 추가
         'searchrequestid',
         'ds',           # ds 파라미터 추가
         'cid'
