@@ -46,7 +46,7 @@ const scrapeForm = document.getElementById('scrapeForm');
 const urlInput = document.getElementById('urlInput');
 const scrapeBtn = document.getElementById('scrapeBtn');
 const progressSection = document.getElementById('progressSection');
-const analysisStatusCard = document.getElementById('analysisStatusCard');
+const loadingIndicator = document.getElementById('loadingIndicator');
 const errorMessage = document.getElementById('errorMessage');
 const lowestPriceSection = document.getElementById('lowestPriceSection');
 const cardResultsSection = document.getElementById('cardResultsSection');
@@ -70,7 +70,7 @@ const translations = {
         searchPhase: '검색창리스트',
         cardPhase: '카드리스트',
         analyzing: '분석 중...',
-        loading: '가격 정보를 분석 중입니다.',
+        loading: '가격 정보를 분석 중입니다. 잠시만 기다려주세요.',
         currentLowest: '현재 최저가',
         openLink: '창열기',
         cardComparison: '카드별 가격 비교',
@@ -112,16 +112,6 @@ document.addEventListener('DOMContentLoaded', function() {
     scrapeForm.addEventListener('submit', handleFormSubmit);
     continueBtn.addEventListener('click', continueAnalysis);
     newSearchBtn.addEventListener('click', startNewSearch);
-
-// 최저가 버튼 이벤트 리스너
-const openLowestPriceBtnEl = document.getElementById('openLowestPriceBtn');
-if (openLowestPriceBtnEl) {
-    openLowestPriceBtnEl.addEventListener('click', function() {
-        if (lowestPriceUrl) {
-            window.open(lowestPriceUrl, '_blank');
-        }
-    });
-}
     
     // 언어 전환 버튼
     const languageToggle = document.getElementById('languageToggle');
@@ -182,12 +172,7 @@ function analyzeCid() {
     
     // UI 업데이트
     updateProgress();
-    showAnalysisStatus();
-    // CID 이름 업데이트
-    const currentCidNameEl = document.getElementById('currentCidName');
-    if (currentCidNameEl && allCids[currentStep]) {
-        currentCidNameEl.textContent = allCids[currentStep].name;
-    }
+    showLoading();
     hideError();
     
     // API 호출
@@ -210,7 +195,7 @@ function analyzeCid() {
         return response.json();
     })
     .then(data => {
-        // 분석 상태 카드는 계속 유지
+        hideLoading();
         
         if (data.error) {
             // 첫번째 CID에서 가격을 찾지 못한 경우 - 잘못된 링크로 판단
@@ -236,7 +221,7 @@ function analyzeCid() {
         }
     })
     .catch(error => {
-        // 분석 상태 카드는 계속 유지
+        hideLoading();
         showError('분석 중 오류가 발생했습니다: ' + error.message);
     });
 }
@@ -262,9 +247,6 @@ function processResult(data) {
 function processSearchResult(data) {
     searchResults.push(data);
     
-    // 검색 결과를 작은 카드로 표시
-    displaySearchResult(data);
-    
     // 가격이 있는 경우 최저가 업데이트
     if (data.prices && data.prices.length > 0) {
         const price = data.prices[0];  // 첫 번째 가격 사용
@@ -274,13 +256,11 @@ function processSearchResult(data) {
             lowestPrice = numericPrice;
             lowestPriceUrl = data.url;
             lowestPriceCidName = data.cid_name;
-            
-            // 최저가 표시 업데이트
             updateLowestPriceDisplay();
         }
     }
     
-    // 검색창리스트 섹션 표시
+    // 최저가 섹션 표시
     showLowestPriceSection();
 }
 
@@ -301,36 +281,6 @@ function updateLowestPriceDisplay() {
         lowestCidNameEl.textContent = lowestPriceCidName;
         openLowestPriceBtnEl.disabled = false;
     }
-}
-
-// 검색 결과 표시 (카드 사이즈 절반)
-function displaySearchResult(data) {
-    const container = document.getElementById('searchResultsContainer');
-    const t = translations[currentLanguage];
-    
-    const cardCol = document.createElement('div');
-    cardCol.className = 'col-md-6 col-xl-3 mb-3';
-    
-    const hasPrice = data.prices && data.prices.length > 0;
-    const price = hasPrice ? data.prices[0].price : t.noPrice;
-    const cardClass = hasPrice ? 'border-success' : 'border-warning';
-    const badgeClass = hasPrice ? 'bg-success' : 'bg-warning';
-    
-    cardCol.innerHTML = `
-        <div class="card h-100 ${cardClass}">
-            <div class="card-body p-3">
-                <div class="text-center">
-                    <div class="badge ${badgeClass} mb-2">${data.cid_name}</div>
-                    <h6 class="card-title">${price}</h6>
-                    <button class="btn btn-sm btn-outline-success" onclick="window.open('${data.url}', '_blank')">
-                        <i class="fas fa-external-link-alt"></i> ${t.openLink}
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    container.appendChild(cardCol);
 }
 
 // 카드 결과 표시
@@ -552,10 +502,6 @@ function showComplete() {
     completeSection.style.display = 'block';
     hideContinueButton();
     hideProgressSection();
-    // 분석 완료 시 분석 상태 카드 숨기기
-    if (analysisStatusCard) {
-        analysisStatusCard.style.display = 'none';
-    }
     
     completeSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
@@ -584,10 +530,6 @@ function startNewSearch() {
     
     // 결과 컨테이너 초기화
     document.getElementById('cardResultsContainer').innerHTML = '';
-    const searchContainer = document.getElementById('searchResultsContainer');
-    if (searchContainer) {
-        searchContainer.innerHTML = '';
-    }
 }
 
 // 숫자 가격 추출 (비교용)
@@ -613,15 +555,12 @@ function hideProgressSection() {
     progressSection.style.display = 'none';
 }
 
-function showAnalysisStatus() {
-    if (analysisStatusCard) {
-        analysisStatusCard.style.display = 'block';
-    }
+function showLoading() {
+    loadingIndicator.style.display = 'block';
 }
 
-function hideAnalysisStatus() {
-    // 분석 상태 카드는 고정으로 유지 (숨기지 않음)
-    // 필요 시 여기서 특정 상황에만 숨길 수 있음
+function hideLoading() {
+    loadingIndicator.style.display = 'none';
 }
 
 function showError(message) {
@@ -659,7 +598,7 @@ function hideContinueButton() {
 
 function hideAllSections() {
     hideProgressSection();
-    hideAnalysisStatus();
+    hideLoading();
     hideError();
     hideLowestPriceSection();
     hideCardResultsSection();
