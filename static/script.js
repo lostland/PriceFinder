@@ -309,14 +309,14 @@ function updateLowestPriceDisplay() {
         
         // 기준 가격과 비교하여 할인율만 표시
         if (basePrice !== null && lowestPrice !== basePrice) {
-            const discountPercentage = Math.round(((basePrice - lowestPrice) / basePrice) * 100);
-            if (discountPercentage > 0) {
+            const discountPercentage = (((basePrice - lowestPrice) / basePrice) * 100).toFixed(1);
+            if (parseFloat(discountPercentage) > 0) {
                 discountText = `${discountPercentage}% 저렴`;
             } else {
-                discountText = `${Math.abs(discountPercentage)}% 비쌈`;
+                discountText = `${Math.abs(parseFloat(discountPercentage)).toFixed(1)}% 비쌈`;
             }
         } else {
-            discountText = '0% (기준가)';
+            discountText = '0.0% 저렴';
         }
         
         // 할인율을 강조하는 HTML로 변경
@@ -351,7 +351,7 @@ function displaySearchResult(data) {
                 </div>
             `;
         } else {
-            priceDisplay = `<div class="search-result-price mb-1">0% (기준가)</div>`;
+            priceDisplay = `<div class="search-result-discount-big discount-positive">0.0% 저렴</div>`;
         }
     } else {
         priceDisplay = `<div class="search-result-price mb-1">${t.noPrice}</div>`;
@@ -408,7 +408,7 @@ function displayCardResult(data) {
                 </div>
             `;
         } else {
-            priceDisplay = `<div class="card-result-price mb-2">0% (기준가)</div>`;
+            priceDisplay = `<div class="card-result-discount-big discount-positive mb-2">0.0% 저렴</div>`;
         }
     } else {
         priceDisplay = `<div class="card-result-price mb-2">${t.noPrice}</div>`;
