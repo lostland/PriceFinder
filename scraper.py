@@ -20,7 +20,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         from selenium.webdriver.support import expected_conditions as EC
         
         chrome_options = Options()
-        chrome_options.add_argument('--headless')
+        #chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         #chrome_options.add_argument('--disable-javascript')
@@ -49,8 +49,8 @@ def scrape_prices_simple(url, original_currency_code=None):
 
 #        try:
         import os
-        if not os.path.exists('downloads'):
-            os.makedirs('downloads')
+        #if not os.path.exists('downloads'):
+        #    os.makedirs('downloads')
 
         # CID 정보 추출
         cid_match = re.search(r'cid=([^&]+)', url)
@@ -69,16 +69,28 @@ def scrape_prices_simple(url, original_currency_code=None):
 #            print(f"텍스트 파일 저장 오류: {save_error}")
 
 
+        start_time = time.time()
         try:
             #f.write(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
 
             #driver.set_script_timeout(5)
-            driver.set_page_load_timeout(10)
-            print(f"driver.get() start: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
-            driver.get(url)
-            #f.flush()
-            print(f"driver.get() end\n")
+            process_time = 0
+            for tt in range(3) :
+                print(f"count = {tt}\n")
+                start_time = time.time()
+                print(f"driver.get() start: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                driver.set_page_load_timeout(6)
+                driver.get(url)
+                #f.flush()
+                process_time = time.time() - start_time
+                print(f"driver.get() end: {time.strftime('%Y-%m-%d %H:%M:%S')} process time ={process_time}\n")
+                #if( process_time >= 5 ) :
+                #    break
+                driver.quit()
+                time.sleep(1)
+                driver = webdriver.Chrome(options=chrome_options)
+                
             # 빠른 로딩 전략 (timeout 방지)
             #time.sleep(1.5)  # 로딩 대기 시간 단축
             
