@@ -308,15 +308,17 @@ function updateLowestPriceDisplay() {
         let discountText = '';
         
         // 기준 가격과 비교하여 할인율만 표시
-        if (basePrice !== null && lowestPrice !== basePrice) {
+        if (basePrice !== null) {
             const discountPercentage = (((basePrice - lowestPrice) / basePrice) * 100).toFixed(1);
             if (parseFloat(discountPercentage) > 0) {
                 discountText = `${discountPercentage}% 저렴`;
-            } else {
+            } else if (parseFloat(discountPercentage) < 0) {
                 discountText = `${Math.abs(parseFloat(discountPercentage)).toFixed(1)}% 비쌈`;
+            } else {
+                discountText = `0.0% 저렴`;
             }
         } else {
-            discountText = '0.0% 저렴';
+            discountText = '할인율 계산 중...';
         }
         
         // 할인율을 강조하는 HTML로 변경
