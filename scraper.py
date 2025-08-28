@@ -4,13 +4,16 @@ import logging
 import requests
 import time  
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
-
+from flask import Flask
 def scrape_prices_simple(url, original_currency_code=None):
     """
     단순하고 빠른 가격 스크래핑 - 이미지 처리 없음
     Returns a list of dictionaries containing price and context information
     original_currency_code: 원본 URL의 통화 코드 (예: USD, KRW, THB)
     """
+
+    app = Flask(__name__)
+
     try:
         # Selenium 사용 - 간단한 설정
         from selenium import webdriver
@@ -45,7 +48,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         #driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
         # URL은 app.py에서 이미 올바르게 처리되었으므로 추가 수정하지 않음
-        #print(f"스크래핑 사용 URL: {url}")
+        app.logger.info(f"스크래핑 사용 URL: {url}")
 
 #        try:
         import os
@@ -80,7 +83,7 @@ def scrape_prices_simple(url, original_currency_code=None):
             driver.get(url)
             #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
-            print(f"driver.get() end\n")
+            app.logger.info(f"driver.get() end\n")
 
         
             # 빠른 로딩 전략 (timeout 방지)
@@ -94,7 +97,7 @@ def scrape_prices_simple(url, original_currency_code=None):
             #page_source = driver.page_source
             
         except:
-           print(f"driver.get() fail\n")
+            app.logger.info(f"driver.get() fail\n")
             #f.write(f"driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
 
@@ -113,7 +116,7 @@ def scrape_prices_simple(url, original_currency_code=None):
 
         driver.quit()
 
-        print(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        app.logger.info(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
         #f.flush()
         
         prices_found = []
@@ -337,10 +340,10 @@ def scrape_prices_simple(url, original_currency_code=None):
                             'context': f"시작가 {price_text}",
                             'source': 'starting_price_from_file'
                         }
-                        print(f"시작가 발견: {starting_price['price']}")
+                        app.logger.info(f"시작가 발견: {starting_price['price']}")
                 
             except Exception as e:
-                print(f"시작가 검색 오류: {e}")
+                app.logger.info(f"시작가 검색 오류: {e}")
             
             # 시작가를 찾았으면 반환, 못 찾았으면 빈 결과
             if starting_price:
