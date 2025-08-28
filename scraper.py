@@ -108,7 +108,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         for tt in range(10) :
             soup = BeautifulSoup(driver.page_source, 'html.parser')
             text_len = len(soup.get_text())
-            if(text_len > 10000):
+            if(text_len > 40000):
                 break
             current_app.logger.info(f"text_len: {text_len}")
             #time.sleep(0.2)
@@ -121,6 +121,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         #f.write( soup.get_text() )
         #f.flush()
 
+        driver.close()
         driver.quit()
 
         current_app.logger.info(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}")
