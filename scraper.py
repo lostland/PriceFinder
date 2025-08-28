@@ -30,7 +30,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
         #chrome_options.add_argument('--blink-setting=imagesEnable=false')
-        #chrome_options.page_load_strategy = 'eager' # 또는 'none'으로 변경 가능
+        chrome_options.page_load_strategy = 'eager'  # DOM 로드되면 즉시 진행
         #chrome_options.add_argument('--disable-extensions')
         # 실제 브라우저처럼 보이게 하는 옵션들
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
@@ -77,7 +77,7 @@ def scrape_prices_simple(url, original_currency_code=None):
             #f.flush()
 
             #driver.set_script_timeout(5)
-            driver.set_page_load_timeout(10)
+            driver.set_page_load_timeout(8)  # 타임아웃 단축
             driver.get(url)
             #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
@@ -89,9 +89,9 @@ def scrape_prices_simple(url, original_currency_code=None):
             
             # 스크롤로 콘텐츠 로딩
             #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(2)
+            time.sleep(1)  # 대기 시간 단축
             driver.execute_script("window.scrollTo(0, 0);")
-            time.sleep(2)
+            time.sleep(1)
             #page_source = driver.page_source
             
         except:
