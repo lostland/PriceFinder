@@ -104,9 +104,9 @@ def scrape():
                 app.logger.info(f"CurrencyCode 추가: {original_currency}")
         
         # URL 파라메터를 지정된 순서로 재정렬
-        app.logger.info(f"재정렬 전 URL: {new_url}")
+        #app.logger.info(f"재정렬 전 URL: {new_url}")
         new_url = reorder_url_parameters(new_url)
-        app.logger.info(f"재정렬 후 URL: {new_url}")
+        #app.logger.info(f"재정렬 후 URL: {new_url}")
         
         # 진행 단계 정보
         is_search_phase = step < len(search_cids)
@@ -156,6 +156,10 @@ def scrape():
         import time
         start_time = time.time()
         prices = scrape_prices_simple(new_url, original_currency_code=original_currency)
+        if len(prices) == 0:
+            print(f"RETRY----------------\n")
+            prices = scrape_prices_simple(new_url, original_currency_code=original_currency)
+
         process_time = time.time() - start_time
         
         # 첫번째 CID에서 가격을 찾지 못한 경우 - 잘못된 링크로 판단

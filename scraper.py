@@ -45,7 +45,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         #driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
         # URL은 app.py에서 이미 올바르게 처리되었으므로 추가 수정하지 않음
-        print(f"스크래핑 사용 URL: {url}")
+        #print(f"스크래핑 사용 URL: {url}")
 
 #        try:
         import os
@@ -69,14 +69,14 @@ def scrape_prices_simple(url, original_currency_code=None):
 #            print(f"텍스트 파일 저장 오류: {save_error}")
 
 
-        print(f"driver.get() start\n")
+        #print(f"driver.get() start\n")
         start_time = time.time()
         try:
-            #f.write(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            print(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
 
             #driver.set_script_timeout(5)
-            driver.set_page_load_timeout(10)
+            driver.set_page_load_timeout(4)
             driver.get(url)
             #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
@@ -88,9 +88,9 @@ def scrape_prices_simple(url, original_currency_code=None):
             
             # 스크롤로 콘텐츠 로딩
             #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            #time.sleep(0.5)
-            #driver.execute_script("window.scrollTo(0, 0);")
-            #time.sleep(0.5)
+            time.sleep(0.5)
+            driver.execute_script("window.scrollTo(0, 0);")
+            time.sleep(0.5)
             #page_source = driver.page_source
             
         except:
@@ -104,13 +104,16 @@ def scrape_prices_simple(url, original_currency_code=None):
         #driver.execute_script("window.scrollTo(0, 0);")
         page_source = driver.page_source
         # BeautifulSoup으로 파싱
-        soup = BeautifulSoup(page_source, 'html.parser')
+        #f.write( page_source )
 
-        driver.quit()
+        soup = BeautifulSoup(page_source, 'html.parser')
+        #f.write( '---------------------------------------\n')
         #f.write( soup.get_text() )
         #f.flush()
 
-        #f.write(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        driver.quit()
+
+        print(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
         #f.flush()
         
         prices_found = []
