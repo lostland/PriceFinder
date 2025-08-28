@@ -25,7 +25,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         #chrome_options.add_argument('--disable-javascript')
-        chrome_options.add_argument('--disable-gpu')
+        #chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument('--window-size=1028,720')  # 더 큰 화면
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
@@ -37,13 +37,13 @@ def scrape_prices_simple(url, original_currency_code=None):
         #chrome_options.add_argument('--accept-language=en-US,en;q=0.9')
         chrome_options.add_argument('--accept-encoding=gzip, deflate, br')
         chrome_options.add_argument('--accept=text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8')
-        chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        #chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
         #chrome_options.add_experimental_option('useAutomationExtension', False)
         
         driver = webdriver.Chrome(options=chrome_options)
         
         # 봇 탐지 우회
-        #driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
         # URL은 app.py에서 이미 올바르게 처리되었으므로 추가 수정하지 않음
         #print(f"스크래핑 사용 URL: {url}")
@@ -69,7 +69,7 @@ def scrape_prices_simple(url, original_currency_code=None):
 #        except Exception as save_error:
 #            print(f"텍스트 파일 저장 오류: {save_error}")
 
-        WebDriverWait(driver, 300)
+
         #print(f"driver.get() start\n")
         start_time = time.time()
         try:
@@ -77,7 +77,7 @@ def scrape_prices_simple(url, original_currency_code=None):
             #f.flush()
 
             #driver.set_script_timeout(5)
-            driver.set_page_load_timeout(8)  # 타임아웃 단축
+            driver.set_page_load_timeout(3)  # 타임아웃 단축
             driver.get(url)
             #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
@@ -89,31 +89,36 @@ def scrape_prices_simple(url, original_currency_code=None):
             
             # 스크롤로 콘텐츠 로딩
             #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            #time.sleep(1)  # 대기 시간 단축
-            driver.execute_script("window.scrollTo(0, 0);")
-            #time.sleep(1)
+            #page_source = driver.page_source
             
         except:
-            current_app.logger.info(f"driver.get() fail")
+           current_app.logger.info(f"driver.get() fail")
             #f.write(f"driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
 
         #f.write(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
         #f.flush()
+        #time.sleep(1)  # 대기 시간 단축
+        #driver.execute_script("window.scrollTo(0, 0);")
+        #time.sleep(1)
 
         current_app.logger.info(f'get page_source')
         #driver.execute_script("window.scrollTo(0, 0);")
-        
+        #page_source = driver.page_source
+        # BeautifulSoup으로 파싱
+        #f.write( page_source )
+
         text_len = 0
         for tt in range(10) :
             soup = BeautifulSoup(driver.page_source, 'html.parser')
             text_len = len(soup.get_text())
-            if(text_len > 40000):
+            if(text_len > 35000):
                 break
             current_app.logger.info(f"text_len: {text_len}")
-            #time.sleep(0.2)
+            time.sleep(0.2)  # 대기 시간 단축
             driver.execute_script("window.scrollTo(0, 0);")
             time.sleep(0.2)
+
             continue
             
         current_app.logger.info(f"last text_len: {text_len}")
@@ -121,7 +126,6 @@ def scrape_prices_simple(url, original_currency_code=None):
         #f.write( soup.get_text() )
         #f.flush()
 
-        driver.close()
         driver.quit()
 
         current_app.logger.info(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}")
