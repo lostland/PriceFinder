@@ -89,13 +89,12 @@ def scrape_prices_simple(url, original_currency_code=None):
             
             # 스크롤로 콘텐츠 로딩
             #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(1)  # 대기 시간 단축
+            #time.sleep(1)  # 대기 시간 단축
             driver.execute_script("window.scrollTo(0, 0);")
-            time.sleep(1)
-            #page_source = driver.page_source
+            #time.sleep(1)
             
         except:
-           current_app.logger.info(f"driver.get() fail")
+            current_app.logger.info(f"driver.get() fail")
             #f.write(f"driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
 
@@ -104,13 +103,20 @@ def scrape_prices_simple(url, original_currency_code=None):
 
         current_app.logger.info(f'get page_source')
         #driver.execute_script("window.scrollTo(0, 0);")
-        page_source = driver.page_source
-        # BeautifulSoup으로 파싱
-        #f.write( page_source )
-
-        current_app.logger.info(f'BeautifulSoup')
-        soup = BeautifulSoup(page_source, 'html.parser')
-        current_app.logger.info(f'BeautifulSoup end')
+        
+        text_len = 0
+        for tt in range(10) :
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            text_len = len(soup.get_text())
+            if(text_len > 10000):
+                break
+            current_app.logger.info(f"text_len: {text_len}")
+            time.sleep(0.2)
+            driver.execute_script("window.scrollTo(0, 0);")
+            time.sleep(0.2)
+            continue
+            
+        current_app.logger.info(f"last text_len: {text_len}")
         #f.write( '---------------------------------------\n')
         #f.write( soup.get_text() )
         #f.flush()
@@ -271,7 +277,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         
         # 5KB 제한: 텍스트가 5KB를 넘으면 5KB까지만 자르고 즉시 종료
         text_size_bytes = len(all_text.encode('utf-8'))
-        current_app.logger.info(f"텍스트 크기: {text_size_bytes} bytes")
+        #current_app.logger.info(f"텍스트 크기: {text_size_bytes} bytes")
         
         #if text_size_bytes > 5 * 1024:  # 5KB = 5 * 1024 bytes
             # UTF-8 기준 5KB까지만 자르기 (안전하게)
