@@ -77,7 +77,7 @@ def scrape_prices_simple(url, original_currency_code=None):
             #f.flush()
 
             #driver.set_script_timeout(5)
-            driver.set_page_load_timeout(4)
+            driver.set_page_load_timeout(10)
             driver.get(url)
             #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
@@ -89,9 +89,9 @@ def scrape_prices_simple(url, original_currency_code=None):
             
             # 스크롤로 콘텐츠 로딩
             #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(0.5)
+            time.sleep(2)
             driver.execute_script("window.scrollTo(0, 0);")
-            time.sleep(0.5)
+            time.sleep(2)
             #page_source = driver.page_source
             
         except:
@@ -102,12 +102,15 @@ def scrape_prices_simple(url, original_currency_code=None):
         #f.write(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
         #f.flush()
 
+        current_app.logger.info(f'get page_source')
         #driver.execute_script("window.scrollTo(0, 0);")
         page_source = driver.page_source
         # BeautifulSoup으로 파싱
         #f.write( page_source )
 
+        current_app.logger.info(f'BeautifulSoup')
         soup = BeautifulSoup(page_source, 'html.parser')
+        current_app.logger.info(f'BeautifulSoup end')
         #f.write( '---------------------------------------\n')
         #f.write( soup.get_text() )
         #f.flush()
@@ -268,12 +271,14 @@ def scrape_prices_simple(url, original_currency_code=None):
         
         # 5KB 제한: 텍스트가 5KB를 넘으면 5KB까지만 자르고 즉시 종료
         text_size_bytes = len(all_text.encode('utf-8'))
-        if text_size_bytes > 5 * 1024:  # 5KB = 5 * 1024 bytes
+        current_app.logger.info(f"텍스트 크기: {text_size_bytes} bytes")
+        
+        #if text_size_bytes > 5 * 1024:  # 5KB = 5 * 1024 bytes
             # UTF-8 기준 5KB까지만 자르기 (안전하게)
-            truncated_text = all_text
-            while len(truncated_text.encode('utf-8')) > 5 * 1024:
-                truncated_text = truncated_text[:-100]  # 100글자씩 줄이기
-            all_text = truncated_text + "... [5KB 제한으로 텍스트 일부만 수집됨]"
+            #truncated_text = all_text
+            #while len(truncated_text.encode('utf-8')) > 5 * 1024:
+            #    truncated_text = truncated_text[:-100]  # 100글자씩 줄이기
+            #all_text = truncated_text + "... [5KB 제한으로 텍스트 일부만 수집됨]"
             
             # 즉시 파일 저장하고 가격 분석 건너뛰기
             #try:
@@ -305,50 +310,50 @@ def scrape_prices_simple(url, original_currency_code=None):
                 #print(f"텍스트 파일 저장 오류: {save_error}")
             
             # txt 파일에서 "시작가" 뒤의 가격 찾기
-            starting_price = None
-            try:
-                # "시작가" 뒤의 가격 패턴 검색 (다양한 통화 단위 지원)
-                starting_price_patterns = [
-                    r'시작가\s*(USD\s+[\d,]+(?:\.\d+)?)',         # USD 46 형태
-                    r'시작가\s*(KRW\s+[\d,]+(?:\.\d+)?)',         # KRW 46000 형태  
-                    r'시작가\s*(THB\s+[\d,]+(?:\.\d+)?)',         # THB 1500 형태
-                    r'시작가\s*([₩]\s*[\d,]+(?:\.\d+)?)',         # ₩ 33,458 형태 (공백 포함)
-                    r'시작가\s*([₩][\d,]+(?:\.\d+)?)',           # ₩46000 형태
-                    r'시작가\s*([฿]\s*[\d,]+(?:\.\d+)?)',         # ฿ 1,500 형태 (공백 포함)
-                    r'시작가\s*([฿][\d,]+(?:\.\d+)?)',           # ฿1500 형태
-                    r'시작가\s*(\$\s*[\d,]+(?:\.\d+)?)',         # $ 46 형태 (공백 포함)
-                    r'시작가\s*(\$[\d,]+(?:\.\d+)?)',            # $46 형태
-                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*USD)',      # 46 USD 형태
-                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*THB)',      # 46 THB 형태
-                    r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*KRW)',      # 46 KRW 형태
-                ]
-                
-                match = None
-                for pattern in starting_price_patterns:
-                    match = re.search(pattern, all_text, re.IGNORECASE)
-                    if match:
-                        break
-                
-                if match:
-                    price_text = match.group(1).strip()
-                    # 원본 가격 텍스트를 그대로 사용 (통화 단위 포함)
-                    if price_text:
-                        starting_price = {
-                            'price': price_text,  # 원본 형태 그대로 (₩, THB, $ 등 포함)
-                            'context': f"시작가 {price_text}",
-                            'source': 'starting_price_from_file'
-                        }
-                        current_app.logger.info(f"시작가 발견: {starting_price['price']}")
-                
-            except Exception as e:
-                current_app.logger.info(f"시작가 검색 오류: {e}")
+        starting_price = None
+        try:
+            # "시작가" 뒤의 가격 패턴 검색 (다양한 통화 단위 지원)
+            starting_price_patterns = [
+                r'시작가\s*(USD\s+[\d,]+(?:\.\d+)?)',         # USD 46 형태
+                r'시작가\s*(KRW\s+[\d,]+(?:\.\d+)?)',         # KRW 46000 형태  
+                r'시작가\s*(THB\s+[\d,]+(?:\.\d+)?)',         # THB 1500 형태
+                r'시작가\s*([₩]\s*[\d,]+(?:\.\d+)?)',         # ₩ 33,458 형태 (공백 포함)
+                r'시작가\s*([₩][\d,]+(?:\.\d+)?)',           # ₩46000 형태
+                r'시작가\s*([฿]\s*[\d,]+(?:\.\d+)?)',         # ฿ 1,500 형태 (공백 포함)
+                r'시작가\s*([฿][\d,]+(?:\.\d+)?)',           # ฿1500 형태
+                r'시작가\s*(\$\s*[\d,]+(?:\.\d+)?)',         # $ 46 형태 (공백 포함)
+                r'시작가\s*(\$[\d,]+(?:\.\d+)?)',            # $46 형태
+                r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*USD)',      # 46 USD 형태
+                r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*THB)',      # 46 THB 형태
+                r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*KRW)',      # 46 KRW 형태
+            ]
             
-            # 시작가를 찾았으면 반환, 못 찾았으면 빈 결과
-            if starting_price:
-                return [starting_price]
-            else:
-                return []
+            match = None
+            for pattern in starting_price_patterns:
+                match = re.search(pattern, all_text, re.IGNORECASE)
+                if match:
+                    break
+            
+            if match:
+                price_text = match.group(1).strip()
+                # 원본 가격 텍스트를 그대로 사용 (통화 단위 포함)
+                if price_text:
+                    starting_price = {
+                        'price': price_text,  # 원본 형태 그대로 (₩, THB, $ 등 포함)
+                        'context': f"시작가 {price_text}",
+                        'source': 'starting_price_from_file'
+                    }
+                    current_app.logger.info(f"시작가 발견: {starting_price['price']}")
+            
+        except Exception as e:
+            current_app.logger.info(f"시작가 검색 오류: {e}")
         
+        # 시작가를 찾았으면 반환, 못 찾았으면 빈 결과
+        if starting_price:
+            return [starting_price]
+        else:
+            return []
+    
         for pattern in debug_patterns:
             matches = re.findall(pattern, all_text, re.IGNORECASE)
             if matches:
