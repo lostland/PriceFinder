@@ -4,7 +4,6 @@ import logging
 import requests
 import time  
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
-from flask import current_app
 
 def scrape_prices_simple(url, original_currency_code=None):
     """
@@ -73,7 +72,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         #print(f"driver.get() start\n")
         start_time = time.time()
         try:
-            current_app.logger.info(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
 
             #driver.set_script_timeout(5)
@@ -81,7 +80,7 @@ def scrape_prices_simple(url, original_currency_code=None):
             driver.get(url)
             #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
-            current_app.logger.info(f"driver.get() end")
+            print(f"driver.get() end\n")
 
         
             # 빠른 로딩 전략 (timeout 방지)
@@ -95,7 +94,7 @@ def scrape_prices_simple(url, original_currency_code=None):
             #page_source = driver.page_source
             
         except:
-           current_app.logger.info(f"driver.get() fail")
+           print(f"driver.get() fail\n")
             #f.write(f"driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
 
@@ -114,7 +113,7 @@ def scrape_prices_simple(url, original_currency_code=None):
 
         driver.quit()
 
-        current_app.logger.info(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
         #f.flush()
         
         prices_found = []
@@ -338,10 +337,10 @@ def scrape_prices_simple(url, original_currency_code=None):
                             'context': f"시작가 {price_text}",
                             'source': 'starting_price_from_file'
                         }
-                        current_app.logger.info(f"시작가 발견: {starting_price['price']}")
+                        print(f"시작가 발견: {starting_price['price']}")
                 
             except Exception as e:
-                current_app.logger.info(f"시작가 검색 오류: {e}")
+                print(f"시작가 검색 오류: {e}")
             
             # 시작가를 찾았으면 반환, 못 찾았으면 빈 결과
             if starting_price:
@@ -412,7 +411,7 @@ def scrape_prices_simple(url, original_currency_code=None):
                             break
             
             if len(all_prices) >= 20:
-                current_app.logger.info("20개 이상의 가격 발견 - 수집 중지")
+                print("20개 이상의 가격 발견 - 수집 중지")
                 break
         
         # 가격 분석 전에 먼저 전체 텍스트를 파일로 저장 (다운로드용)
