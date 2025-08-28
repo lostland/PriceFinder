@@ -69,7 +69,7 @@ def scrape_prices_simple(url, original_currency_code=None):
 #        except Exception as save_error:
 #            print(f"텍스트 파일 저장 오류: {save_error}")
 
-
+        WebDriverWait(driver, 300)
         #print(f"driver.get() start\n")
         start_time = time.time()
         try:
@@ -111,7 +111,7 @@ def scrape_prices_simple(url, original_currency_code=None):
             if(text_len > 10000):
                 break
             current_app.logger.info(f"text_len: {text_len}")
-            time.sleep(0.2)
+            #time.sleep(0.2)
             driver.execute_script("window.scrollTo(0, 0);")
             time.sleep(0.2)
             continue
