@@ -112,7 +112,7 @@ def scrape():
         is_search_phase = step < len(search_cids)
         phase_name = "검색창리스트" if is_search_phase else "카드리스트"
         
-        app.logger.info(f"Processing step {step+1}/{len(all_cids)}: CID {current_name}({current_cid})")
+        app.logger.info(f"Processing 스텝 {step+1}/{len(all_cids)}: CID {current_name}({current_cid})")
         
         # 기준 가격 계산 (첫 번째 스텝에서 원본 URL의 CID 가격을 기준으로 설정)
         global global_base_price, global_base_price_cid_name
