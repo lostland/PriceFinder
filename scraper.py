@@ -28,10 +28,10 @@ def scrape_prices_simple(url, original_currency_code=None):
         chrome_options.add_argument('--disable-dev-shm-usage')
         #chrome_options.add_argument('--disable-javascript')
         chrome_options.add_argument('--disable-gpu')
-        chrome_options.add_argument('--window-size=1028,720')  # 더 큰 화면
+        chrome_options.add_argument('--window-size=640,360')  
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
-        #chrome_options.add_argument('--blink-setting=imagesEnable=false')
+        chrome_options.add_argument('--blink-setting=imagesEnable=false')
         chrome_options.page_load_strategy = 'eager' # 또는 'none'으로 변경 가능
         #chrome_options.add_argument('--disable-extensions')
         # 실제 브라우저처럼 보이게 하는 옵션들
@@ -41,24 +41,24 @@ def scrape_prices_simple(url, original_currency_code=None):
         chrome_options.add_argument('--accept=text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8')
         chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
         #chrome_options.add_experimental_option('useAutomationExtension', False)
-        
+
         driver = webdriver.Chrome(options=chrome_options)
-        
+        actions = ActionChains(driver)
+
         # 봇 탐지 우회
         #driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
         # URL은 app.py에서 이미 올바르게 처리되었으므로 추가 수정하지 않음
-        print(f"스크래핑 사용 URL: {url}")
+        #print(f"스크래핑 사용 URL: {url}")
 
 #        try:
-        import os
-        if not os.path.exists('downloads'):
-            os.makedirs('downloads')
+        #import os
+        #if not os.path.exists('downloads'):
+        #    os.makedirs('downloads')
 
         # CID 정보 추출
-        cid_match = re.search(r'cid=([^&]+)', url)
-        cid_value = cid_match.group(1) if cid_match else 'unknown'
-
+        #cid_match = re.search(r'cid=([^&]+)', url)
+        #cid_value = cid_match.group(1) if cid_match else 'unknown'
         # 파일명 생성
         #filename = f"page_text_cid_{cid_value}.txt"
         #filepath = os.path.join('downloads', filename)
@@ -80,7 +80,9 @@ def scrape_prices_simple(url, original_currency_code=None):
             #f.flush()
 
             #driver.set_script_timeout(5)
-            driver.set_page_load_timeout(10)
+            driver.set_page_load_timeout(100)
+            driver.implicitly_wait(100)
+            driver.set_script_timeout(100)
             driver.get(url)
             #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
@@ -93,9 +95,9 @@ def scrape_prices_simple(url, original_currency_code=None):
             
             # 스크롤로 콘텐츠 로딩
             #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(0.1)
+            time.sleep(0.5)
             driver.execute_script("window.scrollTo(0, 0);")
-            time.sleep(0.1)
+            time.sleep(0.5)
             #page_source = driver.page_source
             
         except:
@@ -115,16 +117,29 @@ def scrape_prices_simple(url, original_currency_code=None):
         current_app.logger.info(f'BeautifulSoup')
         soup = BeautifulSoup(page_source, 'html.parser')
         current_app.logger.info(f'BeautifulSoup end')
-        actions = ActionChains(driver)
 
-        for tt in range(10):
+        print("send_keys-------------")
+        #actions.send_keys(Keys.END).perform()
+        print("execute_script-------------")
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        print("start check-------------")
+
+        for tt in range(3):
             text_len = len(soup.get_text())
+            current_app.logger.info(f'text_len = {text_len}')         
             if text_len > 40000:
                 break
-            time.sleep(0.1)
-            actions.send_keys(Keys.END).perform()
-            soup = BeautifulSoup(driver.page_source, 'html.parser')
-            current_app.logger.info(f'text_len = {text_len}')         
+            print("1-------------")
+            #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            actions.send_keys(Keys.DOWN).perform()
+            time.sleep(0.5)
+            print("2-------------")
+            soup.clear()
+            print("3-------------")
+            src = driver.page_source
+            print("5-------------")
+            soup = BeautifulSoup(src, 'html.parser')
+            print("6-------------")
         
         #f.write( '---------------------------------------\n')
         #f.write( soup.get_text() )

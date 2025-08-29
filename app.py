@@ -142,6 +142,7 @@ def scrape():
             # 기준 가격 스크래핑
             import time
             start_time = time.time()
+            time.sleep(1)
             base_prices = scrape_prices_simple(base_url_new, original_currency_code=original_currency)
             if base_prices:
                 base_price_str = base_prices[0]['price']
@@ -155,9 +156,11 @@ def scrape():
         # 현재 CID 스크래핑 실행
         import time
         start_time = time.time()
+        time.sleep(1)
         prices = scrape_prices_simple(new_url, original_currency_code=original_currency)
         if len(prices) == 0:
             print(f"RETRY----------------\n")
+            time.sleep(1)
             prices = scrape_prices_simple(new_url, original_currency_code=original_currency)
 
         process_time = time.time() - start_time

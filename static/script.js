@@ -355,11 +355,11 @@ function updateLowestPriceDisplay() {
         if (basePrice !== null) {
             const discountPercentage = (((basePrice - lowestPrice) / basePrice) * 100).toFixed(1);
             if (parseFloat(discountPercentage) > 0) {
-                discountText = `${discountPercentage}% 저렴`;
+                discountText = `${discountPercentage}% 저.렴`;
             } else if (parseFloat(discountPercentage) < 0) {
-                discountText = `${Math.abs(parseFloat(discountPercentage)).toFixed(1)}% 비쌈`;
+                discountText = `${Math.abs(parseFloat(discountPercentage)).toFixed(1)}% 비.쌈`;
             } else {
-                discountText = `0.0% 저렴`;
+                discountText = `0.0% 저렴     `;
             }
         } else {
             discountText = '할인율 계산 중...';
@@ -369,7 +369,7 @@ function updateLowestPriceDisplay() {
         const discountClass = basePrice !== null && lowestPrice < basePrice ? 'discount-positive' : 
                              basePrice !== null && lowestPrice > basePrice ? 'discount-negative' : 'discount-neutral';
         
-        lowestPriceEl.innerHTML = `<span class="lowest-price-discount ${discountClass}">${discountText}</span>`;
+        lowestPriceEl.innerHTML = `<span class="card-result-discount-big discount-positive mb-2">${discountText}</span>`;
         lowestCidNameEl.textContent = lowestPriceCidName;
         openLowestPriceBtnEl.disabled = false;
     }

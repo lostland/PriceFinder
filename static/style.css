@@ -329,13 +329,13 @@ body {
 
 .discount-positive {
     background: linear-gradient(135deg, #28a745, #20c997) !important;
-    color: white !important;
+    color: rgba(255, 255, 255, 0.9);
     box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
 }
 
 .discount-negative {
     background: linear-gradient(135deg, #dc3545, #e74c3c) !important;
-    color: white !important;
+    color: #rgba(255, 255, 255, 0.9);
     box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
 }
 
@@ -343,14 +343,14 @@ body {
 .search-result-discount-big {
     font-size: 1.1rem !important;
     padding: 0.3rem;
-    color: white !important;
+    color: rgba(255, 255, 255, 0.9);
 }
 
 /* 카드 결과 할인율 더 큰 크기 */
 .card-result-discount-big {
     font-size: 1.3rem !important;
     padding: 0.4rem;
-    color: white !important;
+    color: rgba(255, 255, 255, 0.9);
 }
 
 /* 최저가 할인율 강조 스타일 */
@@ -364,15 +364,17 @@ body {
 }
 
 /* 최저가 할인율 색상 강제 적용 */
+/*
 .lowest-price-discount.discount-positive,
 .lowest-price-discount.discount-negative,
 .lowest-price-discount.discount-neutral {
     color: white !important;
 }
+*/
 
 .discount-neutral {
     background: linear-gradient(135deg, #28a745, #20c997) !important;
-    color: white !important;
+    color: rgba(255, 255, 255, 0.9);
     box-shadow: 0 3px 10px rgba(40, 167, 69, 0.4);
 }
 
@@ -380,7 +382,7 @@ body {
 .btn-info {
     background: var(--magic-gradient) !important;
     border: none !important;
-    color: white !important;
+    color: rgba(255, 255, 255, 0.9);
     font-weight: 600;
     transition: transform 0.2s ease;
 }
@@ -520,7 +522,7 @@ body {
 }
 
 .discount-positive {
-    color: #28a745 !important; /* 녹색 - 저렴할 때 */
+    color: #ffffff !important; /* 녹색 - 저렴할 때 */
 }
 
 .discount-negative {
@@ -528,5 +530,5 @@ body {
 }
 
 .discount-neutral {
-    color: #6c757d !important; /* 회색 - 동일할 때 또는 계산 중 */
+    color: #ffffff !important; /* 회색 - 동일할 때 또는 계산 중 */
 }
