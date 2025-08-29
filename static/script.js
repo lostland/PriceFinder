@@ -9,6 +9,7 @@ let lowestPriceUrl = '';
 let lowestPriceCidName = '';
 const totalSteps = 17; // 검색창리스트(9) + 카드리스트(8)
 let currentLanguage = 'ko'; // 기본값: 한국어
+let isAnalyzing = false; // 분석 중인 상태 추적
 
 // 부드러운 진행률 애니메이션을 위한 변수들
 let currentProgressPercentage = 0;
@@ -64,6 +65,7 @@ const translations = {
         urlInput: '아고다 URL 입력',
         urlPlaceholder: '아고다 링크를 입력해 주세요',
         startAnalysis: '분석 시작',
+        stopAnalysis: '분석 중단',
         guide: '사용방법',
         languageBtn: 'English',
         progress: '진행 상황',
@@ -88,6 +90,7 @@ const translations = {
         urlInput: 'Enter Agoda URL',
         urlPlaceholder: 'Please enter Agoda link',
         startAnalysis: 'Start Analysis',
+        stopAnalysis: 'Stop Analysis',
         guide: 'Guide',
         languageBtn: '한국어',
         progress: 'Progress',
@@ -130,16 +133,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// 폼 제출 처리
+// 폼 제출 처리 (분석 시작/중단 토글)
 function handleFormSubmit(e) {
     e.preventDefault();
     
-    const url = urlInput.value.trim();
-    if (!url) {
-        showError('URL을 입력해주세요.');
-        return;
+    if (isAnalyzing) {
+        // 분석 중단
+        stopAnalysis();
+    } else {
+        // 분석 시작
+        const url = urlInput.value.trim();
+        if (!url) {
+            showError('URL을 입력해주세요.');
+            return;
+        }
+        startAnalysis(url);
     }
-    
+}
+
+// 분석 시작
+function startAnalysis(url) {
     // 초기화
     currentUrl = url;
     currentStep = 0;
@@ -149,6 +162,7 @@ function handleFormSubmit(e) {
     lowestPrice = null;
     lowestPriceUrl = '';
     lowestPriceCidName = '';
+    isAnalyzing = true;
     
     // 진행률 애니메이션 초기화 및 시작
     currentProgressPercentage = 0;
@@ -164,8 +178,43 @@ function handleFormSubmit(e) {
     
     showProgressSection();
     
+    // 버튼 텍스트 변경
+    updateAnalysisButton();
+    
     // 첫 번째 CID 분석 시작
     analyzeCid();
+}
+
+// 분석 중단
+function stopAnalysis() {
+    // 분석 상태 초기화
+    isAnalyzing = false;
+    
+    // 진행률 애니메이션 중지
+    stopSmoothProgress();
+    
+    // 상태 초기화 (URL은 유지)
+    currentStep = 0;
+    allResults = [];
+    searchResults = [];
+    cardResults = [];
+    lowestPrice = null;
+    lowestPriceUrl = '';
+    lowestPriceCidName = '';
+    
+    // 진행률 초기화
+    currentProgressPercentage = 0;
+    targetProgressPercentage = 0;
+    
+    // UI 초기화
+    hideAllSections();
+    
+    // 결과 컨테이너 초기화
+    document.getElementById('cardResultsContainer').innerHTML = '';
+    document.getElementById('searchResultsContainer').innerHTML = '';
+    
+    // 버튼 텍스트 변경
+    updateAnalysisButton();
 }
 
 // CID 분석 실행
@@ -589,6 +638,10 @@ function showComplete() {
     hideContinueButton();
     hideProgressSection();
     
+    // 분석 완료 시 상태 초기화
+    isAnalyzing = false;
+    updateAnalysisButton();
+    
     completeSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
@@ -614,9 +667,27 @@ function startNewSearch() {
     urlInput.value = '';
     urlInput.focus();
     
+    // 버튼 업데이트
+    isAnalyzing = false;
+    updateAnalysisButton();
+    
     // 결과 컨테이너 초기화
     document.getElementById('cardResultsContainer').innerHTML = '';
     document.getElementById('searchResultsContainer').innerHTML = '';
+}
+
+// 분석 버튼 텍스트 업데이트
+function updateAnalysisButton() {
+    const t = translations[currentLanguage];
+    const startBtn = document.getElementById('scrapeBtn');
+    
+    if (startBtn) {
+        if (isAnalyzing) {
+            startBtn.innerHTML = `<i class="fas fa-stop"></i> ${t.stopAnalysis}`;
+        } else {
+            startBtn.innerHTML = `<i class="fas fa-search"></i> ${t.startAnalysis}`;
+        }
+    }
 }
 
 // 숫자 가격 추출 (비교용)
@@ -796,8 +867,8 @@ function updateLanguage() {
     const urlInput = document.getElementById('urlInput');
     if (urlInput) urlInput.placeholder = t.urlPlaceholder;
     
-    const startBtn = document.getElementById('scrapeBtn');
-    if (startBtn) startBtn.innerHTML = `<i class="fas fa-search"></i> ${t.startAnalysis}`;
+    // 버튼 업데이트 (동적 텍스트)
+    updateAnalysisButton();
     
     // 언어 전환 버튼
     const languageText = document.getElementById('languageText');
