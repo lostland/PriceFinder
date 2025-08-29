@@ -7,8 +7,6 @@ let cardResults = [];
 let lowestPrice = null;
 let lowestPriceUrl = '';
 let lowestPriceCidName = '';
-let basePrice = null; // 기준 가격 (원본 URL의 CID 가격)
-let basePriceCidName = ''; // 기준 가격의 CID 이름
 const totalSteps = 17; // 검색창리스트(9) + 카드리스트(8)
 let currentLanguage = 'ko'; // 기본값: 한국어
 
@@ -151,16 +149,19 @@ function handleFormSubmit(e) {
     lowestPrice = null;
     lowestPriceUrl = '';
     lowestPriceCidName = '';
-    basePrice = null;
-    basePriceCidName = '';
     
     // 진행률 애니메이션 초기화 및 시작
     currentProgressPercentage = 0;
     targetProgressPercentage = 0;
     startSmoothProgress();
     
-    // UI 초기화
+    // UI 초기화 - 새로운 검색처럼 완전 초기화
     hideAllSections();
+    
+    // 결과 컨테이너 초기화
+    document.getElementById('cardResultsContainer').innerHTML = '';
+    document.getElementById('searchResultsContainer').innerHTML = '';
+    
     showProgressSection();
     
     // 첫 번째 CID 분석 시작
@@ -236,23 +237,6 @@ function analyzeCid() {
 function processResult(data) {
     allResults.push(data);
     
-    // 첫 번째 결과에서 기준 가격 설정
-    if (data.step === 1 && data.base_price) {
-        basePrice = data.base_price;
-        basePriceCidName = data.base_price_cid_name;
-        console.log(`기준 가격 설정: ${basePrice} (${basePriceCidName})`);
-        
-        // 기준 가격 정보 표시
-        const basePriceInfo = document.getElementById('basePriceInfo');
-        const basePriceText = document.getElementById('basePriceText');
-        const basePriceCid = document.getElementById('basePriceCid');
-        
-        if (basePriceInfo && basePriceText && basePriceCid) {
-            basePriceText.textContent = formatPrice(basePrice);
-            basePriceCid.textContent = basePriceCidName;
-            basePriceInfo.style.display = 'block';
-        }
-    }
     
     // 검색창리스트 단계인지 카드리스트 단계인지 확인
     if (data.is_search_phase) {
@@ -305,27 +289,9 @@ function updateLowestPriceDisplay() {
     const openLowestPriceBtnEl = document.getElementById('openLowestPriceBtn');
     
     if (lowestPrice !== null && lowestPriceEl && lowestCidNameEl && openLowestPriceBtnEl) {
-        let discountText = '';
-        
-        // 기준 가격과 비교하여 할인율만 표시
-        if (basePrice !== null) {
-            const discountPercentage = (((basePrice - lowestPrice) / basePrice) * 100).toFixed(1);
-            if (parseFloat(discountPercentage) > 0) {
-                discountText = `${discountPercentage}% 저렴`;
-            } else if (parseFloat(discountPercentage) < 0) {
-                discountText = `${Math.abs(parseFloat(discountPercentage)).toFixed(1)}% 비쌈`;
-            } else {
-                discountText = `0.0% 저렴`;
-            }
-        } else {
-            discountText = '할인율 계산 중...';
-        }
-        
-        // 할인율을 강조하는 HTML로 변경
-        const discountClass = basePrice !== null && lowestPrice < basePrice ? 'discount-positive' : 
-                             basePrice !== null && lowestPrice > basePrice ? 'discount-negative' : 'discount-neutral';
-        
-        lowestPriceEl.innerHTML = `<span class="lowest-price-discount ${discountClass}">${discountText}</span>`;
+        // 가격만 표시 (할인율 계산 제거)
+        lowestPriceEl.innerHTML = formatPrice(lowestPrice);
+        lowestPriceEl.className = 'text-success mb-1';
         lowestCidNameEl.textContent = lowestPriceCidName;
         openLowestPriceBtnEl.disabled = false;
     }
@@ -639,8 +605,6 @@ function startNewSearch() {
     lowestPrice = null;
     lowestPriceUrl = '';
     lowestPriceCidName = '';
-    basePrice = null;
-    basePriceCidName = '';
     
     // 진행률 초기화
     currentProgressPercentage = 0;

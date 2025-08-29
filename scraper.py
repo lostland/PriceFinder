@@ -19,6 +19,8 @@ def scrape_prices_simple(url, original_currency_code=None):
         from selenium.webdriver.common.by import By
         from selenium.webdriver.support.ui import WebDriverWait
         from selenium.webdriver.support import expected_conditions as EC
+        from selenium.webdriver.common.keys import Keys
+        from selenium.webdriver.common.action_chains import ActionChains
         
         chrome_options = Options()
         chrome_options.add_argument('--headless')
@@ -30,7 +32,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
         #chrome_options.add_argument('--blink-setting=imagesEnable=false')
-        #chrome_options.page_load_strategy = 'eager' # 또는 'none'으로 변경 가능
+        chrome_options.page_load_strategy = 'eager' # 또는 'none'으로 변경 가능
         #chrome_options.add_argument('--disable-extensions')
         # 실제 브라우저처럼 보이게 하는 옵션들
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
@@ -46,7 +48,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         #driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         
         # URL은 app.py에서 이미 올바르게 처리되었으므로 추가 수정하지 않음
-        #print(f"스크래핑 사용 URL: {url}")
+        print(f"스크래핑 사용 URL: {url}")
 
 #        try:
         import os
@@ -70,7 +72,8 @@ def scrape_prices_simple(url, original_currency_code=None):
 #            print(f"텍스트 파일 저장 오류: {save_error}")
 
 
-        #print(f"driver.get() start\n")
+        print(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}")
+        
         start_time = time.time()
         try:
             current_app.logger.info(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -82,16 +85,17 @@ def scrape_prices_simple(url, original_currency_code=None):
             #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
             current_app.logger.info(f"driver.get() end")
-
+            
+            # Send a space to the element
         
             # 빠른 로딩 전략 (timeout 방지)
             #time.sleep(1.5)  # 로딩 대기 시간 단축
             
             # 스크롤로 콘텐츠 로딩
             #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(2)
+            time.sleep(0.1)
             driver.execute_script("window.scrollTo(0, 0);")
-            time.sleep(2)
+            time.sleep(0.1)
             #page_source = driver.page_source
             
         except:
@@ -111,6 +115,17 @@ def scrape_prices_simple(url, original_currency_code=None):
         current_app.logger.info(f'BeautifulSoup')
         soup = BeautifulSoup(page_source, 'html.parser')
         current_app.logger.info(f'BeautifulSoup end')
+        actions = ActionChains(driver)
+
+        for tt in range(10):
+            text_len = len(soup.get_text())
+            if text_len > 40000:
+                break
+            time.sleep(0.1)
+            actions.send_keys(Keys.END).perform()
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            current_app.logger.info(f'text_len = {text_len}')         
+        
         #f.write( '---------------------------------------\n')
         #f.write( soup.get_text() )
         #f.flush()
@@ -272,6 +287,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         # 5KB 제한: 텍스트가 5KB를 넘으면 5KB까지만 자르고 즉시 종료
         text_size_bytes = len(all_text.encode('utf-8'))
         current_app.logger.info(f"텍스트 크기: {text_size_bytes} bytes")
+        #f.write(f"{all_text}\n")
         
         #if text_size_bytes > 5 * 1024:  # 5KB = 5 * 1024 bytes
             # UTF-8 기준 5KB까지만 자르기 (안전하게)
