@@ -512,3 +512,21 @@ body {
         height: 120px;
     }
 }
+
+/* 최저가 할인율 스타일 */
+.lowest-price-discount {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.discount-positive {
+    color: #28a745 !important; /* 녹색 - 저렴할 때 */
+}
+
+.discount-negative {
+    color: #dc3545 !important; /* 빨간색 - 비쌀 때 */
+}
+
+.discount-neutral {
+    color: #6c757d !important; /* 회색 - 동일할 때 또는 계산 중 */
+}
