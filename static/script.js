@@ -195,6 +195,9 @@ function stopAnalysis() {
     // 진행률 애니메이션 중지
     stopSmoothProgress();
     
+    // 진행상황 카드 숨기기
+    hideProgressCard();
+    
     // 상태 초기화 (URL은 유지)
     currentStep = 0;
     allResults = [];
@@ -588,6 +591,14 @@ function stopSmoothProgress() {
     }
 }
 
+// 진행상황 카드 숨기기
+function hideProgressCard() {
+    const progressSection = document.getElementById('progressSection');
+    if (progressSection) {
+        progressSection.style.display = 'none';
+    }
+}
+
 // 진행률 업데이트 (목표값만 설정)
 function updateProgress() {
     const currentCidNameEl = document.getElementById('currentCidName');
@@ -683,6 +694,9 @@ function showComplete() {
 function startNewSearch() {
     // 부드러운 진행률 애니메이션 중지
     stopSmoothProgress();
+    
+    // 진행상황 카드 숨기기
+    hideProgressCard();
     
     currentUrl = '';
     currentStep = 0;
