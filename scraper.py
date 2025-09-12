@@ -6,6 +6,14 @@ import time
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from flask import current_app
 
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
+
 def scrape_prices_simple(url, original_currency_code=None):
     """
     단순하고 빠른 가격 스크래핑 - 이미지 처리 없음
@@ -14,14 +22,7 @@ def scrape_prices_simple(url, original_currency_code=None):
     """
     try:
         # Selenium 사용 - 간단한 설정
-        from selenium import webdriver
-        from selenium.webdriver.chrome.options import Options
-        from selenium.webdriver.common.by import By
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-        from selenium.webdriver.common.keys import Keys
-        from selenium.webdriver.common.action_chains import ActionChains
-        
+
         chrome_options = Options()
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
