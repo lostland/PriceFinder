@@ -118,28 +118,32 @@ def scrape_prices_simple(url, original_currency_code=None):
         soup = BeautifulSoup(page_source, 'html.parser')
         current_app.logger.info(f'BeautifulSoup end')
 
-        print("send_keys-------------")
+        #print("send_keys-------------")
         #actions.send_keys(Keys.END).perform()
-        print("execute_script-------------")
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        #print("execute_script-------------")
+        #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         print("start check-------------")
 
         for tt in range(3):
-            text_len = len(soup.get_text())
-            current_app.logger.info(f'text_len = {text_len}')         
-            if text_len > 40000:
-                break
-            print("1-------------")
-            #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            actions.send_keys(Keys.DOWN).perform()
-            time.sleep(0.5)
-            print("2-------------")
-            soup.clear()
-            print("3-------------")
-            src = driver.page_source
-            print("5-------------")
-            soup = BeautifulSoup(src, 'html.parser')
-            print("6-------------")
+            try:
+                text_len = len(soup.get_text())
+                current_app.logger.info(f'text_len = {text_len}')         
+                if text_len > 40000:
+                    break
+                print("1-------------")
+                #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                actions.send_keys(Keys.DOWN).perform()
+                time.sleep(0.5)
+                print("2-------------")
+                soup.clear()
+                print("3-------------")
+                src = driver.page_source
+                print("5-------------")
+                soup = BeautifulSoup(src, 'html.parser')
+                print("6-------------")
+            except :
+                print("EXCEPTION-------------")
+            
         
         #f.write( '---------------------------------------\n')
         #f.write( soup.get_text() )
