@@ -96,9 +96,9 @@ def scrape_prices_simple(url, original_currency_code=None):
             
             # 스크롤로 콘텐츠 로딩
             #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(0.5)
-            driver.execute_script("window.scrollTo(0, 0);")
-            time.sleep(0.5)
+            #time.sleep(0.5)
+            #driver.execute_script("window.scrollTo(0, 0);")
+            #time.sleep(0.5)
             #page_source = driver.page_source
             
         except:
@@ -129,11 +129,11 @@ def scrape_prices_simple(url, original_currency_code=None):
             try:
                 text_len = len(soup.get_text())
                 current_app.logger.info(f'text_len = {text_len}')         
-                if text_len > 40000:
+                if text_len > 30000:
                     break
                 print("1-------------")
                 #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                actions.send_keys(Keys.DOWN).perform()
+                actions.send_keys(Keys.UP).perform()
                 time.sleep(1)
                 print("2-------------")
                 soup.clear()
