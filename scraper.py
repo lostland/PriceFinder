@@ -125,7 +125,7 @@ def scrape_prices_simple(url, original_currency_code=None):
         #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         print("start check-------------")
 
-        for tt in range(3):
+        for tt in range(10):
             try:
                 text_len = len(soup.get_text())
                 current_app.logger.info(f'text_len = {text_len}')         
@@ -134,7 +134,7 @@ def scrape_prices_simple(url, original_currency_code=None):
                 print("1-------------")
                 #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 actions.send_keys(Keys.DOWN).perform()
-                time.sleep(0.5)
+                time.sleep(1)
                 print("2-------------")
                 soup.clear()
                 print("3-------------")
