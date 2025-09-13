@@ -134,13 +134,13 @@ def scrape_prices_simple(url, original_currency_code=None):
                 print("1-------------")
                 #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 actions.send_keys(Keys.UP).perform()
-                time.sleep(1)
+                time.sleep(0.3)
                 print("2-------------")
                 soup.clear()
                 print("3-------------")
-                src = driver.page_source
+                #src = driver.page_source
                 print("5-------------")
-                soup = BeautifulSoup(src, 'html.parser')
+                soup = BeautifulSoup(driver.page_source, 'html.parser')
                 print("6-------------")
             except :
                 print("EXCEPTION-------------")
