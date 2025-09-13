@@ -1,0 +1,145 @@
+sudo certbot certificates
+Saving debug log to /var/log/letsencrypt/letsencrypt.log
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Found the following certs:
+  Certificate Name: agodamagic.shop
+    Serial Number: 6f359162255a300cf67ac3ccf95015e2c8c
+    Key Type: RSA
+    Domains: agodamagic.shop
+    Expiry Date: 2025-12-12 06:21:31+00:00 (VALID: 89 days)
+    Certificate Path: /etc/letsencrypt/live/agodamagic.shop/fullchain.pem
+    Private Key Path: /etc/letsencrypt/live/agodamagic.shop/privkey.pem
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+(venv) root@agodamagic:/home/agoda-app# openssl s_client -connect
+s_client: Option -connect needs a value
+s_client: Use -help for summary.
+(venv) root@agodamagic:/home/agoda-app# openssl s_client -connect www.agodamagic.shop:443 -servername www.agodamagic.shop
+CONNECTED(00000003)
+depth=0 C = KR, ST = Seoul, L = Seoul, O = AgodaMagic, CN = www.agodamagic.shop
+verify error:num=18:self-signed certificate
+verify return:1
+depth=0 C = KR, ST = Seoul, L = Seoul, O = AgodaMagic, CN = www.agodamagic.shop
+verify return:1
+---
+Certificate chain
+ 0 s:C = KR, ST = Seoul, L = Seoul, O = AgodaMagic, CN = www.agodamagic.shop
+   i:C = KR, ST = Seoul, L = Seoul, O = AgodaMagic, CN = www.agodamagic.shop
+   a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
+   v:NotBefore: Sep 13 07:33:54 2025 GMT; NotAfter: Sep 13 07:33:54 2026 GMT
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIDoTCCAomgAwIBAgIUFvJ25r+VTTQphT+hz0XP251j+AkwDQYJKoZIhvcNAQEL
+BQAwYDELMAkGA1UEBhMCS1IxDjAMBgNVBAgMBVNlb3VsMQ4wDAYDVQQHDAVTZW91
+bDETMBEGA1UECgwKQWdvZGFNYWdpYzEcMBoGA1UEAwwTd3d3LmFnb2RhbWFnaWMu
+c2hvcDAeFw0yNTA5MTMwNzMzNTRaFw0yNjA5MTMwNzMzNTRaMGAxCzAJBgNVBAYT
+AktSMQ4wDAYDVQQIDAVTZW91bDEOMAwGA1UEBwwFU2VvdWwxEzARBgNVBAoMCkFn
+b2RhTWFnaWMxHDAaBgNVBAMME3d3dy5hZ29kYW1hZ2ljLnNob3AwggEiMA0GCSqG
+SIb3DQEBAQUAA4IBDwAwggEKAoIBAQCe0iGhZ97OkcxOT8TYzvASJebiwVWr43Tr
+1mzHdvlALYl4wOOmREhBI6lwSoZXUV2CHNbTcovkeNXXFdeTMFqqFxSDVrN/8pqX
+QDxYvz4xGhduyX9uMQ4ZkOtRkqbjZETylHuUy2YXIdMD1Gt2Bof5rPk+J4UK3Udq
+Qg36rYWgDboBTJveKxMj20rX0hQr6JablOwJ362HFScaMv2zo11t3L39rMixyvOw
+udemKoEs5/gzhLcDI9EZsZ1B5yY1xI/OwRZQwDXl59holwVzK+mZax0osiOepl/u
+VkiXk1HDBc4xaO28g+3+h/TdCo8p84IOxj0gMlDY/G8AHKpvHymjAgMBAAGjUzBR
+MB0GA1UdDgQWBBSNMMD+6jjmlrDruyZ2ZTdnAK+qwTAfBgNVHSMEGDAWgBSNMMD+
+6jjmlrDruyZ2ZTdnAK+qwTAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUA
+A4IBAQCUQ0DZuet7evdJQcfYsY2z53Uv0nTlCy6kHs0SEQqIS4sfnWV0GtaK6pvC
+ijr7IZsy6BQbEiu/nscZwAY851S9/NTry1wCtr631tINpiy8tNwRqjPBkrYt5MvO
+2yiMzoLp5+cSyH0TkLS7PzwiFZM2gEclz4nAy60732JwWiRpp9NcPKeeD3b1jnBn
+FMQ6wM2WM+5ZiVTRzZ8fNejXPR7tEuzQl1B0Sb8VeH03TfFNbscZ7iAMd8dF/FsY
+Vb+MNAEEE8hL8CvJxhuO6MXXAbx7WEE1N5ILnfCwrYXlOx1Tyr68Zj4mm3zLIUqk
+wokIqxk9CJjsCCQO0tQtL0YENZvS
+-----END CERTIFICATE-----
+subject=C = KR, ST = Seoul, L = Seoul, O = AgodaMagic, CN = www.agodamagic.shop
+issuer=C = KR, ST = Seoul, L = Seoul, O = AgodaMagic, CN = www.agodamagic.shop
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: RSA-PSS
+Server Temp Key: X25519, 253 bits
+---
+SSL handshake has read 1493 bytes and written 401 bytes
+Verification error: self-signed certificate
+---
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Server public key is 2048 bit
+Secure Renegotiation IS NOT supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 18 (self-signed certificate)
+---
+---
+Post-Handshake New Session Ticket arrived:
+SSL-Session:
+    Protocol  : TLSv1.3
+    Cipher    : TLS_AES_256_GCM_SHA384
+    Session-ID: BC61E1EAA63949CE12D6BFC725BEDD9AC8EEF5A0E8B32D21E5AA0625C076CBE0
+    Session-ID-ctx:
+    Resumption PSK: BC41DA6115F3CB736903D5918D9EF282D60174ADECD49B99116A565E006E85070AB85F08923E3FC8CFF1D206298B21BE
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    TLS session ticket lifetime hint: 300 (seconds)
+    TLS session ticket:
+    0000 - 9c f0 dd 34 2d 37 aa 01-46 43 35 10 f3 08 29 1b   ...4-7..FC5...).
+    0010 - 64 4d 3c 66 f6 8f 53 58-a4 7f b1 f6 a7 db 6e 8d   dM<f..SX......n.
+    0020 - 91 28 2d 76 6d 51 98 21-0e 04 73 7e a8 01 35 a8   .(-vmQ.!..s~..5.
+    0030 - 87 cc 5a 38 cf 9a b8 4d-0b b5 f3 ea 04 7a 72 68   ..Z8...M.....zrh
+    0040 - b6 2f 49 ea 59 3e 87 2b-db ca 3b 1e c3 86 00 7c   ./I.Y>.+..;....|
+    0050 - 12 f8 06 3a a4 e6 0b 18-19 ad b0 0f 51 65 c6 9b   ...:........Qe..
+    0060 - 13 3d 0f 19 0e 77 93 a6-32 67 a6 95 c3 ed 9a 9e   .=...w..2g......
+    0070 - 74 65 e7 df 7d 53 98 96-04 6d 4c 12 b5 e2 71 e0   te..}S...mL...q.
+    0080 - 95 34 df ec 80 ef 63 6f-2c 99 74 7f 09 f1 c8 fa   .4....co,.t.....
+    0090 - 45 46 63 b0 78 4d 4e 78-5b 13 e4 58 05 1e 86 70   EFc.xMNx[..X...p
+    00a0 - 57 cd 8d c6 8c 89 f8 e3-a4 aa cc a5 0a 26 20 7b   W............& {
+    00b0 - 9e cd 93 1b 85 24 c3 b1-49 12 60 f0 cb bb 0f f1   .....$..I.`.....
+    00c0 - 81 df e7 57 3a 2a 9e 09-d1 cd 49 4d 82 9d b1 88   ...W:*....IM....
+    00d0 - f5 07 d5 5a 49 c8 0b 20-85 5b c8 fd 73 a4 e7 79   ...ZI.. .[..s..y
+    00e0 - 3a 6a 69 e0 e9 df 58 12-7b a6 42 3e b4 a7 27 7c   :ji...X.{.B>..'|
+
+    Start Time: 1757749187
+    Timeout   : 7200 (sec)
+    Verify return code: 18 (self-signed certificate)
+    Extended master secret: no
+    Max Early Data: 0
+---
+read R BLOCK
+---
+Post-Handshake New Session Ticket arrived:
+SSL-Session:
+    Protocol  : TLSv1.3
+    Cipher    : TLS_AES_256_GCM_SHA384
+    Session-ID: A46576B5419B73369A57557885DB1304D01C5A86EA49ED49D145CAC7E94FB23E
+    Session-ID-ctx:
+    Resumption PSK: FBABA3CAAA72C13807C7F8C1B27ECF808A4B4C562E1C8F61F28090D213E91D4590966F967B9F74E449F13D0D3A6A5414
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    TLS session ticket lifetime hint: 300 (seconds)
+    TLS session ticket:
+    0000 - 9c f0 dd 34 2d 37 aa 01-46 43 35 10 f3 08 29 1b   ...4-7..FC5...).
+    0010 - 04 83 32 8c 1f 09 6a 1e-13 fb b6 b4 48 7a ef c8   ..2...j.....Hz..
+    0020 - a5 f5 4f 22 c4 91 62 35-6e 9c 77 65 85 9b 93 04   ..O"..b5n.we....
+    0030 - 89 d5 65 39 a4 15 ca 74-5f 5a 9e a8 74 33 f5 ce   ..e9...t_Z..t3..
+    0040 - af 06 c3 cc 5f ea 2f 6d-38 26 7e 6b 87 e0 25 ac   ...._./m8&~k..%.
+    0050 - c3 b8 57 25 21 f1 b6 d7-60 e9 b2 8b ad 23 20 c5   ..W%!...`....# .
+    0060 - 83 8f 31 e2 f4 18 91 79-ac c8 fe 6d 00 22 4b 88   ..1....y...m."K.
+    0070 - 7f 22 d6 79 41 b1 09 6f-d4 9a 2d 5c 7b 87 d1 dc   .".yA..o..-\{...
+    0080 - 97 88 4c 38 d2 ae c3 0a-87 e9 c9 d8 94 40 ca 3e   ..L8.........@.>
+    0090 - 54 d2 df 6c 08 04 60 01-9d b9 c7 e9 01 e1 c2 11   T..l..`.........
+    00a0 - c0 78 cd f8 2b 74 83 ee-46 5d f5 0f ae 61 bf 86   .x..+t..F]...a..
+    00b0 - 0b 50 91 eb 1a 38 e1 84-64 5c 93 1f b5 9e 70 61   .P...8..d\....pa
+    00c0 - ea 56 cd 7d fd f3 00 58-6d 80 57 b6 78 66 a6 d6   .V.}...Xm.W.xf..
+    00d0 - 2b 5c b2 8a dd 14 74 82-45 a3 b2 44 dd 5b b8 b4   +\....t.E..D.[..
+    00e0 - bf 87 c8 93 f1 02 be ac-d0 97 41 da 71 b6 75 5f   ..........A.q.u_
+
+    Start Time: 1757749187
+    Timeout   : 7200 (sec)
+    Verify return code: 18 (self-signed certificate)
+    Extended master secret: no
+    Max Early Data: 0
+---
+read R BLOCK
