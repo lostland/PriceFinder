@@ -92,7 +92,7 @@ def scrape_prices_simple(url, original_currency_code=None):
             # Send a space to the element
         
             # 빠른 로딩 전략 (timeout 방지)
-            time.sleep(1.5)  # 로딩 대기 시간 단축
+            time.sleep(0.5)  # 로딩 대기 시간 단축
             
             # 스크롤로 콘텐츠 로딩
             #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -111,14 +111,21 @@ def scrape_prices_simple(url, original_currency_code=None):
 
         current_app.logger.info(f'get page_source')
         #driver.execute_script("window.scrollTo(0, 0);")
-        page_source = driver.page_source
+        #page_source = driver.page_source
         # BeautifulSoup으로 파싱
         #f.write( page_source )
 
-        current_app.logger.info(f'BeautifulSoup')
-        soup = BeautifulSoup(page_source, 'html.parser')
-        current_app.logger.info(f'BeautifulSoup end')
+        #current_app.logger.info(f'BeautifulSoup')
+        #soup = BeautifulSoup(driver.page_source, 'html.parser')
+        soup = BeautifulSoup(driver.page_source, 'lxml')
 
+        price = 0
+        priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
+        if( priceText ):
+            price = priceText["data-element-cheapest-room-price"]
+            print( "Price Found : ",  price )
+            
+#current_app.logger.info(f'BeautifulSoup end')
         #print("send_keys-------------")
         #actions.send_keys(Keys.END).perform()
         #print("execute_script-------------")
@@ -131,17 +138,24 @@ def scrape_prices_simple(url, original_currency_code=None):
                 current_app.logger.info(f'text_len = {text_len}')         
                 if text_len > 30000:
                     break
+                    
                 print("1-------------")
                 #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                actions.send_keys(Keys.UP).perform()
+                actions.send_keys(Keys.HOME).perform()
                 time.sleep(0.3)
-                print("2-------------")
+                #print("2-------------")
                 soup.clear()
                 print("3-------------")
                 #src = driver.page_source
                 print("5-------------")
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 print("6-------------")
+                priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
+                if( priceText ):
+                    price = priceText["data-element-cheapest-room-price"]
+                    print( "Price Found : ",  price )
+                    break
+
             except :
                 print("EXCEPTION-------------")
             
@@ -151,6 +165,15 @@ def scrape_prices_simple(url, original_currency_code=None):
         #f.flush()
 
         driver.quit()
+
+        #여기
+        if( price != 0 ):
+            starting_price = {
+                'price': price,  # 원본 형태 그대로 (₩, THB, $ 등 포함)
+                'context': f"시작가 {price}",
+                'source': 'starting_price_from_file'
+            }
+            return [starting_price]
 
         current_app.logger.info(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}")
         #f.flush()
