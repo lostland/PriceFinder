@@ -92,13 +92,13 @@ def scrape_prices_simple(url, original_currency_code=None):
             # Send a space to the element
         
             # 빠른 로딩 전략 (timeout 방지)
-            time.sleep(0.5)  # 로딩 대기 시간 단축
+            #time.sleep(3)  # 로딩 대기 시간 단축
             
             # 스크롤로 콘텐츠 로딩
             #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            #time.sleep(0.5)
-            #driver.execute_script("window.scrollTo(0, 0);")
-            #time.sleep(0.5)
+            time.sleep(0.5)
+            driver.execute_script("window.scrollTo(0, 0);")
+            time.sleep(0.5)
             #page_source = driver.page_source
             
         except:
@@ -115,9 +115,9 @@ def scrape_prices_simple(url, original_currency_code=None):
         # BeautifulSoup으로 파싱
         #f.write( page_source )
 
-        #current_app.logger.info(f'BeautifulSoup')
-        #soup = BeautifulSoup(driver.page_source, 'html.parser')
-        soup = BeautifulSoup(driver.page_source, 'lxml')
+        current_app.logger.info(f'BeautifulSoup')
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        current_app.logger.info(f'BeautifulSoup end')
 
         price = 0
         priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
@@ -130,35 +130,37 @@ def scrape_prices_simple(url, original_currency_code=None):
         #actions.send_keys(Keys.END).perform()
         #print("execute_script-------------")
         #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        print("start check-------------")
 
-        for tt in range(10):
-            try:
-                text_len = len(soup.get_text())
-                current_app.logger.info(f'text_len = {text_len}')         
-                if text_len > 30000:
-                    break
-                    
-                print("1-------------")
-                #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                actions.send_keys(Keys.HOME).perform()
-                time.sleep(0.3)
-                #print("2-------------")
-                soup.clear()
-                print("3-------------")
-                #src = driver.page_source
-                print("5-------------")
-                soup = BeautifulSoup(driver.page_source, 'html.parser')
-                print("6-------------")
-                priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
-                if( priceText ):
-                    price = priceText["data-element-cheapest-room-price"]
-                    print( "Price Found : ",  price )
-                    break
-
-            except :
-                print("EXCEPTION-------------")
-            
+        if( price == 0 ):
+            print("start check-------------")
+            for tt in range(10):
+                try:      
+                    print("1-------------")
+                    #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    actions.send_keys(Keys.DOWN).perform()
+                    time.sleep(0.5)
+                    #print("2-------------")
+                    soup.clear()
+                    print("3-------------")
+                    src = driver.page_source
+                    print("5-------------")
+                    soup = BeautifulSoup(src, 'html.parser' )
+                    print("6-------------")
+                    priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
+                    if( priceText ):
+                        price = priceText["data-element-cheapest-room-price"]
+                        print( "Price Found : ",  price )
+                        break
+                        
+                    text_len = len(soup.get_text())
+                    current_app.logger.info(f'text_len = {text_len}')         
+    
+                    if text_len > 40000:
+                        break
+                        
+                except :
+                    print("EXCEPTION-------------")
+                
         
         #f.write( '---------------------------------------\n')
         #f.write( soup.get_text() )
