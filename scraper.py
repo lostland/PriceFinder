@@ -73,9 +73,8 @@ def scrape_prices_simple(url, original_currency_code=None):
 #            print(f"텍스트 파일 저장 오류: {save_error}")
 
 
-        print(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}")
+        start_time = time.localtime()
         
-        start_time = time.time()
         try:
             current_app.logger.info(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}")
             #f.flush()
@@ -96,7 +95,7 @@ def scrape_prices_simple(url, original_currency_code=None):
             
             # 스크롤로 콘텐츠 로딩
             #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(0.5)
+            #time.sleep(1.5)
             driver.execute_script("window.scrollTo(0, 0);")
             time.sleep(0.5)
             #page_source = driver.page_source
@@ -133,12 +132,12 @@ def scrape_prices_simple(url, original_currency_code=None):
 
         if( price == 0 ):
             print("start check-------------")
-            for tt in range(10):
+            for tt in range(15):
                 try:      
                     print("1-------------")
                     #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                    actions.send_keys(Keys.DOWN).perform()
-                    time.sleep(0.5)
+                    #actions.send_keys(Keys.DOWN).perform()
+                    time.sleep(0.2)
                     #print("2-------------")
                     soup.clear()
                     print("3-------------")
@@ -168,8 +167,12 @@ def scrape_prices_simple(url, original_currency_code=None):
 
         driver.quit()
 
-        #여기
         if( price != 0 ):
+            end_time = time.localtime()
+            elapsed = time.mktime(end_time) - time.mktime(start_time)  # 초 단위 차이
+            print(f"걸린 시간: {elapsed:.3f}초")
+            
+            current_app.logger.info(f'time : {time}')
             starting_price = {
                 'price': price,  # 원본 형태 그대로 (₩, THB, $ 등 포함)
                 'context': f"시작가 {price}",
