@@ -40,8 +40,7 @@ def _progress_ticker_loop(logger):
         with _progress_lock:
             if _process_pct < 95:
                 _process_pct += 1
-                if( _progress_cb ):
-                    _progress_cb(_process_pct, " ")
+                set_progress(_process_pct, " ")
                 try:
                     # Flask 컨텍스트 없어도 동작하는 로거
                     logger.info(f"[ticker] process={_process_pct}%")
