@@ -17,6 +17,8 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "default_secret_key_for_development")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
+logging.getLogger("werkzeug").setLevel(logging.WARNING)  # INFO 로그 숨김
+
 def _start_ticker_once():
     # 개발 서버(reloader) 중복 실행 회피는 필요 시 추가
     start_progress_ticker(logger=app.logger)
