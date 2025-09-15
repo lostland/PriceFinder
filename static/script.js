@@ -267,7 +267,7 @@ function analyzeCid() {
     hideError();
 
      // ← 추가: 스텝 시작 시 0%로 초기화하고 폴링 시작
-    setStepProgress(0, '준비');
+    setStepProgress(100,' ');
     startStepProgressPolling();
     
     // API 호출
@@ -304,7 +304,7 @@ function analyzeCid() {
         
         stopStepProgressPolling();
         //if (typeof data.subprogress_pct === 'number') {
-        setStepProgress(data.subprogress_pct, data.subprogress_msg || (data.subprogress_pct + '%'));
+        setStepProgress(data.subprogress_pct, ' ');
         //}
         
         // 결과 처리

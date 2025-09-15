@@ -160,6 +160,7 @@ def scrape():
                     global_base_price = int(base_price_match.group().replace(',', ''))
                     app.logger.info(f"기준 가격 설정: {base_price_str} ({global_base_price}) - {global_base_price_cid_name}")
         
+        
         # 현재 CID 스크래핑 실행
         import time
         start_time = time.time()
