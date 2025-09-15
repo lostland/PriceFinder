@@ -152,7 +152,7 @@ function startStepProgressPolling() {
         }
       })
       .catch(() => { /* 네트워크 일시 오류 무시 */ });
-  }, 1000); 
+  }, 200); 
 }
 
 function stopStepProgressPolling() {
