@@ -736,6 +736,9 @@ function showComplete() {
     hideContinueButton();
     hideProgressSection();
     
+    // 각 그룹별 최저가 카드에 빛나는 효과 적용
+    highlightLowestPriceCards();
+    
     // 분석 완료 시 상태 초기화
     isAnalyzing = false;
     updateAnalysisButton();
@@ -1045,5 +1048,55 @@ function setStepProgress(percent, label) {
 }
 // 전역에서 쓸 수 있게 노출
 window.setStepProgress = setStepProgress;
+
+// 각 그룹별 최저가 카드에 빛나는 효과 적용
+function highlightLowestPriceCards() {
+    // 검색창리스트에서 최저가 찾기
+    const searchLowestPrice = findLowestPriceInGroup(searchResults);
+    if (searchLowestPrice) {
+        highlightCardByCidName(searchLowestPrice.cid_name, 'search-result-card');
+    }
+    
+    // 카드리스트에서 최저가 찾기
+    const cardLowestPrice = findLowestPriceInGroup(cardResults);
+    if (cardLowestPrice) {
+        highlightCardByCidName(cardLowestPrice.cid_name, 'card-result-item');
+    }
+}
+
+// 특정 그룹에서 최저가 결과 찾기
+function findLowestPriceInGroup(results) {
+    if (!results || results.length === 0) return null;
+    
+    let lowestResult = null;
+    let lowestPrice = null;
+    
+    for (const result of results) {
+        if (result.prices && result.prices.length > 0) {
+            const price = extractNumericPrice(result.prices[0].price);
+            if (price && (lowestPrice === null || price < lowestPrice)) {
+                lowestPrice = price;
+                lowestResult = result;
+            }
+        }
+    }
+    
+    return lowestResult;
+}
+
+// CID 이름으로 카드를 찾아서 빛나는 효과 적용
+function highlightCardByCidName(cidName, cardClass) {
+    // 모든 해당 클래스의 카드들을 찾기
+    const cards = document.querySelectorAll(`.${cardClass}`);
+    
+    cards.forEach(card => {
+        // 카드 내에서 CID 이름 찾기
+        const nameElement = card.querySelector('.search-result-name, h6');
+        if (nameElement && nameElement.textContent.trim() === cidName) {
+            // 최저가 클래스 추가
+            card.classList.add('lowest-price');
+        }
+    });
+}
 
 
