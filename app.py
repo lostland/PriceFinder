@@ -119,7 +119,7 @@ def scrape():
         
         # 진행 단계 정보
         if step == 0:
-            is_search_phase = True
+            is_search_phase = False  # 기준가격은 검색창 리스트에 표시하지 않음
             phase_name = "기준가격 설정"
         else:
             is_search_phase = step <= len(search_cids)  # step 1부터 search_cids 처리

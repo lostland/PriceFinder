@@ -148,11 +148,11 @@ function startStepProgressPolling() {
       .then(p => {
         if (!p) return;
         if (typeof p.pct === 'number') {
-          setStepProgress(p.pct, p.msg || (p.pct + '%'));
+          setStepProgress(p.pct, ' ');
         }
       })
       .catch(() => { /* 네트워크 일시 오류 무시 */ });
-  }, 200); // 200ms 간격으로 폴링
+  }, 1000); 
 }
 
 function stopStepProgressPolling() {
