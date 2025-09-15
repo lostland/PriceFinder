@@ -31,12 +31,22 @@ def get_progress_state():
     return _progress_state
     
 
-def _safe_progress(progress_cb, pct, msg=None):
+def _safe_progress(progress_cb, pct, msg=None, logger=None):
     current_app.logger.info(f"Progress: {pct}% - {msg or ''}")
     
     try:
+        if logger:
+            logger.info(f"Progress: {pct}% - {msg or ''}")
+        elif has_app_context():
+            current_app.logger.info(f"Progress: {pct}% - {msg or ''}")
+        else:
+            logging.getLogger(__name__).info(f"Progress: {pct}% - {msg or ''}")
+    except Exception:
+        pass
+
+    try:
         if progress_cb:
-            progress_cb(pct, " ")
+            progress_cb(pct, msg or "")
     except Exception:
         pass
         
@@ -48,17 +58,22 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     """
     process = 0
 
-    stop_event = threading.Event()
+    # 안전한 로거 확보 (컨텍스트 있으면 Flask 로거, 없으면 기본 로거)
+    try:
+        logger = current_app.logger
+    except Exception:
+        logger = logging.getLogger(__name__)
 
+    # --- 자동 증가 틱커 ---
+    stop_event = threading.Event()
     def _ticker():
         nonlocal process
         while not stop_event.is_set():
-            # 상한선(예: 95%)까지만 자동 증가
             if process < 95:
                 process += 1
-                _safe_progress(progress_cb, process, "")
-            # 1초마다 +1
+                _safe_progress(progress_cb, process, "", logger=logger)
             stop_event.wait(1)
+    # ---------------------
             
     try:
         # Selenium 사용 - 간단한 설정
@@ -90,7 +105,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         ticker_thread.start()
 
         process += 5
-        _safe_progress(progress_cb, process, "준비")
+        _safe_progress(progress_cb, process, "준비", logger=logger )
 
         # 봇 탐지 우회
         #driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
@@ -136,7 +151,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             
             current_app.logger.info(f"driver.get() end")
             process += 5
-            _safe_progress(progress_cb, process, "URL 체크 시작")
+            _safe_progress(progress_cb, process, "URL 체크 시작", logger=logger )
             
             # Send a space to the element
         
@@ -172,14 +187,14 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         #f.write( page_source )
 
         process += 5
-        _safe_progress(progress_cb, process, "")
+        _safe_progress(progress_cb, process, "", logger=logger )
 
         #current_app.logger.info(f'BeautifulSoup')
         soup = BeautifulSoup("", 'html.parser')
         #current_app.logger.info(f'BeautifulSoup end')
         
         process += 5
-        _safe_progress(progress_cb, process, "")
+        _safe_progress(progress_cb, process, "", logger=logger )
 
         price = 0
             
@@ -198,7 +213,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     #actions.send_keys(Keys.DOWN).perform()
                     if( process < 95 ):
                         process += 1
-                        _safe_progress(progress_cb, process, "")
+                        _safe_progress(progress_cb, process, "", logger=logger )
                         
                     time.sleep(0.5)
                     #print("2-------------")
@@ -210,7 +225,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     print("6-------------")
                     if( process < 95 ):
                         process += 2
-                        _safe_progress(progress_cb, process, "")
+                        _safe_progress(progress_cb, process, "", logger=logger )
                         
                     priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
                     if( priceText ):
@@ -249,7 +264,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
 
         if( price != 0 ):
             process = 100
-            _safe_progress(progress_cb, process, "")
+            _safe_progress(progress_cb, process, "", logger=logger )
 
             end_time = time.localtime()
             elapsed = time.mktime(end_time) - time.mktime(start_time)  # 초 단위 차이
