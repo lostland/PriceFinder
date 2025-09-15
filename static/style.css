@@ -327,6 +327,7 @@ body {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+/* 할인율 색상 적용 */
 .discount-positive {
     background: linear-gradient(135deg, #28a745, #20c997) !important;
     color: rgba(255, 255, 255, 0.9);
@@ -335,7 +336,7 @@ body {
 
 .discount-negative {
     background: linear-gradient(135deg, #dc3545, #e74c3c) !important;
-    color: #rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.9);
     box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
 }
 
@@ -466,15 +467,6 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(32, 178, 170, 0.25) !important;
 }
 
-/* 가격 텍스트 강조 - 기존 스타일 오버라이드 */
-.text-success {
-    background: linear-gradient(135deg, #20b2aa 0%, #17a2b8 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
-    font-weight: 700 !important;
-}
-
 /* 창열기 버튼 스타일 */
 .btn-success {
     background: var(--magic-gradient) !important;
@@ -519,16 +511,4 @@ body {
 .lowest-price-discount {
     font-size: 1rem;
     font-weight: bold;
-}
-
-.discount-positive {
-    color: #ffffff !important; /* 녹색 - 저렴할 때 */
-}
-
-.discount-negative {
-    color: #dc3545 !important; /* 빨간색 - 비쌀 때 */
-}
-
-.discount-neutral {
-    color: #ffffff !important; /* 회색 - 동일할 때 또는 계산 중 */
 }

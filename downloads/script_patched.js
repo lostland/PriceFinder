@@ -134,33 +134,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-
-// 실시간 서브 진행률 폴링 타이머
-let stepProgressTimer = null;
-
-function startStepProgressPolling() {
-  stopStepProgressPolling(); // 중복 방지
-  stepProgressTimer = setInterval(() => {
-    fetch('/progress')
-      .then(r => r.ok ? r.json() : null)
-      .then(p => {
-        if (!p) return;
-        if (typeof p.pct === 'number') {
-          setStepProgress(p.pct, p.msg || (p.pct + '%'));
-        }
-      })
-      .catch(() => { /* 네트워크 일시 오류 무시 */ });
-  }, 300); // 0.3초 간격
-}
-
-function stopStepProgressPolling() {
-  if (stepProgressTimer) {
-    clearInterval(stepProgressTimer);
-    stepProgressTimer = null;
-  }
-}
-
-
 // 폼 제출 처리 (분석 시작/중단 토글)
 function handleFormSubmit(e) {
     e.preventDefault();
@@ -263,10 +236,6 @@ function analyzeCid() {
     updateProgress();
     showLoading();
     hideError();
-
-     // ← 추가: 스텝 시작 시 0%로 초기화하고 폴링 시작
-    setStepProgress(0, '준비');
-    startStepProgressPolling();
     
     // API 호출
     fetch('/scrape', {
@@ -289,7 +258,7 @@ function analyzeCid() {
     })
     .then(data => {
         // hideLoading(); // 고정 디스플레이를 위해 주석 처리
-                
+        
         if (data.error) {
             // 첫번째 CID에서 가격을 찾지 못한 경우 - 잘못된 링크로 판단
             if (data.error_type === 'invalid_link' && data.step === 0) {
@@ -300,11 +269,6 @@ function analyzeCid() {
             return;
         }
         
-        stopStepProgressPolling();
-        //if (typeof data.subprogress_pct === 'number') {
-        setStepProgress(data.subprogress_pct, data.subprogress_msg || (data.subprogress_pct + '%'));
-        //}
-        
         // 결과 처리
         processResult(data);
         
@@ -313,13 +277,12 @@ function analyzeCid() {
             // 짧은 지연 후 자동으로 다음 단계 실행
             setTimeout(() => {
                 continueAnalysis();
-            }, 100); // 0.1초 지연
+            }, 500); // 0.5초 지연
         } else {
             showComplete();
         }
     })
     .catch(error => {
-        stopStepProgressPolling();
         // hideLoading(); // 고정 디스플레이를 위해 주석 처리
         showError('분석 중 오류가 발생했습니다: ' + error.message);
     });
@@ -542,7 +505,7 @@ function displayDebugResult(data) {
         pricesHtml = data.prices.map(price => `
             <div class="price-item mb-3">
                 <div class="d-flex justify-content-between align-items-center">
-                    <span class="price-value h6 mb-0">${price.price}</span>
+                    <span class="price-value h6 mb-0 text-success">${price.price}</span>
                     <small class="text-muted">${data.process_time}초</small>
                 </div>
                 <div class="price-context mt-1">
@@ -580,7 +543,7 @@ function displayDebugResult(data) {
     if (urlSpan) {
         urlSpan.textContent = data.url;
     }
-        
+    
     showDebugResultsSection();
 }
 
@@ -1020,14 +983,32 @@ function updateDynamicTexts() {
 
 // === 단계 진행 바(Loading 카드 내부) ===
 function setStepProgress(percent, label) {
-    const bar = document.getElementById('stepProgressBar');
-    const text = document.getElementById('stepProgressText');
-    const p = Math.max(0, Math.min(100, Number(percent) || 0));
-    if (bar) bar.style.width = p + '%';
-    if (text) text.textContent = (label ?? `${Math.round(p)}%`);
-    console.log("Step Progress:", p, label)
+  const bar = document.getElementById('stepProgressBar');
+  const text = document.getElementById('stepProgressText');
+  const p = Math.max(0, Math.min(100, Number(percent) || 0));
+  // 디버그 로그
+  console.log("🔄 setStepProgress()", { percent, label, p, hasBar: !!bar, hasText: !!text });
+  if (bar) bar.style.width = p + '%';
+  if (text) text.textContent = (label ?? (Math.round(p) + '%'));
 }
-// 전역에서 쓸 수 있게 노출
 window.setStepProgress = setStepProgress;
 
-
+// 실시간 서브 진행률 폴링
+let stepProgressTimer = null;
+function startStepProgressPolling() {
+  stopStepProgressPolling();
+  stepProgressTimer = setInterval(() => {
+    fetch('/progress')
+      .then(r => r.ok ? r.json() : null)
+      .then(p => {
+        if (!p) return;
+        if (typeof p.pct === 'number') {
+          setStepProgress(p.pct, p.msg || (p.pct + '%'));
+        }
+      })
+      .catch(() => {});
+  }, 400);
+}
+function stopStepProgressPolling() {
+  if (stepProgressTimer) { clearInterval(stepProgressTimer); stepProgressTimer = null; }
+}

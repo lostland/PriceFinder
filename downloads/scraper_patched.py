@@ -6,6 +6,32 @@ import time
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from flask import current_app
 
+# === Progress state helpers ===
+_progress_state = {"pct": 0, "msg": ""}
+
+def set_progress(pct, msg=""):
+    try:
+        pct = int(max(0, min(100, pct)))
+    except Exception:
+        pct = 0
+    _progress_state["pct"] = pct
+    _progress_state["msg"] = msg or ""
+
+def get_progress_state():
+    return dict(_progress_state)
+
+def _safe_progress(cb, pct, msg=None):
+    try:
+        if cb:
+            cb(pct, msg or "")
+        else:
+            set_progress(pct, msg or "")
+    except Exception:
+        # swallow to avoid                     _safe_progress(progress_cb, 80, '가격 감지')
+                    breaking scraping
+        pass
+# === end progress helpers ===
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -14,38 +40,12 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
-from flask import current_app
-
-_progress_state = {"pct": 0, "msg": ""}
-
-def set_progress(pct, msg=""):
-    """서버 전역 진행률 업데이트"""
-    global _progress_state
-    _progress_state["pct"] = int(pct)
-    _progress_state["msg"] = msg
-
-def get_progress_state():
-    """현재 진행률 조회"""
-    return _progress_state
-    
-
-def _safe_progress(progress_cb, pct, msg=None):
-
-    current_app.logger.info(f"Progress: {pct}% - {msg or ''}")
-    set_progress(pct, msg or "")
-    try:
-        if progress_cb:
-            progress_cb(pct, msg or "")
-    except Exception:
-        pass
-        
 def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     """
     단순하고 빠른 가격 스크래핑 - 이미지 처리 없음
     Returns a list of dictionaries containing price and context information
     original_currency_code: 원본 URL의 통화 코드 (예: USD, KRW, THB)
     """
-    process = 0
     try:
         # Selenium 사용 - 간단한 설정
 
@@ -69,11 +69,10 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
         #chrome_options.add_experimental_option('useAutomationExtension', False)
 
+        _safe_progress(progress_cb, 5, '브라우저 준비 완료')
         driver = webdriver.Chrome(options=chrome_options)
+        _safe_progress(progress_cb, 12, '드라이버 시작')
         actions = ActionChains(driver)
-
-        process += 5
-        _safe_progress(progress_cb, process, "준비")
 
         # 봇 탐지 우회
         #driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
@@ -112,12 +111,12 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             driver.set_page_load_timeout(100)
             driver.implicitly_wait(100)
             driver.set_script_timeout(100)
-            driver.get(url)
+             _safe_progress(progress_cb, 20, '페이지 열기')
+        driver.get(url)
+        _safe_progress(progress_cb, 35, '페이지 로드')
             #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
             current_app.logger.info(f"driver.get() end")
-            process += 5
-            _safe_progress(progress_cb, process, "URL 체크 시작")
             
             # Send a space to the element
         
@@ -145,21 +144,18 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         # BeautifulSoup으로 파싱
         #f.write( page_source )
 
-        process += 5
-        _safe_progress(progress_cb, process, "")
-
         current_app.logger.info(f'BeautifulSoup')
+        _safe_progress(progress_cb, 45, '파싱 준비')
         soup = BeautifulSoup(driver.page_source, 'html.parser')
+        _safe_progress(progress_cb, 55, 'DOM 파싱')
         current_app.logger.info(f'BeautifulSoup end')
-        
-        process += 5
-        _safe_progress(progress_cb, process, "")
 
         price = 0
         priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
         if( priceText ):
             price = priceText["data-element-cheapest-room-price"]
             print( "Price Found : ",  price )
+            _safe_progress(progress_cb, 80, '가격 감지')
             
 #current_app.logger.info(f'BeautifulSoup end')
         #print("send_keys-------------")
@@ -170,14 +166,11 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         if( price == 0 ):
             print("start check-------------")
             for tt in range(15):
+                _safe_progress(progress_cb, 55 + int((tt+1)*2), f'추가 확인 {tt+1}/15')
                 try:      
                     print("1-------------")
                     #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     #actions.send_keys(Keys.DOWN).perform()
-                    if( process < 95 ):
-                        process += 1
-                        _safe_progress(progress_cb, process, "")
-                        
                     time.sleep(0.5)
                     #print("2-------------")
                     soup.clear()
@@ -186,21 +179,20 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     print("5-------------")
                     soup = BeautifulSoup(src, 'html.parser' )
                     print("6-------------")
-                    if( process < 95 ):
-                        process += 2
-                        _safe_progress(progress_cb, process, "")
-                        
                     priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
                     if( priceText ):
                         price = priceText["data-element-cheapest-room-price"]
                         print( "Price Found : ",  price )
-                        break
+            _safe_progress(progress_cb, 80, '가격 감지')
+                                            _safe_progress(progress_cb, 80, '가격 감지')
+                    break
                         
                     text_len = len(soup.get_text())
                     current_app.logger.info(f'text_len = {text_len}')         
     
                     if text_len > 40000:
-                        break
+                                            _safe_progress(progress_cb, 80, '가격 감지')
+                    break
                         
                 except :
                     print("EXCEPTION-------------")
@@ -210,12 +202,10 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         #f.write( soup.get_text() )
         #f.flush()
 
+        _safe_progress(progress_cb, 90, '브라우저 종료')
         driver.quit()
 
         if( price != 0 ):
-            process = 100
-            _safe_progress(progress_cb, process, "")
-
             end_time = time.localtime()
             elapsed = time.mktime(end_time) - time.mktime(start_time)  # 초 단위 차이
             print(f"걸린 시간: {elapsed:.3f}초")
@@ -288,18 +278,22 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                                     })
                                     
                                     if len(prices_found) >= 3:
-                                        break
+                                                            _safe_progress(progress_cb, 80, '가격 감지')
+                    break
                         
                         if len(prices_found) >= 3:
-                            break
+                                                _safe_progress(progress_cb, 80, '가격 감지')
+                    break
                     
                     if len(prices_found) >= 3:
-                        break
+                                            _safe_progress(progress_cb, 80, '가격 감지')
+                    break
             except Exception:
                 continue
             
             if len(prices_found) >= 3:
-                break
+                                    _safe_progress(progress_cb, 80, '가격 감지')
+                    break
         
         # 2단계: 특정 요소에서 못 찾으면 전체 텍스트 검색
         if len(prices_found) < 2:
@@ -361,9 +355,11 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     
                     # 최대 5개로 제한
                     if len(prices_found) >= 5:
-                        break
+                                            _safe_progress(progress_cb, 80, '가격 감지')
+                    break
                 
                 if len(prices_found) >= 5:
+                                        _safe_progress(progress_cb, 80, '가격 감지')
                     break
         
         # 디버그: 실제 페이지에 어떤 가격 정보가 있는지 확인
@@ -444,6 +440,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             for pattern in starting_price_patterns:
                 match = re.search(pattern, all_text, re.IGNORECASE)
                 if match:
+                                        _safe_progress(progress_cb, 80, '가격 감지')
                     break
             
             if match:
@@ -458,12 +455,14 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     current_app.logger.info(f"시작가 발견: {starting_price['price']}")
             
         except Exception as e:
+        _safe_progress(progress_cb, 100, f'오류: {str(e)}')
             current_app.logger.info(f"시작가 검색 오류: {e}")
         
         # 시작가를 찾았으면 반환, 못 찾았으면 빈 결과
         if starting_price:
             return [starting_price]
         else:
+            _safe_progress(progress_cb, 100, '완료(가격 없음)')
             return []
     
         for pattern in debug_patterns:
@@ -526,11 +525,13 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         
                         # 더 많이 수집 (두 번째 가격을 찾기 위해)
                         if len(all_prices) >= 20:
-                            break
+                                                _safe_progress(progress_cb, 80, '가격 감지')
+                    break
             
             if len(all_prices) >= 20:
                 current_app.logger.info("20개 이상의 가격 발견 - 수집 중지")
-                break
+                                    _safe_progress(progress_cb, 80, '가격 감지')
+                    break
         
         # 가격 분석 전에 먼저 전체 텍스트를 파일로 저장 (다운로드용)
         #try:
@@ -571,7 +572,9 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         return prices_found
         
     except Exception as e:
-        return []
+        _safe_progress(progress_cb, 100, f'오류: {str(e)}')
+        _safe_progress(progress_cb, 100, '완료(가격 없음)')
+            return []
  
 def process_all_cids_sequential(base_url, cid_list):
     """
@@ -590,17 +593,6 @@ def process_all_cids_sequential(base_url, cid_list):
     # 각 CID를 순차적으로 처리
     for i, new_cid in enumerate(cid_list, 1):
         try:
-            def progress_cb(pct, msg=""):
-                # 제너레이터로 'subprogress' 타입 이벤트를 흘림
-                # (라우트에서 이 제너레이터를 SSE/스트리밍으로 연결해 두면
-                #  프런트에서 즉시 반영 가능)
-                yield {
-                    'type': 'subprogress',
-                    'step': i,
-                    'pct': int(pct),
-                    'msg': msg
-                }
-                
             # URL 생성
             if original_cid:
                 new_url = base_url.replace(f"cid={original_cid}", f"cid={new_cid}")
@@ -624,7 +616,7 @@ def process_all_cids_sequential(base_url, cid_list):
             
             # 스크래핑 실행
             start_time = time.time()
-            prices = scrape_prices_simple(new_url,progress_cb=progress_cb)
+            prices = scrape_prices_simple(new_url)
             process_time = time.time() - start_time
             
             # 즉시 결과 반환
@@ -642,6 +634,7 @@ def process_all_cids_sequential(base_url, cid_list):
             yield result
             
         except Exception as e:
+        _safe_progress(progress_cb, 100, f'오류: {str(e)}')
             yield {
                 'type': 'error',
                 'step': i,
@@ -750,6 +743,7 @@ def reorder_url_parameters(url):
         return new_url
         
     except Exception as e:
+        _safe_progress(progress_cb, 100, f'오류: {str(e)}')
         print(f"URL 파라메터 재정렬 오류: {e}")
         return url  # 오류 시 원본 URL 반환
 

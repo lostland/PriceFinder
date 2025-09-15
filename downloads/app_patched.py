@@ -4,6 +4,7 @@ from urllib.parse import urlparse, parse_qs
 from flask import Flask, render_template, request, jsonify, Response, send_file
 from werkzeug.middleware.proxy_fix import ProxyFix
 from scraper import process_all_cids_sequential
+from scraper import set_progress, get_progress_state, scrape_prices_simple, reorder_url_parameters
 
 logging.basicConfig(level=logging.INFO)
 
@@ -71,7 +72,7 @@ def scrape():
         current_cid, current_name = all_cids[step]
         
         # URL에서 CID 교체하고 currencyCode 유지
-        from scraper import extract_cid_from_url, scrape_prices_simple, reorder_url_parameters, set_progress, get_progress_state
+        from scraper import extract_cid_from_url, scrape_prices_simple, reorder_url_parameters
         from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
         import re
         
@@ -138,19 +139,13 @@ def scrape():
                 global_base_price_cid_name = current_name
 
             base_url_new = reorder_url_parameters(base_url)
-
-            from scraper import set_progress
-            set_progress(0, f"{current_name} 시작")
             
             # 기준 가격 스크래핑
             import time
             start_time = time.time()
-            #time.sleep(1)
-            base_prices = scrape_prices_simple(
-                base_url_new,
-                original_currency_code=original_currency,
-                progress_cb=lambda pct, msg=None: set_progress(pct, f"기준가 {msg or ''}".strip())
-            )
+            time.sleep(1)
+            set_progress(0, '기준가 시작')
+            base_prices = scrape_prices_simple(base_url_new, original_currency_code=original_currency, progress_cb=set_progress)
             if base_prices:
                 base_price_str = base_prices[0]['price']
                 # 숫자만 추출하여 기준 가격 설정
@@ -163,18 +158,14 @@ def scrape():
         # 현재 CID 스크래핑 실행
         import time
         start_time = time.time()
-        #time.sleep(1)
-        prices = scrape_prices_simple(
-            new_url,
-            original_currency_code=original_currency,
-            progress_cb=lambda pct, msg=None: set_progress(pct, f"{current_name} {msg or ''}".strip())
-        )
+        time.sleep(1)
+        set_progress(0, f'{current_name} 시작')
+        prices = scrape_prices_simple(new_url, original_currency_code=original_currency, progress_cb=set_progress)
         if len(prices) == 0:
-            prices = scrape_prices_simple(
-                new_url,
-                original_currency_code=original_currency,
-                progress_cb=lambda pct, msg=None: set_progress(pct, f"{current_name} {msg or ''}".strip())
-            )
+            print(f"RETRY----------------\n")
+            time.sleep(1)
+            set_progress(0, f'{current_name} 시작')
+        prices = scrape_prices_simple(new_url, original_currency_code=original_currency, progress_cb=set_progress)
 
         process_time = time.time() - start_time
         
@@ -216,9 +207,7 @@ def scrape():
                     discount_percentage = 0
 
                 print(f"discount_percentage: {discount_percentage}")
-
-        progress = get_progress_state()
-
+        
         # 결과 반환
         result = {
             'step': step + 1,
@@ -239,11 +228,12 @@ def scrape():
             'base_price': global_base_price,
             'base_price_cid_name': global_base_price_cid_name,
             'current_price': current_price,
-            'discount_percentage': discount_percentage,
-            'subprogress_pct': progress.get('pct', 0),
-            'subprogress_msg': progress.get('msg', '')
+            'discount_percentage': discount_percentage
         }
         
+        result['subprogress_pct'] = progress.get('pct', 0)
+        result['subprogress_msg'] = progress.get('msg', '')
+        progress = get_progress_state()
         return jsonify(result)
         
     except Exception as e:
@@ -293,11 +283,6 @@ def info_page():
 def split_view_page():
     """분할 뷰 페이지 라우트"""
     return send_file('static/pages/split_view.html')
-
-@app.route('/progress', methods=['GET'])
-def progress_state():
-    from scraper import get_progress_state
-    return jsonify(get_progress_state())
 
 @app.route('/status')
 def status_page():
@@ -380,6 +365,15 @@ def status_page():
     </html>
     """
     return html
+
+
+@app.route('/progress', methods=['GET'])
+def progress_state():
+    try:
+        from scraper import get_progress_state
+        return jsonify(get_progress_state())
+    except Exception as e:
+        return jsonify({'pct': 0, 'msg': f'error: {e}'}), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
