@@ -30,8 +30,8 @@ def get_progress_state():
     
 
 def _safe_progress(progress_cb, pct, msg=None):
+
     current_app.logger.info(f"Progress: {pct}% - {msg or ''}")
-    set_progress(pct, msg or "")
     
     try:
         if progress_cb:
