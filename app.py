@@ -65,14 +65,14 @@ def scrape():
         all_cids = search_cids + card_cids
         
         # 유효한 단계인지 확인 (step 0는 기준가격만 설정)
-        if step > len(all_cids):
+        if step >= len(all_cids) + 1:
             return jsonify({'error': '모든 CID 처리가 완료되었습니다'}), 400
         
         # step이 0이면 기준가격만 설정, 1 이상이면 실제 CID 처리
         if step == 0:
             current_cid, current_name = None, "기준가격 설정"
         else:
-            current_cid, current_name = all_cids[step - 1]  # step 1부터 all_cids[0] 처리
+            current_cid, current_name = all_cids[step - 1]  # step 1: all_cids[0], step 2: all_cids[1] ...
         
         # URL에서 CID 교체하고 currencyCode 유지
         from scraper import extract_cid_from_url, scrape_prices_simple, reorder_url_parameters, set_progress, get_progress_state
@@ -125,7 +125,7 @@ def scrape():
             is_search_phase = step <= len(search_cids)  # step 1부터 search_cids 처리
             phase_name = "검색창리스트" if is_search_phase else "카드리스트"
         
-        app.logger.info(f"Processing 스텝 {step+1}/{len(all_cids)}: CID {current_name}({current_cid})")
+        app.logger.info(f"Processing 스텝 {step+1}/{len(all_cids) + 1}: CID {current_name}({current_cid})")
         
         # 기준 가격 계산 (첫 번째 스텝에서 원본 URL의 CID 가격을 기준으로 설정)
         global global_base_price, global_base_price_cid_name
