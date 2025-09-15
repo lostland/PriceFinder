@@ -19,6 +19,7 @@ from flask import current_app
 
 import threading, time, logging
 
+_progress_cb=None
 _process_pct = 0
 _progress_lock = threading.Lock()
 _ticker_thread = None
@@ -39,6 +40,8 @@ def _progress_ticker_loop(logger):
         with _progress_lock:
             if _process_pct < 95:
                 _process_pct += 1
+                if( _progress_cb ):
+                    _progress_cb(_process_pct, " ")
                 try:
                     # Flask 컨텍스트 없어도 동작하는 로거
                     logger.info(f"[ticker] process={_process_pct}%")
@@ -93,6 +96,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     original_currency_code: 원본 URL의 통화 코드 (예: USD, KRW, THB)
     """
 
+    _progress_cb = progress_cb
+    
     # 앱 로거 안전하게 확보
     try:
         logger = current_app.logger
@@ -210,6 +215,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             
         except:
             current_app.logger.info(f"driver.get() fail")
+            _progress_cb = None
             return []
             
             #f.write(f"driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
@@ -280,6 +286,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         
                 except :
                     print("EXCEPTION-------------")
+                    _progress_cb = None
+
                     return []
                 
         
@@ -288,6 +296,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         #f.flush()
 
         driver.quit()
+
+        _progress_cb = None
 
         if( price != 0 ):
             process = 100
