@@ -128,7 +128,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             # 스크롤로 콘텐츠 로딩
             #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(0.5)
-            driver.execute_script("window.scrollTo(0, 0);")
+            #driver.execute_script("window.scrollTo(0, 0);")
             time.sleep(0.5)
             #page_source = driver.page_source
             
@@ -162,7 +162,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
         if( priceText ):
             price = priceText["data-element-cheapest-room-price"]
-            print( "Price Found : ",  price )
+            if( price ) print( "Price Found : ",  price )
             
 #current_app.logger.info(f'BeautifulSoup end')
         #print("send_keys-------------")
@@ -196,7 +196,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
                     if( priceText ):
                         price = priceText["data-element-cheapest-room-price"]
-                        print( "Price Found : ",  price )
+                        if( price ) print( "Price Found : ",  price )
                         break
                         
                     text_len = len(soup.get_text())
