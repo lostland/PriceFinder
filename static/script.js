@@ -117,6 +117,9 @@ document.addEventListener('DOMContentLoaded', function() {
     continueBtn.addEventListener('click', continueAnalysis);
     newSearchBtn.addEventListener('click', startNewSearch);
     
+    // WebSocket 연결 자동 시작
+    startStepProgressSocket();
+    
     // 언어 전환 버튼
     const languageToggle = document.getElementById('languageToggle');
     if (languageToggle) {
@@ -135,29 +138,41 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-// 실시간 서브 진행률 폴링 타이머
-let stepProgressTimer = null;
+// WebSocket 연결
+let socket = null;
 
+// WebSocket 연결 시작
+function startStepProgressSocket() {
+  if (!socket) {
+    socket = io();
+    
+    // 진행률 업데이트 이벤트 리스너
+    socket.on('progress_update', function(data) {
+      setStepProgress(data.pct, data.msg || (data.pct + '%'));
+    });
+    
+    socket.on('connect', function() {
+      console.log('WebSocket connected');
+    });
+    
+    socket.on('disconnect', function() {
+      console.log('WebSocket disconnected');
+    });
+  }
+}
+
+// WebSocket 정리 (필요시)
+function stopStepProgressSocket() {
+  // WebSocket은 계속 연결 유지 (필요시에만 해제)
+}
+
+// 호환성을 위한 별칭
 function startStepProgressPolling() {
-  stopStepProgressPolling(); // 중복 방지
-  stepProgressTimer = setInterval(() => {
-    fetch('/progress')
-      .then(r => r.ok ? r.json() : null)
-      .then(p => {
-        if (!p) return;
-        if (typeof p.pct === 'number') {
-          setStepProgress(p.pct, p.msg || (p.pct + '%'));
-        }
-      })
-      .catch(() => { /* 네트워크 일시 오류 무시 */ });
-  }, 300); // 0.3초 간격
+  startStepProgressSocket();
 }
 
 function stopStepProgressPolling() {
-  if (stepProgressTimer) {
-    clearInterval(stepProgressTimer);
-    stepProgressTimer = null;
-  }
+  stopStepProgressSocket();
 }
 
 

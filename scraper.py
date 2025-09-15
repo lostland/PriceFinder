@@ -30,8 +30,16 @@ def get_progress_state():
     
 
 def _safe_progress(progress_cb, pct, msg=None):
-
     current_app.logger.info(f"Progress: {pct}% - {msg or ''}")
+    set_progress(pct, msg or "")
+    
+    # WebSocket으로 실시간 진행률 전송
+    try:
+        from app import socketio
+        socketio.emit('progress_update', {'pct': pct, 'msg': msg or ""}, namespace='/')
+    except Exception:
+        pass
+    
     try:
         if progress_cb:
             progress_cb(pct, msg or "")
