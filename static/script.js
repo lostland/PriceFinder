@@ -710,6 +710,8 @@ function showContinueButton(nextStep) {
 
 // 완료 표시
 function showComplete() {
+    console.log('🎯 showComplete() 함수 호출됨');
+    
     // 부드러운 진행률 애니메이션 중지
     stopSmoothProgress();
     
@@ -736,14 +738,21 @@ function showComplete() {
     hideContinueButton();
     hideProgressSection();
     
+    console.log('🎯 최저가 카드 하이라이팅 함수 호출 직전');
     // 각 그룹별 최저가 카드에 빛나는 효과 적용
-    highlightLowestPriceCards();
+    try {
+        highlightLowestPriceCards();
+        console.log('🎯 최저가 카드 하이라이팅 함수 호출 완료');
+    } catch (error) {
+        console.error('🚨 최저가 카드 하이라이팅 오류:', error);
+    }
     
     // 분석 완료 시 상태 초기화
     isAnalyzing = false;
     updateAnalysisButton();
     
     completeSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    console.log('🎯 showComplete() 함수 완료');
 }
 
 // 새 검색 시작
