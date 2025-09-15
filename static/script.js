@@ -117,7 +117,8 @@ document.addEventListener('DOMContentLoaded', function() {
     continueBtn.addEventListener('click', continueAnalysis);
     newSearchBtn.addEventListener('click', startNewSearch);
     
-    // 폴링 초기화는 analyzeCid에서 시작
+    // SSE 연결 자동 시작
+    startStepProgressSSE();
     
     // 언어 전환 버튼
     const languageToggle = document.getElementById('languageToggle');
@@ -137,29 +138,58 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-// 실시간 서브 진행률 폴링 타이머
-let stepProgressTimer = null;
+// SSE 연결
+let progressEventSource = null;
 
-function startStepProgressPolling() {
-  stopStepProgressPolling(); // 중복 방지
-  stepProgressTimer = setInterval(() => {
-    fetch('/progress')
-      .then(r => r.ok ? r.json() : null)
-      .then(p => {
-        if (!p) return;
-        if (typeof p.pct === 'number') {
-          setStepProgress(p.pct, p.msg || (p.pct + '%'));
+function startStepProgressSSE() {
+  stopStepProgressSSE(); // 중복 방지
+  
+  try {
+    progressEventSource = new EventSource('/progress-stream');
+    
+    progressEventSource.onmessage = function(event) {
+      try {
+        const data = JSON.parse(event.data);
+        if (typeof data.pct === 'number') {
+          setStepProgress(data.pct, data.msg || (data.pct + '%'));
         }
-      })
-      .catch(() => { /* 네트워크 일시 오류 무시 */ });
-  }, 100); // 0.1초 간격으로 줄임 (기존 300ms에서)
+      } catch (e) {
+        console.log('진행률 데이터 파싱 오류:', e);
+      }
+    };
+    
+    progressEventSource.onerror = function(event) {
+      console.log('SSE 연결 오류:', event);
+      // 자동 재연결 시도
+      setTimeout(() => {
+        if (progressEventSource && progressEventSource.readyState === EventSource.CLOSED) {
+          startStepProgressSSE();
+        }
+      }, 1000);
+    };
+    
+    progressEventSource.onopen = function(event) {
+      console.log('SSE 연결 성공');
+    };
+  } catch (e) {
+    console.log('SSE 연결 실패:', e);
+  }
+}
+
+function stopStepProgressSSE() {
+  if (progressEventSource) {
+    progressEventSource.close();
+    progressEventSource = null;
+  }
+}
+
+// 호환성을 위한 별칭
+function startStepProgressPolling() {
+  startStepProgressSSE();
 }
 
 function stopStepProgressPolling() {
-  if (stepProgressTimer) {
-    clearInterval(stepProgressTimer);
-    stepProgressTimer = null;
-  }
+  stopStepProgressSSE();
 }
 
 
