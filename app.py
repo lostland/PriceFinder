@@ -1,7 +1,5 @@
 import os
 import logging
-import json
-import time
 from urllib.parse import urlparse, parse_qs
 from flask import Flask, render_template, request, jsonify, Response, send_file
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -17,21 +15,6 @@ global_base_price_cid_name = ''
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "default_secret_key_for_development")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
-
-# SSE 클라이언트 연결 관리
-sse_clients = []
-
-def send_sse_progress(pct, msg):
-    """SSE로 진행률을 모든 연결된 클라이언트에게 전송"""
-    data = json.dumps({'pct': pct, 'msg': msg})
-    event = f"data: {data}\n\n"
-    
-    # 연결된 모든 클라이언트에게 전송
-    for client in sse_clients[:]:
-        try:
-            client.put(event)
-        except:
-            sse_clients.remove(client)
 
 @app.route('/')
 def index():
@@ -316,30 +299,6 @@ def progress_state():
     from scraper import get_progress_state
     return jsonify(get_progress_state())
 
-@app.route('/progress-stream')
-def progress_stream():
-    """SSE 엔드포인트 - 실시간 진행률 스트림"""
-    import queue
-    
-    def event_stream():
-        client_queue = queue.Queue()
-        sse_clients.append(client_queue)
-        
-        try:
-            while True:
-                # 클라이언트가 연결된 상태를 유지하기 위해 heartbeat 전송
-                try:
-                    data = client_queue.get(timeout=30)
-                    yield data
-                except queue.Empty:
-                    # heartbeat - 연결 유지
-                    yield ": heartbeat\n\n"
-        except GeneratorExit:
-            if client_queue in sse_clients:
-                sse_clients.remove(client_queue)
-    
-    return Response(event_stream(), content_type='text/event-stream')
-
 @app.route('/status')
 def status_page():
     """시스템 상태 페이지"""
@@ -422,8 +381,6 @@ def status_page():
     """
     return html
 
-# 모듈 임포트 시 scraper.py에서 접근할 수 있도록 함수를 모듈 레벨에서 사용 가능하게 함
-app.send_sse_progress = send_sse_progress
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
