@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import logging
 import requests
 import time  
+import threading
+
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from flask import current_app
 
@@ -45,6 +47,19 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     original_currency_code: 원본 URL의 통화 코드 (예: USD, KRW, THB)
     """
     process = 0
+
+    stop_event = threading.Event()
+
+    def _ticker():
+        nonlocal process
+        while not stop_event.is_set():
+            # 상한선(예: 95%)까지만 자동 증가
+            if process < 95:
+                process += 1
+                _safe_progress(progress_cb, process, "")
+            # 1초마다 +1
+            stop_event.wait(1)
+            
     try:
         # Selenium 사용 - 간단한 설정
 
@@ -70,6 +85,9 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
 
         driver = webdriver.Chrome(options=chrome_options)
         actions = ActionChains(driver)
+
+        ticker_thread = threading.Thread(target=_ticker, daemon=True)
+        ticker_thread.start()
 
         process += 5
         _safe_progress(progress_cb, process, "준비")
@@ -134,6 +152,11 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             
         except:
             current_app.logger.info(f"driver.get() fail")
+            stop_event.set()
+            try:
+                ticker_thread.join(timeout=1)
+            except:
+                pass
             return []
             
             #f.write(f"driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
@@ -204,6 +227,11 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         
                 except :
                     print("EXCEPTION-------------")
+                    stop_event.set()
+                    try:
+                        ticker_thread.join(timeout=1)
+                    except:
+                        pass
                     return []
                 
         
@@ -212,6 +240,12 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         #f.flush()
 
         driver.quit()
+
+        stop_event.set()
+        try:
+            ticker_thread.join(timeout=1)
+        except:
+            pass
 
         if( price != 0 ):
             process = 100
