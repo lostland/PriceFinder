@@ -151,19 +151,14 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         process += 5
         _safe_progress(progress_cb, process, "")
 
-        current_app.logger.info(f'BeautifulSoup')
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
-        current_app.logger.info(f'BeautifulSoup end')
+        #current_app.logger.info(f'BeautifulSoup')
+        soup = BeautifulSoup("", 'html.parser')
+        #current_app.logger.info(f'BeautifulSoup end')
         
         process += 5
         _safe_progress(progress_cb, process, "")
 
         price = 0
-        priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
-        if( priceText ):
-            price = priceText["data-element-cheapest-room-price"]
-            if( price ):
-                print( "Price Found : ",  price )
             
 #current_app.logger.info(f'BeautifulSoup end')
         #print("send_keys-------------")
