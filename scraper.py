@@ -33,13 +33,6 @@ def _safe_progress(progress_cb, pct, msg=None):
     current_app.logger.info(f"Progress: {pct}% - {msg or ''}")
     set_progress(pct, msg or "")
     
-    # SSE로 실시간 진행률 전송
-    try:
-        from app import send_sse_progress
-        send_sse_progress(pct, msg or "")
-    except Exception:
-        pass
-    
     try:
         if progress_cb:
             progress_cb(pct, msg or "")
