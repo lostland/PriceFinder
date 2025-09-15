@@ -2,7 +2,6 @@ import os
 import logging
 from urllib.parse import urlparse, parse_qs
 from flask import Flask, render_template, request, jsonify, Response, send_file
-from flask_socketio import SocketIO, emit
 from werkzeug.middleware.proxy_fix import ProxyFix
 from scraper import process_all_cids_sequential
 
@@ -16,9 +15,6 @@ global_base_price_cid_name = ''
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "default_secret_key_for_development")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
-
-# WebSocket 설정
-socketio = SocketIO(app, cors_allowed_origins="*")
 
 @app.route('/')
 def index():
@@ -386,4 +382,4 @@ def status_page():
     return html
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
