@@ -95,7 +95,7 @@ def scrape_prices_simple(url, original_currency_code=None):
             
             # 스크롤로 콘텐츠 로딩
             #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            #time.sleep(1.5)
+            time.sleep(0.5)
             driver.execute_script("window.scrollTo(0, 0);")
             time.sleep(0.5)
             #page_source = driver.page_source
@@ -137,7 +137,7 @@ def scrape_prices_simple(url, original_currency_code=None):
                     print("1-------------")
                     #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     #actions.send_keys(Keys.DOWN).perform()
-                    time.sleep(0.2)
+                    time.sleep(0.5)
                     #print("2-------------")
                     soup.clear()
                     print("3-------------")
