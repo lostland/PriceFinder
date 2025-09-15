@@ -64,11 +64,15 @@ def scrape():
         # 모든 CID를 합친 리스트
         all_cids = search_cids + card_cids
         
-        # 유효한 단계인지 확인
-        if step >= len(all_cids):
+        # 유효한 단계인지 확인 (step 0는 기준가격만 설정)
+        if step > len(all_cids):
             return jsonify({'error': '모든 CID 처리가 완료되었습니다'}), 400
         
-        current_cid, current_name = all_cids[step]
+        # step이 0이면 기준가격만 설정, 1 이상이면 실제 CID 처리
+        if step == 0:
+            current_cid, current_name = None, "기준가격 설정"
+        else:
+            current_cid, current_name = all_cids[step - 1]  # step 1부터 all_cids[0] 처리
         
         # URL에서 CID 교체하고 currencyCode 유지
         from scraper import extract_cid_from_url, scrape_prices_simple, reorder_url_parameters, set_progress, get_progress_state
@@ -82,11 +86,16 @@ def scrape():
             original_currency = currency_match.group(1)
         
         original_cid = extract_cid_from_url(url)
-        if original_cid:
-            new_url = url.replace(f"cid={original_cid}", f"cid={current_cid}")
+        
+        # step이 0이면 원본 URL 사용, 1 이상이면 CID 교체
+        if step == 0:
+            new_url = url  # 원본 URL 그대로 사용
         else:
-            separator = "&" if "?" in url else "?"
-            new_url = f"{url}{separator}cid={current_cid}"
+            if original_cid:
+                new_url = url.replace(f"cid={original_cid}", f"cid={current_cid}")
+            else:
+                separator = "&" if "?" in url else "?"
+                new_url = f"{url}{separator}cid={current_cid}"
         
         # currencyCode가 바뀌었다면 원본으로 복원
         if original_currency:
@@ -109,8 +118,12 @@ def scrape():
         #app.logger.info(f"재정렬 후 URL: {new_url}")
         
         # 진행 단계 정보
-        is_search_phase = step < len(search_cids)
-        phase_name = "검색창리스트" if is_search_phase else "카드리스트"
+        if step == 0:
+            is_search_phase = True
+            phase_name = "기준가격 설정"
+        else:
+            is_search_phase = step <= len(search_cids)  # step 1부터 search_cids 처리
+            phase_name = "검색창리스트" if is_search_phase else "카드리스트"
         
         app.logger.info(f"Processing 스텝 {step+1}/{len(all_cids)}: CID {current_name}({current_cid})")
         
@@ -160,8 +173,35 @@ def scrape():
                     global_base_price = int(base_price_match.group().replace(',', ''))
                     app.logger.info(f"기준 가격 설정: {base_price_str} ({global_base_price}) - {global_base_price_cid_name}")
         
+        # step이 0이면 기준가격만 설정하고 바로 리턴
+        if step == 0:
+            progress = get_progress_state()
+            result = {
+                'step': step + 1,
+                'total_steps': len(all_cids) + 1,  # step 0도 포함
+                'cid': None,
+                'cid_name': current_name,
+                'url': new_url,
+                'prices': [],
+                'found_count': 0,
+                'process_time': 0,
+                'has_next': True,
+                'next_step': 1,
+                'is_search_phase': is_search_phase,
+                'phase_name': phase_name,
+                'search_phase_completed': False,
+                'download_link': None,
+                'download_filename': None,
+                'base_price': global_base_price,
+                'base_price_cid_name': global_base_price_cid_name,
+                'current_price': None,
+                'discount_percentage': None,
+                'subprogress_pct': progress.get('pct', 100),
+                'subprogress_msg': progress.get('msg', '기준가격 설정 완료')
+            }
+            return jsonify(result)
         
-        # 현재 CID 스크래핑 실행
+        # 현재 CID 스크래핑 실행 (step 1 이상에서만)
         import time
         start_time = time.time()
         #time.sleep(1)
@@ -178,15 +218,6 @@ def scrape():
             )
 
         process_time = time.time() - start_time
-        
-        # 첫번째 CID에서 가격을 찾지 못한 경우 - 잘못된 링크로 판단
-        if step == 0 and len(prices) == 0:
-            app.logger.warning(f"First CID parsing failed - no prices found: {new_url}")
-            return jsonify({
-                'error': '잘못된 링크를 입력한 것 같습니다\n사용법을 확인해 주세요',
-                'error_type': 'invalid_link',
-                'step': step
-            }), 400
         
         # 텍스트 파일 다운로드 링크 생성
         download_filename = f"page_text_cid_{current_cid}.txt"
@@ -223,18 +254,18 @@ def scrape():
         # 결과 반환
         result = {
             'step': step + 1,
-            'total_steps': len(all_cids),
+            'total_steps': len(all_cids) + 1,  # step 0도 포함
             'cid': current_cid,
             'cid_name': current_name,
             'url': new_url,
             'prices': prices,
             'found_count': len(prices),
             'process_time': round(process_time, 1),
-            'has_next': step + 1 < len(all_cids),
-            'next_step': step + 1 if step + 1 < len(all_cids) else None,
+            'has_next': step + 1 <= len(all_cids),  # step이 len(all_cids)까지 가능
+            'next_step': step + 1 if step + 1 <= len(all_cids) else None,
             'is_search_phase': is_search_phase,
             'phase_name': phase_name,
-            'search_phase_completed': step + 1 == len(search_cids),
+            'search_phase_completed': step == len(search_cids),  # step이 search_cids 길이와 같을 때 완료
             'download_link': download_link,
             'download_filename': download_filename,
             'base_price': global_base_price,
