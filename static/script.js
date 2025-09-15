@@ -502,13 +502,7 @@ function displayCardResult(data) {
                 </div>
             `;
         } else {
-            // 할인율이 계산되지 않은 경우 (기준 가격 없음)
-            const actualPrice = extractNumericPrice(data.prices[0].price);
-            const formattedPrice = formatPrice(actualPrice);
-            priceDisplay = `<div class="card-result-price-info mb-2">
-                <div class="card-result-price">${formattedPrice}</div>
-                <div class="card-result-discount-small">기준가격 미설정</div>
-            </div>`;
+            priceDisplay = `<div class="card-result-discount-big discount-positive mb-2">0.0% 저렴</div>`;
         }
     } else {
         priceDisplay = `<div class="card-result-price mb-2">${t.noPrice}</div>`;
@@ -1121,7 +1115,8 @@ function findLowestPriceInGroup(results) {
     for (const result of results) {
         if (result.prices && result.prices.length > 0) {
             const price = extractNumericPrice(result.prices[0].price);
-            if (price && (lowestPrice === null || price < lowestPrice)) {
+            // 0원 가격은 최저가 비교에서 제외
+            if (price && price > 0 && (lowestPrice === null || price < lowestPrice)) {
                 lowestPrice = price;
                 lowestResult = result;
             }

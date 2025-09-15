@@ -354,27 +354,6 @@ body {
     color: rgba(255, 255, 255, 0.9);
 }
 
-/* 기준가격 미설정 카드 스타일 */
-.card-result-price-info {
-    text-align: center;
-}
-
-.card-result-price {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 4px;
-    font-family: 'Courier New', monospace;
-}
-
-.card-result-discount-small {
-    font-size: 0.85rem;
-    color: #666;
-    background-color: #f8f9fa;
-    padding: 2px 8px;
-    border-radius: 3px;
-    display: inline-block;
-}
 
 /* 최저가 할인율 강조 스타일 */
 .lowest-price-discount {
