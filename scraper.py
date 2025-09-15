@@ -162,7 +162,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
         if( priceText ):
             price = priceText["data-element-cheapest-room-price"]
-            if( price ) print( "Price Found : ",  price )
+            if( price ):
+                print( "Price Found : ",  price )
             
 #current_app.logger.info(f'BeautifulSoup end')
         #print("send_keys-------------")
@@ -196,7 +197,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
                     if( priceText ):
                         price = priceText["data-element-cheapest-room-price"]
-                        if( price ) print( "Price Found : ",  price )
+                        if( price ):
+                            print( "Price Found : ",  price )
                         break
                         
                     text_len = len(soup.get_text())
