@@ -331,11 +331,14 @@ function analyzeCid() {
 function processResult(data) {
     allResults.push(data);
     
-    // 첫 번째 결과에서 기준 가격 설정
-    if (data.step === 1 && data.base_price) {
-        basePrice = data.base_price;
+    // step 0은 기준가격 설정만 하고 화면에 표시하지 않음
+    if (data.step === 1) {
+        // 기준 가격 설정
+        if (data.base_price) {
+            basePrice = data.base_price;
+        }
+        return; // 기준가격 설정 단계는 여기서 종료
     }
-    
     
     // 검색창리스트 단계인지 카드리스트 단계인지 확인
     if (data.is_search_phase) {
