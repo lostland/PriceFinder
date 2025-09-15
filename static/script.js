@@ -1051,17 +1051,27 @@ window.setStepProgress = setStepProgress;
 
 // 각 그룹별 최저가 카드에 빛나는 효과 적용
 function highlightLowestPriceCards() {
+    console.log('=== 최저가 카드 하이라이팅 시작 ===');
+    console.log('searchResults:', searchResults);
+    console.log('cardResults:', cardResults);
+    
     // 검색창리스트에서 최저가 찾기
     const searchLowestPrice = findLowestPriceInGroup(searchResults);
+    console.log('검색창리스트 최저가:', searchLowestPrice);
     if (searchLowestPrice) {
+        console.log('검색창리스트 최저가 CID:', searchLowestPrice.cid_name);
         highlightCardByCidName(searchLowestPrice.cid_name, 'search-result-card');
     }
     
     // 카드리스트에서 최저가 찾기
     const cardLowestPrice = findLowestPriceInGroup(cardResults);
+    console.log('카드리스트 최저가:', cardLowestPrice);
     if (cardLowestPrice) {
+        console.log('카드리스트 최저가 CID:', cardLowestPrice.cid_name);
         highlightCardByCidName(cardLowestPrice.cid_name, 'card-result-item');
     }
+    
+    console.log('=== 최저가 카드 하이라이팅 완료 ===');
 }
 
 // 특정 그룹에서 최저가 결과 찾기
@@ -1086,15 +1096,22 @@ function findLowestPriceInGroup(results) {
 
 // CID 이름으로 카드를 찾아서 빛나는 효과 적용
 function highlightCardByCidName(cidName, cardClass) {
+    console.log(`카드 하이라이팅 시도: CID="${cidName}", 클래스="${cardClass}"`);
+    
     // 모든 해당 클래스의 카드들을 찾기
     const cards = document.querySelectorAll(`.${cardClass}`);
+    console.log(`찾은 카드 수: ${cards.length}`);
     
-    cards.forEach(card => {
+    cards.forEach((card, index) => {
         // 카드 내에서 CID 이름 찾기
         const nameElement = card.querySelector('.search-result-name, h6');
+        const foundName = nameElement ? nameElement.textContent.trim() : '이름 없음';
+        console.log(`카드 ${index}: 이름="${foundName}"`);
+        
         if (nameElement && nameElement.textContent.trim() === cidName) {
             // 최저가 클래스 추가
             card.classList.add('lowest-price');
+            console.log(`✅ 최저가 클래스 추가됨: "${cidName}"`);
         }
     });
 }
