@@ -3,7 +3,8 @@ import logging
 from urllib.parse import urlparse, parse_qs
 from flask import Flask, render_template, request, jsonify, Response, send_file
 from werkzeug.middleware.proxy_fix import ProxyFix
-from scraper import process_all_cids_sequential
+from scraper import process_all_cids_sequential, start_progress_ticker
+from flask import Flask
 
 logging.basicConfig(level=logging.INFO)
 
@@ -15,6 +16,10 @@ global_base_price_cid_name = ''
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "default_secret_key_for_development")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+def _start_ticker_once():
+    # 개발 서버(reloader) 중복 실행 회피는 필요 시 추가
+    start_progress_ticker(logger=app.logger)
 
 @app.route('/')
 def index():

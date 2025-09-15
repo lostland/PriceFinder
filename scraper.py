@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 import logging
 import requests
 import time  
-import threading
 
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 from flask import current_app
@@ -18,6 +17,53 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 from flask import current_app
 
+import threading, time, logging
+
+_process_pct = 0
+_progress_lock = threading.Lock()
+_ticker_thread = None
+_ticker_stop = threading.Event()
+
+def get_global_process():
+    with _progress_lock:
+        return _process_pct
+
+def set_global_process(val):
+    global _process_pct
+    with _progress_lock:
+        _process_pct = int(val)
+
+def _progress_ticker_loop(logger):
+    global _process_pct
+    while not _ticker_stop.is_set():
+        with _progress_lock:
+            if _process_pct < 95:
+                _process_pct += 1
+                try:
+                    # Flask 컨텍스트 없어도 동작하는 로거
+                    logger.info(f"[ticker] process={_process_pct}%")
+                except Exception:
+                    pass
+        # 1초마다 +1
+        if _ticker_stop.wait(0.2):
+            break
+
+def start_progress_ticker(logger=None):
+    """앱 생애주기 동안 1회만 시작"""
+    global _ticker_thread
+    if logger is None:
+        logger = logging.getLogger(__name__)
+    if _ticker_thread and _ticker_thread.is_alive():
+        return
+    _ticker_stop.clear()
+    _ticker_thread = threading.Thread(target=_progress_ticker_loop, args=(logger,), daemon=True)
+    _ticker_thread.start()
+
+def stop_progress_ticker():
+    """앱 종료 시 필요하면 호출"""
+    _ticker_stop.set()
+
+
 _progress_state = {"pct": 0, "msg": ""}
 
 def set_progress(pct, msg=""):
@@ -31,22 +77,12 @@ def get_progress_state():
     return _progress_state
     
 
-def _safe_progress(progress_cb, pct, msg=None, logger=None):
+def _safe_progress(progress_cb, pct, msg=None):
     current_app.logger.info(f"Progress: {pct}% - {msg or ''}")
     
     try:
-        if logger:
-            logger.info(f"Progress: {pct}% - {msg or ''}")
-        elif has_app_context():
-            current_app.logger.info(f"Progress: {pct}% - {msg or ''}")
-        else:
-            logging.getLogger(__name__).info(f"Progress: {pct}% - {msg or ''}")
-    except Exception:
-        pass
-
-    try:
         if progress_cb:
-            progress_cb(pct, msg or "")
+            progress_cb(pct, " ")
     except Exception:
         pass
         
@@ -56,25 +92,35 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     Returns a list of dictionaries containing price and context information
     original_currency_code: 원본 URL의 통화 코드 (예: USD, KRW, THB)
     """
-    process = 0
 
-    # 안전한 로거 확보 (컨텍스트 있으면 Flask 로거, 없으면 기본 로거)
+    # 앱 로거 안전하게 확보
     try:
         logger = current_app.logger
     except Exception:
         logger = logging.getLogger(__name__)
 
-    # --- 자동 증가 틱커 ---
-    stop_event = threading.Event()
-    def _ticker():
-        nonlocal process
-        while not stop_event.is_set():
-            if process < 95:
-                process += 1
-                _safe_progress(progress_cb, process, "", logger=logger)
-            stop_event.wait(1)
-    # ---------------------
-            
+    # 전역 틱커가 이미 돌고 있어야 함. (안 돌면 시작)
+    start_progress_ticker(logger=logger)
+
+    # 필요 시 시작 시점 보정
+    set_global_process(0)  # 혹은 유지하고 싶으면 제거
+
+    # 진행 상황 수동 가산
+    def report(pct, msg=""):
+        # 전역 %도 함께 맞춰주고, 콜백 호출
+        set_global_process(pct)
+        try:
+            if progress_cb:
+                progress_cb(int(pct), msg)
+        except Exception:
+            pass
+        try:
+            logger.info(f"[scrape] {pct}% - {msg}")
+        except Exception:
+            pass
+
+    
+    process = 0
     try:
         # Selenium 사용 - 간단한 설정
 
@@ -101,11 +147,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         driver = webdriver.Chrome(options=chrome_options)
         actions = ActionChains(driver)
 
-        ticker_thread = threading.Thread(target=_ticker, daemon=True)
-        ticker_thread.start()
-
         process += 5
-        _safe_progress(progress_cb, process, "준비", logger=logger )
+        report( process, "준비")
 
         # 봇 탐지 우회
         #driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
@@ -151,7 +194,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             
             current_app.logger.info(f"driver.get() end")
             process += 5
-            _safe_progress(progress_cb, process, "URL 체크 시작", logger=logger )
+            report( process, "URL 체크 시작")
             
             # Send a space to the element
         
@@ -167,11 +210,6 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             
         except:
             current_app.logger.info(f"driver.get() fail")
-            stop_event.set()
-            try:
-                ticker_thread.join(timeout=1)
-            except:
-                pass
             return []
             
             #f.write(f"driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
@@ -187,14 +225,14 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         #f.write( page_source )
 
         process += 5
-        _safe_progress(progress_cb, process, "", logger=logger )
+        report( process, "")
 
         #current_app.logger.info(f'BeautifulSoup')
         soup = BeautifulSoup("", 'html.parser')
         #current_app.logger.info(f'BeautifulSoup end')
         
         process += 5
-        _safe_progress(progress_cb, process, "", logger=logger )
+        report( process, "")
 
         price = 0
             
@@ -213,7 +251,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     #actions.send_keys(Keys.DOWN).perform()
                     if( process < 95 ):
                         process += 1
-                        _safe_progress(progress_cb, process, "", logger=logger )
+                        report( process, "")
                         
                     time.sleep(0.5)
                     #print("2-------------")
@@ -225,7 +263,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     print("6-------------")
                     if( process < 95 ):
                         process += 2
-                        _safe_progress(progress_cb, process, "", logger=logger )
+                        report( process, "")
                         
                     priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
                     if( priceText ):
@@ -242,11 +280,6 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         
                 except :
                     print("EXCEPTION-------------")
-                    stop_event.set()
-                    try:
-                        ticker_thread.join(timeout=1)
-                    except:
-                        pass
                     return []
                 
         
@@ -256,15 +289,9 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
 
         driver.quit()
 
-        stop_event.set()
-        try:
-            ticker_thread.join(timeout=1)
-        except:
-            pass
-
         if( price != 0 ):
             process = 100
-            _safe_progress(progress_cb, process, "", logger=logger )
+            report( process, "")
 
             end_time = time.localtime()
             elapsed = time.mktime(end_time) - time.mktime(start_time)  # 초 단위 차이
