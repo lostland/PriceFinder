@@ -8,7 +8,7 @@ let lowestPrice = null;
 let lowestPriceUrl = '';
 let lowestPriceCidName = '';
 let basePrice = null; // 기준 가격 (첫 번째 결과에서 설정)
-const totalSteps = 17; // 검색창리스트(9) + 카드리스트(8)
+const totalSteps = 18; // 기준가격설정(1) + 검색창리스트(9) + 카드리스트(8)
 let currentLanguage = 'ko'; // 기본값: 한국어
 let isAnalyzing = false; // 분석 중인 상태 추적
 
@@ -651,31 +651,40 @@ function updateProgress() {
     targetProgressPercentage = percentage;
     
     // 현재 단계 정보 업데이트
-    if (currentStep < allCids.length) {
-        const currentCid = allCids[currentStep];
-        if (currentCidNameEl) {
-            // 첫 번째 스텝인 경우 '기준 가격'으로 표시
-            if (currentStep === 0) {
-                currentCidNameEl.textContent = '기준 가격';
-            } else {
-                currentCidNameEl.textContent = currentCid.name;
-            }
+    if (currentCidNameEl) {
+        // step 0은 기준가격 설정, step 1부터 allCids[0] 처리
+        if (currentStep === 0) {
+            currentCidNameEl.textContent = '기준 가격';
+        } else if (currentStep <= allCids.length) {
+            const currentCid = allCids[currentStep - 1];  // step 1: allCids[0], step 2: allCids[1] ...
+            currentCidNameEl.textContent = currentCid.name;
         }
-        
-        // 현재 페이즈 표시
-        const isSearchPhase = currentStep < searchCids.length;
-        if (currentPhaseEl) {
+    }
+    
+    // 현재 페이즈 표시
+    let isSearchPhase = false;
+    if (currentStep === 0) {
+        isSearchPhase = false;  // 기준가격은 검색창리스트에 표시하지 않음
+    } else {
+        isSearchPhase = currentStep <= searchCids.length;  // step 1부터 searchCids 처리
+    }
+    
+    if (currentPhaseEl) {
+        if (currentStep === 0) {
+            currentPhaseEl.textContent = '기준가격 설정';
+        } else {
             currentPhaseEl.textContent = isSearchPhase ? '검색창리스트' : '카드리스트';
         }
-        currentPhaseEl.className = `badge ${isSearchPhase ? 'bg-primary' : 'bg-info'}`;
-        
-        if (loadingCid) {
-            // 첫 번째 스텝인 경우 '기준 가격'으로 표시
-            if (currentStep === 0) {
-                loadingCid.textContent = '기준 가격';
-            } else {
-                loadingCid.textContent = currentCid.name;
-            }
+    }
+    currentPhaseEl.className = `badge ${currentStep === 0 ? 'bg-secondary' : (isSearchPhase ? 'bg-primary' : 'bg-info')}`;
+    
+    if (loadingCid) {
+        // step 0은 기준가격 설정, step 1부터 allCids[0] 처리
+        if (currentStep === 0) {
+            loadingCid.textContent = '기준 가격';
+        } else if (currentStep <= allCids.length) {
+            const currentCid = allCids[currentStep - 1];  // step 1: allCids[0], step 2: allCids[1] ...
+            loadingCid.textContent = currentCid.name;
         }
     }
 }
@@ -684,9 +693,11 @@ function updateProgress() {
 function showContinueButton(nextStep) {
     const nextCidInfo = document.getElementById('nextCidInfo');
     
-    if (nextStep < allCids.length) {
-        if (nextCidInfo) {
-            nextCidInfo.textContent = allCids[nextStep].name;
+    if (nextCidInfo) {
+        if (nextStep === 0) {
+            nextCidInfo.textContent = '기준가격 설정';
+        } else if (nextStep <= allCids.length) {
+            nextCidInfo.textContent = allCids[nextStep - 1].name;  // step 1: allCids[0], step 2: allCids[1] ...
         }
     }
     
