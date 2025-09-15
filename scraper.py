@@ -108,12 +108,14 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             #f.flush()
 
             #driver.set_script_timeout(5)
-            driver.set_page_load_timeout(100)
-            driver.implicitly_wait(100)
-            driver.set_script_timeout(100)
+            driver.set_page_load_timeout(15)
+            driver.implicitly_wait(15)
+            driver.set_script_timeout(15)
+            time.sleep(0.5)
             driver.get(url)
             #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
+            
             current_app.logger.info(f"driver.get() end")
             process += 5
             _safe_progress(progress_cb, process, "URL 체크 시작")
