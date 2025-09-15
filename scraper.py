@@ -133,7 +133,9 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             #page_source = driver.page_source
             
         except:
-           current_app.logger.info(f"driver.get() fail")
+            current_app.logger.info(f"driver.get() fail")
+            return []
+            
             #f.write(f"driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
 
@@ -205,6 +207,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         
                 except :
                     print("EXCEPTION-------------")
+                    return []
                 
         
         #f.write( '---------------------------------------\n')
