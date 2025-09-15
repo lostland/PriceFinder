@@ -376,12 +376,18 @@ function processSearchResult(data) {
     // 검색창리스트 결과 섹션과 최저가 섹션 표시
     showSearchResultsSection();
     showLowestPriceSection();
+    
+    // 실시간으로 최저가 카드 하이라이팅 업데이트
+    updateLowestPriceHighlighting();
 }
 
 // 카드리스트 결과 처리
 function processCardResult(data) {
     cardResults.push(data);
     displayCardResult(data);
+    
+    // 실시간으로 최저가 카드 하이라이팅 업데이트
+    updateLowestPriceHighlighting();
 }
 
 // 최저가 표시 업데이트
@@ -1057,6 +1063,22 @@ function setStepProgress(percent, label) {
 }
 // 전역에서 쓸 수 있게 노출
 window.setStepProgress = setStepProgress;
+
+// 실시간 최저가 카드 하이라이팅 업데이트
+function updateLowestPriceHighlighting() {
+    console.log('⚡ 실시간 최저가 하이라이팅 업데이트');
+    
+    // 기존 하이라이팅 모두 제거
+    document.querySelectorAll('.search-result-card.lowest-price').forEach(card => {
+        card.classList.remove('lowest-price');
+    });
+    document.querySelectorAll('.card-result-item.lowest-price').forEach(card => {
+        card.classList.remove('lowest-price');
+    });
+    
+    // 새로운 최저가 하이라이팅 적용
+    highlightLowestPriceCards();
+}
 
 // 각 그룹별 최저가 카드에 빛나는 효과 적용
 function highlightLowestPriceCards() {
