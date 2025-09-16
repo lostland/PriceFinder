@@ -218,6 +218,19 @@ function startAnalysis(url) {
 
 // 분석 중단
 function stopAnalysis() {
+    // 서버에 중단 신호 전송
+    fetch('/cancel', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    }).then(response => response.json())
+    .then(data => {
+        console.log('서버 중단 응답:', data);
+    }).catch(error => {
+        console.error('중단 요청 오류:', error);
+    });
+    
     // 분석 상태 초기화
     isAnalyzing = false;
     
