@@ -273,35 +273,45 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         report( process, "")
 
                     time.sleep(0.5)
+                    #time.sleep(0.5)
                     #print("2-------------")
-                    soup.clear()
+                    #soup.clear()
                     print("3-------------")
-                    src = driver.page_source
-                    print("5-------------")
-                    soup = BeautifulSoup(src, 'html.parser' )
-                    print("6-------------")
+                    #src = driver.page_source
+                    #print("5-------------")
+                    #soup = BeautifulSoup(src, 'html.parser' )
+                    #print("6-------------")
+
+                    container = driver.find_element(By.XPATH, "//div[@class='StickyNavPrice']")
+                    if( container ):
+                        price = container.get_attribute("data-element-cheapest-room-price")
+                        #print( "#########container Found : ",  container )
+                        if( price ):
+                            print( "############Price Found : ",  price )
+                            break
+                        
                     if( process < 95 ):
                         process += 2
                         report( process, "")
 
-                    if( len(titleText) <= 1 ):
-                        soupTitle = soup.find('h1', attrs={"data-selenium": "hotel-header-name"})
-                        if( soupTitle ):
-                            titleText = soupTitle.get_text()
-                            print( "Title Found : ",  titleText )
+                    #if( len(titleText) <= 1 ):
+                    #    soupTitle = soup.find('h1', attrs={"data-selenium": "hotel-header-name"})
+                    #    if( soupTitle ):
+                    #        titleText = soupTitle.get_text()
+                    #        print( "Title Found : ",  titleText )
 
-                    priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
-                    if( priceText ):
-                        price = priceText["data-element-cheapest-room-price"]
-                        if( price ):
-                            print( "Price Found : ",  price )
-                        break
+                    #priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
+                    #if( priceText ):
+                    #    price = priceText["data-element-cheapest-room-price"]
+                    #    if( price ):
+                    #        print( "Price Found : ",  price )
+                    #    break
 
-                    text_len = len(soup.get_text())
-                    current_app.logger.info(f'text_len = {text_len}')         
+                    #text_len = len(soup.get_text())
+                    #current_app.logger.info(f'text_len = {text_len}')         
 
-                    if text_len > 40000:
-                        break
+                    #if text_len > 40000:
+                    #    break
 
                 except :
                     print("EXCEPTION-------------")
