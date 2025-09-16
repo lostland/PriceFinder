@@ -27,7 +27,10 @@ const searchCids = [
     { name: '구글 검색A', cid: '1776688' },
     { name: '구글 검색B', cid: '1922868' },
     { name: '구글 검색C', cid: '1908612' },
-    { name: '네이버 검색', cid: '1729890' },
+    { name: 'VIO', cid: '1807747' },
+    { name: '호텔스컴바인', cid: '1838029' },
+    { name: 'BluePillow', cid: '1928503' },
+    { name: '네이버', cid: '1729890' },
     { name: 'TripAdvisor', cid: '1587497' }
 ];
 
@@ -39,7 +42,14 @@ const cardCids = [
     { name: 'BC카드', cid: '1748498' },
     { name: '신한카드', cid: '1760133' },
     { name: '하나카드', cid: '1729471' },
-    { name: '토스', cid: '1917334' }
+    { name: '토스', cid: '1917334' },
+    { name: '삼성카드', cid: '1783115' },
+    { name: '농협카드', cid: '1827579' },
+    { name: '트레블월렛', cid: '1917349' },
+    { name: '페이코', cid: '1845157' },
+    { name: '비자', cid: '1889319' },
+    { name: '마스터', cid: '1889572' },
+    { name: '유니온페이', cid: '1801110' }
 ];
 
 const allCids = [...searchCids, ...cardCids];
@@ -697,7 +707,7 @@ function startSmoothProgress() {
                 progressBar.style.width = `${currentProgressPercentage}%`;
             }
         }
-    }, 10); // 10ms마다 0.01씩 증가 (약 1초에 1% 증가)
+    }, 50); // 10ms마다 0.01씩 증가 (약 1초에 1% 증가)
 }
 
 // 부드러운 진행률 애니메이션 중지
