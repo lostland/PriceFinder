@@ -33,6 +33,16 @@ def index():
 def scrape():
     """Handle single CID scraping request"""
     try:
+        # 중단 플래그 확인
+        global is_cancelled
+        if is_cancelled:
+            # 분석이 중단된 경우
+            is_cancelled = False  # 플래그 초기화
+            return jsonify({
+                'status': 'cancelled',
+                'message': '분석이 중단되었습니다.'
+            }), 200
+        
         data = request.get_json()
         url = data.get('url', '').strip()
         step = data.get('step', 0)  # 현재 단계 (0부터 시작)
