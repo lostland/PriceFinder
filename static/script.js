@@ -249,11 +249,9 @@ function stopAnalysis() {
     
     // 진행률 애니메이션 중지
     stopSmoothProgress();
-    stopStepProgressPolling();
     
     // 진행상황 카드 숨기기
     hideProgressCard();
-    hideProgressSection();
     
     // 상태 초기화 (URL은 유지)
     currentStep = 0;
@@ -328,11 +326,14 @@ function analyzeCid() {
         // 중단 응답 확인
         if (data.status === 'cancelled') {
             console.log('분석이 서버에서 중단되었습니다:', data.message);
-            stopAnalysis(); // 클라이언트 상태도 정리
+            // stopAnalysis() 호출하지 않음 - 이미 중단 상태이므로 UI만 정리
+            isAnalyzing = false;
+            hideProgressCard();
+            updateAnalysisButton();
             return;
         }
         
-        hideLoading(); 
+        // hideLoading(); // 고정 디스플레이를 위해 주석 처리
                 
         if (data.error) {
             // 첫번째 CID에서 가격을 찾지 못한 경우 - 잘못된 링크로 판단
@@ -367,7 +368,7 @@ function analyzeCid() {
     })
     .catch(error => {
         stopStepProgressPolling();
-        hideLoading(); // 고정 디스플레이를 위해 주석 처리
+        // hideLoading(); // 고정 디스플레이를 위해 주석 처리
         
         // AbortError는 사용자 중단이므로 오류로 표시하지 않음
         if (error.name === 'AbortError') {
@@ -896,7 +897,7 @@ function showLoading() {
 
 function hideLoading() {
     // 분석 중 카드를 고정으로 두고 숨기지 않음
-    loadingIndicator.style.display = 'none';
+    // loadingIndicator.style.display = 'none';
 }
 
 function showSearchResultsSection() {
