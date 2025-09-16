@@ -93,7 +93,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     Returns a list of dictionaries containing price and context information
     original_currency_code: 원본 URL의 통화 코드 (예: USD, KRW, THB)
     """
-
+    
     _progress_cb = progress_cb
     
     # 앱 로거 안전하게 확보

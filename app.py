@@ -11,6 +11,7 @@ logging.basicConfig(level=logging.INFO)
 # 기준 가격을 저장하기 위한 전역 변수
 global_base_price = None
 global_base_price_cid_name = ''
+is_cancelled = False  # 분석 중단 플래그
 
 # create the app
 app = Flask(__name__)
@@ -419,6 +420,14 @@ def status_page():
     </html>
     """
     return html
+
+@app.route('/cancel', methods=['POST'])
+def cancel_analysis():
+    """분석 중단 요청 처리"""
+    global is_cancelled
+    is_cancelled = True
+    app.logger.info("분석 중단 요청 받음")
+    return jsonify({'status': 'cancelled', 'message': '분석이 중단되었습니다.'})
 
 
 if __name__ == '__main__':
