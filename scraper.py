@@ -271,7 +271,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         process += 1
                         report( process, "")
 
-                    time.sleep(0.5)
+                    time.sleep(1)
                     print("1-------------")
                     soup.clear()
                     #src = driver.page_source
