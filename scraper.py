@@ -272,7 +272,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         report( process, "")
 
                     time.sleep(0.5)
-                    if( process < 23 ):
+                    if( process < 25 ):
                         continue
                         
                     print("1-------------")
