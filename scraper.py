@@ -239,6 +239,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         report( process, "")
 
         price = 0
+        titleText = ""
 
 #current_app.logger.info(f'BeautifulSoup end')
         #print("send_keys-------------")
@@ -268,6 +269,11 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     if( process < 95 ):
                         process += 2
                         report( process, "")
+
+                    if( len(titleText) <= 1 ):
+                        titleText = soup.find('title')
+                        if( titleText ):
+                            print( "Title Found : ",  titleText.get_text() )
 
                     priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
                     if( priceText ):
