@@ -117,15 +117,15 @@ document.addEventListener('DOMContentLoaded', function() {
     scrapeForm.addEventListener('submit', handleFormSubmit);
     continueBtn.addEventListener('click', continueAnalysis);
     newSearchBtn.addEventListener('click', startNewSearch);
-    
+
     // 폴링 초기화는 analyzeCid에서 시작
-    
+
     // 언어 전환 버튼
     const languageToggle = document.getElementById('languageToggle');
     if (languageToggle) {
         languageToggle.addEventListener('click', toggleLanguage);
     }
-    
+
     // 최저가 창열기 버튼
     const openLowestPriceBtn = document.getElementById('openLowestPriceBtn');
     if (openLowestPriceBtn) {
@@ -199,24 +199,24 @@ function startAnalysis(url) {
     lowestPriceCidName = '';
     basePrice = null;
     isAnalyzing = true;
-    
+
     // 진행률 애니메이션 초기화 및 시작
     currentProgressPercentage = 0;
     targetProgressPercentage = 0;
     startSmoothProgress();
-    
+
     // UI 초기화 - 새로운 검색처럼 완전 초기화
     hideAllSections();
-    
+
     // 결과 컨테이너 초기화
     document.getElementById('cardResultsContainer').innerHTML = '';
     document.getElementById('searchResultsContainer').innerHTML = '';
-    
+
     showProgressSection();
-    
+
     // 버튼 텍스트 변경
     updateAnalysisButton();
-    
+
     // 첫 번째 CID 분석 시작
     analyzeCid();
 }
@@ -230,7 +230,7 @@ function stopAnalysis() {
         abortController.abort();
         abortController = null;
     }
-    
+
     // 서버에 중단 신호 전송
     fetch('/cancel', {
         method: 'POST',
@@ -243,16 +243,18 @@ function stopAnalysis() {
     }).catch(error => {
         console.error('중단 요청 오류:', error);
     });
-    
+
     // 분석 상태 초기화
     isAnalyzing = false;
-    
+
     // 진행률 애니메이션 중지
     stopSmoothProgress();
-    
+    stopStepProgressPolling();
+
     // 진행상황 카드 숨기기
     hideProgressCard();
-    
+    hideProgressSection();
+
     // 상태 초기화 (URL은 유지)
     currentStep = 0;
     allResults = [];
@@ -262,18 +264,18 @@ function stopAnalysis() {
     lowestPriceUrl = '';
     lowestPriceCidName = '';
     basePrice = null;
-    
+
     // 진행률 초기화
     currentProgressPercentage = 0;
     targetProgressPercentage = 0;
-    
+
     // UI 초기화
     hideAllSections();
-    
+
     // 결과 컨테이너 초기화
     document.getElementById('cardResultsContainer').innerHTML = '';
     document.getElementById('searchResultsContainer').innerHTML = '';
-    
+
     // 버튼 텍스트 변경
     updateAnalysisButton();
 }
@@ -286,7 +288,7 @@ function analyzeCid() {
         showComplete();
         return;
     }
-    
+
     // UI 업데이트
     updateProgress();
     showLoading();
@@ -295,13 +297,13 @@ function analyzeCid() {
      // ← 추가: 스텝 시작 시 0%로 초기화하고 폴링 시작
     setStepProgress(100,' ');
     startStepProgressPolling();
-    
+
     // 분석이 중단되었는지 확인
     if (!isAnalyzing) {
         stopStepProgressPolling(); // 폴링도 중지
         return;
     }
-    
+
     // API 호출
     fetch('/scrape', {
         method: 'POST',
@@ -325,16 +327,19 @@ function analyzeCid() {
     .then(data => {
         // 중단 응답 확인
         if (data.status === 'cancelled') {
-            console.log('분석이 서버에서 중단되었습니다:', data.message);
-            // stopAnalysis() 호출하지 않음 - 이미 중단 상태이므로 UI만 정리
-            isAnalyzing = false;
-            hideProgressCard();
-            updateAnalysisButton();
-            return;
+          // step 0에서 온 취소는 '직전 중단의 잔상'일 수 있으니 1회 재시도
+          if (currentStep === 0) {
+            setTimeout(() => {
+              if (isAnalyzing) analyzeCid();  // 재시도
+            }, 100);
+          } else {
+            stopAnalysis();
+          }
+          return;
         }
-        
-        // hideLoading(); // 고정 디스플레이를 위해 주석 처리
-                
+
+        hideLoading(); 
+
         if (data.error) {
             // 첫번째 CID에서 가격을 찾지 못한 경우 - 잘못된 링크로 판단
             if (data.error_type === 'invalid_link' && data.step === 0) {
@@ -344,15 +349,15 @@ function analyzeCid() {
             showError(data.error);
             return;
         }
-        
+
         stopStepProgressPolling();
         //if (typeof data.subprogress_pct === 'number') {
         setStepProgress(data.subprogress_pct, ' ');
         //}
-        
+
         // 결과 처리
         processResult(data);
-        
+
         // 다음 단계가 있는지 확인 - 자동으로 계속 진행
         if (data.has_next) {
             // 짧은 지연 후 자동으로 다음 단계 실행
@@ -368,14 +373,14 @@ function analyzeCid() {
     })
     .catch(error => {
         stopStepProgressPolling();
-        // hideLoading(); // 고정 디스플레이를 위해 주석 처리
-        
+        hideLoading(); // 고정 디스플레이를 위해 주석 처리
+
         // AbortError는 사용자 중단이므로 오류로 표시하지 않음
         if (error.name === 'AbortError') {
             console.log('분석이 사용자에 의해 중단되었습니다');
             return;
         }
-        
+
         showError('분석 중 오류가 발생했습니다: ' + error.message);
     });
 }
@@ -383,7 +388,7 @@ function analyzeCid() {
 // 결과 처리
 function processResult(data) {
     allResults.push(data);
-    
+
     // step 0은 기준가격 설정만 하고 화면에 표시하지 않음
     if (data.step === 1) {
         // 기준 가격 설정
@@ -392,14 +397,14 @@ function processResult(data) {
         }
         return; // 기준가격 설정 단계는 여기서 종료
     }
-    
+
     // 검색창리스트 단계인지 카드리스트 단계인지 확인
     if (data.is_search_phase) {
         processSearchResult(data);
     } else {
         processCardResult(data);
     }
-    
+
     // 검색창리스트가 완료되면 카드 결과 섹션 표시
     if (data.search_phase_completed) {
         showCardResultsSection();
@@ -409,15 +414,15 @@ function processResult(data) {
 // 검색창리스트 결과 처리
 function processSearchResult(data) {
     searchResults.push(data);
-    
+
     // 검색창리스트 결과를 작은 카드로 표시
     displaySearchResult(data);
-    
+
     // 가격이 있는 경우 최저가 업데이트
     if (data.prices && data.prices.length > 0) {
         const price = data.prices[0];  // 첫 번째 가격 사용
         const numericPrice = extractNumericPrice(price.price);
-        
+
         if (numericPrice && (lowestPrice === null || numericPrice < lowestPrice)) {
             lowestPrice = numericPrice;
             lowestPriceUrl = data.url;
@@ -425,11 +430,11 @@ function processSearchResult(data) {
             updateLowestPriceDisplay();
         }
     }
-    
+
     // 검색창리스트 결과 섹션과 최저가 섹션 표시
     showSearchResultsSection();
     showLowestPriceSection();
-    
+
     // 실시간으로 최저가 카드 하이라이팅 업데이트
     updateLowestPriceHighlighting();
 }
@@ -438,7 +443,7 @@ function processSearchResult(data) {
 function processCardResult(data) {
     cardResults.push(data);
     displayCardResult(data);
-    
+
     // 실시간으로 최저가 카드 하이라이팅 업데이트
     updateLowestPriceHighlighting();
 }
@@ -448,10 +453,10 @@ function updateLowestPriceDisplay() {
     const lowestPriceEl = document.getElementById('lowestPrice');
     const lowestCidNameEl = document.getElementById('lowestCidName');
     const openLowestPriceBtnEl = document.getElementById('openLowestPriceBtn');
-    
+
     if (lowestPrice !== null && lowestPriceEl && lowestCidNameEl && openLowestPriceBtnEl) {
         let discountText = '';
-        
+
         // 기준 가격과 비교하여 할인율 표시
         if (basePrice !== null) {
             const discountPercentage = (((basePrice - lowestPrice) / basePrice) * 100).toFixed(1);
@@ -465,11 +470,11 @@ function updateLowestPriceDisplay() {
         } else {
             discountText = '할인율 계산 중...';
         }
-        
+
         // 할인율을 강조하는 HTML로 변경
         const discountClass = basePrice !== null && lowestPrice < basePrice ? 'discount-positive' : 
                              basePrice !== null && lowestPrice > basePrice ? 'discount-negative' : 'discount-neutral';
-        
+
         lowestPriceEl.innerHTML = `<div class="card-result-discount-big discount-positive mb-2">${discountText}</div>`;
         lowestCidNameEl.textContent = lowestPriceCidName;
         openLowestPriceBtnEl.disabled = false;
@@ -480,13 +485,13 @@ function updateLowestPriceDisplay() {
 function displaySearchResult(data) {
     const container = document.getElementById('searchResultsContainer');
     const t = translations[currentLanguage];
-    
+
     const cardCol = document.createElement('div');
     cardCol.className = 'col-md-4 col-lg-3 mb-2';
-    
+
     const hasPrice = data.prices && data.prices.length > 0;
     let priceDisplay = '';
-    
+
     if (hasPrice) {
         if (data.discount_percentage !== null && data.discount_percentage !== undefined) {
             const discountText = data.discount_percentage >= 0 ? 
@@ -503,7 +508,7 @@ function displaySearchResult(data) {
     } else {
         priceDisplay = `<div class="search-result-price mb-1">${t.noPrice}</div>`;
     }
-    
+
     cardCol.innerHTML = `
         <div class="search-result-card">
             <div class="text-center">
@@ -518,9 +523,9 @@ function displaySearchResult(data) {
             </div>
         </div>
     `;
-    
+
     container.appendChild(cardCol);
-    
+
     // 창열기 버튼 이벤트 추가
     const openBtn = cardCol.querySelector('.search-open-btn');
     if (openBtn && !openBtn.disabled) {
@@ -534,15 +539,15 @@ function displaySearchResult(data) {
 function displayCardResult(data) {
     const container = document.getElementById('cardResultsContainer');
     const t = translations[currentLanguage];
-    
+
     const cardCol = document.createElement('div');
     cardCol.className = 'col-md-6 col-lg-4 mb-3';
-    
+
     const hasPrice = data.prices && data.prices.length > 0;
     const cardClass = hasPrice ? 'border-success' : 'border-warning';
     const badgeClass = hasPrice ? 'bg-success' : 'bg-warning';
     const badgeText = hasPrice ? '' : t.noPrice;
-    
+
     let priceDisplay = '';
     if (hasPrice) {
         if (data.discount_percentage !== null && data.discount_percentage !== undefined) {
@@ -560,7 +565,7 @@ function displayCardResult(data) {
     } else {
         priceDisplay = `<div class="card-result-price mb-2">${t.noPrice}</div>`;
     }
-    
+
     cardCol.innerHTML = `
         <div class="card-result-item ${cardClass}">
             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -578,9 +583,9 @@ function displayCardResult(data) {
             </div>
         </div>
     `;
-    
+
     container.appendChild(cardCol);
-    
+
     // 창열기 버튼 이벤트 추가
     const openBtn = cardCol.querySelector('.card-open-btn');
     if (openBtn && !openBtn.disabled) {
@@ -593,14 +598,14 @@ function displayCardResult(data) {
 // 디버그 결과 표시 (개발용)
 function displayDebugResult(data) {
     const container = document.getElementById('debugResultsContainer');
-    
+
     const resultCard = document.createElement('div');
     resultCard.className = 'card mb-3';
-    
+
     const statusBadge = data.found_count > 0 ? 
         `<span class="badge bg-success">${data.found_count}개 발견</span>` :
         `<span class="badge bg-warning">가격 없음</span>`;
-    
+
     let pricesHtml = '';
     if (data.prices && data.prices.length > 0) {
         pricesHtml = data.prices.map(price => `
@@ -617,7 +622,7 @@ function displayDebugResult(data) {
     } else {
         pricesHtml = '<div class="text-muted">이 CID에서는 가격을 찾지 못했습니다.</div>';
     }
-    
+
     resultCard.innerHTML = `
         <div class="card-header d-flex justify-content-between align-items-center">
             <h6 class="mb-0">
@@ -636,15 +641,15 @@ function displayDebugResult(data) {
             ${pricesHtml}
         </div>
     `;
-    
+
     container.appendChild(resultCard);
-    
+
     // URL을 안전하게 표시
     const urlSpan = resultCard.querySelector('.url-display');
     if (urlSpan) {
         urlSpan.textContent = data.url;
     }
-        
+
     showDebugResultsSection();
 }
 
@@ -654,7 +659,7 @@ function continueAnalysis() {
     if (!isAnalyzing) {
         return;
     }
-    
+
     currentStep++;
     hideContinueButton();
     analyzeCid();
@@ -665,20 +670,20 @@ function startSmoothProgress() {
     if (progressAnimationInterval) {
         clearInterval(progressAnimationInterval);
     }
-    
+
     progressAnimationInterval = setInterval(() => {
         if (currentProgressPercentage < targetProgressPercentage) {
             currentProgressPercentage += 0.01;
-            
+
             // 목표값에 도달했다면 정확히 맞춰줌
             if (currentProgressPercentage >= targetProgressPercentage) {
                 currentProgressPercentage = targetProgressPercentage;
             }
-            
+
             // 진행률 바 업데이트
             const progressText = document.getElementById('progressText');
             const progressBar = document.getElementById('progressBar');
-            
+
             if (progressText) {
                 progressText.textContent = `${Math.round(currentProgressPercentage)}%`;
             }
@@ -710,13 +715,13 @@ function updateProgress() {
     const currentCidNameEl = document.getElementById('currentCidName');
     const currentPhaseEl = document.getElementById('currentPhase');
     const loadingCid = document.getElementById('loadingCid');
-    
+
     const step = currentStep + 1;
     const percentage = Math.round((step / totalSteps) * 100);
-    
+
     // 목표 진행률 설정 (부드러운 애니메이션으로 이동)
     targetProgressPercentage = percentage;
-    
+
     // 현재 단계 정보 업데이트
     if (currentCidNameEl) {
         // step 0은 기준가격 설정, step 1부터 allCids[0] 처리
@@ -727,7 +732,7 @@ function updateProgress() {
             currentCidNameEl.textContent = currentCid.name;
         }
     }
-    
+
     // 현재 페이즈 표시
     let isSearchPhase = false;
     if (currentStep === 0) {
@@ -735,7 +740,7 @@ function updateProgress() {
     } else {
         isSearchPhase = currentStep <= searchCids.length;  // step 1부터 searchCids 처리
     }
-    
+
     if (currentPhaseEl) {
         if (currentStep === 0) {
             currentPhaseEl.textContent = '기준가격 설정';
@@ -744,7 +749,7 @@ function updateProgress() {
         }
     }
     currentPhaseEl.className = `badge ${currentStep === 0 ? 'bg-secondary' : (isSearchPhase ? 'bg-primary' : 'bg-info')}`;
-    
+
     if (loadingCid) {
         // step 0은 기준가격 설정, step 1부터 allCids[0] 처리
         if (currentStep === 0) {
@@ -759,7 +764,7 @@ function updateProgress() {
 // 계속 버튼 표시
 function showContinueButton(nextStep) {
     const nextCidInfo = document.getElementById('nextCidInfo');
-    
+
     if (nextCidInfo) {
         if (nextStep === 0) {
             nextCidInfo.textContent = '기준가격 설정';
@@ -767,7 +772,7 @@ function showContinueButton(nextStep) {
             nextCidInfo.textContent = allCids[nextStep - 1].name;  // step 1: allCids[0], step 2: allCids[1] ...
         }
     }
-    
+
     continueSection.style.display = 'block';
     continueSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
@@ -775,10 +780,10 @@ function showContinueButton(nextStep) {
 // 완료 표시
 function showComplete() {
     console.log('🎯 showComplete() 함수 호출됨');
-    
+
     // 부드러운 진행률 애니메이션 중지
     stopSmoothProgress();
-    
+
     // 진행률을 100%로 최종 설정
     const progressText = document.getElementById('progressText');
     const progressBar = document.getElementById('progressBar');
@@ -788,20 +793,20 @@ function showComplete() {
     if (progressBar) {
         progressBar.style.width = '100%';
     }
-    
+
     const totalResults = allResults.reduce((sum, result) => sum + result.found_count, 0);
     const totalResultsEl = document.getElementById('totalResults');
     if (totalResultsEl) {
         totalResultsEl.textContent = totalResults;
     }
-    
+
     // 분석중 창 숨기기
     loadingIndicator.style.display = 'none';
-    
+
     completeSection.style.display = 'block';
     hideContinueButton();
     hideProgressSection();
-    
+
     console.log('🎯 최저가 카드 하이라이팅 함수 호출 직전');
     // 각 그룹별 최저가 카드에 빛나는 효과 적용
     try {
@@ -810,11 +815,11 @@ function showComplete() {
     } catch (error) {
         console.error('🚨 최저가 카드 하이라이팅 오류:', error);
     }
-    
+
     // 분석 완료 시 상태 초기화
     isAnalyzing = false;
     updateAnalysisButton();
-    
+
     completeSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
     console.log('🎯 showComplete() 함수 완료');
 }
@@ -823,10 +828,10 @@ function showComplete() {
 function startNewSearch() {
     // 부드러운 진행률 애니메이션 중지
     stopSmoothProgress();
-    
+
     // 진행상황 카드 숨기기
     hideProgressCard();
-    
+
     currentUrl = '';
     currentStep = 0;
     allResults = [];
@@ -836,19 +841,19 @@ function startNewSearch() {
     lowestPriceUrl = '';
     lowestPriceCidName = '';
     basePrice = null;
-    
+
     // 진행률 초기화
     currentProgressPercentage = 0;
     targetProgressPercentage = 0;
-    
+
     hideAllSections();
     urlInput.value = '';
     urlInput.focus();
-    
+
     // 버튼 업데이트
     isAnalyzing = false;
     updateAnalysisButton();
-    
+
     // 결과 컨테이너 초기화
     document.getElementById('cardResultsContainer').innerHTML = '';
     document.getElementById('searchResultsContainer').innerHTML = '';
@@ -858,7 +863,7 @@ function startNewSearch() {
 function updateAnalysisButton() {
     const t = translations[currentLanguage];
     const startBtn = document.getElementById('scrapeBtn');
-    
+
     if (startBtn) {
         if (isAnalyzing) {
             startBtn.innerHTML = `<i class="fas fa-stop"></i> ${t.stopAnalysis}`;
@@ -897,7 +902,7 @@ function showLoading() {
 
 function hideLoading() {
     // 분석 중 카드를 고정으로 두고 숨기지 않음
-    // loadingIndicator.style.display = 'none';
+    loadingIndicator.style.display = 'none';
 }
 
 function showSearchResultsSection() {
@@ -961,7 +966,7 @@ function hideAllSections() {
 // 잘못된 링크 모달 표시 및 입력창 초기화
 function showInvalidLinkModal(message) {
     const t = translations[currentLanguage];
-    
+
     // Bootstrap Alert로 모달처럼 표시
     const alertHtml = `
         <div class="alert alert-warning alert-dismissible fade show position-fixed" 
@@ -983,16 +988,16 @@ function showInvalidLinkModal(message) {
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     `;
-    
+
     // 기존 alert 제거
     const existingAlert = document.querySelector('.alert-warning');
     if (existingAlert) {
         existingAlert.remove();
     }
-    
+
     // 새 alert 추가
     document.body.insertAdjacentHTML('afterbegin', alertHtml);
-    
+
     // OK 버튼 이벤트 추가
     const okBtn = document.querySelector('.modal-ok-btn');
     if (okBtn) {
@@ -1003,14 +1008,14 @@ function showInvalidLinkModal(message) {
             }
         });
     }
-    
+
     // 입력창 초기화
     urlInput.value = '';
     urlInput.focus();
-    
+
     // 모든 섹션 숨기기
     hideAllSections();
-    
+
     // 5초 후 자동 제거
     setTimeout(() => {
         const alert = document.querySelector('.alert-warning');
@@ -1029,59 +1034,59 @@ function toggleLanguage() {
 // 언어 업데이트
 function updateLanguage() {
     const t = translations[currentLanguage];
-    
+
     // 페이지 제목과 설명
     const titleEl = document.querySelector('.dynamic-title');
     if (titleEl) titleEl.textContent = t.title;
-    
+
     const subtitlePs = document.querySelectorAll('.subtitle-description p');
     if (subtitlePs[0]) subtitlePs[0].textContent = t.subtitle1;
     if (subtitlePs[1]) subtitlePs[1].textContent = t.subtitle2;
-    
+
     // URL 입력 관련
     const urlInputTitle = document.querySelector('.card-title');
     if (urlInputTitle) urlInputTitle.innerHTML = `<i class="fas fa-link text-info"></i> ${t.urlInput}`;
-    
+
     const urlInput = document.getElementById('urlInput');
     if (urlInput) urlInput.placeholder = t.urlPlaceholder;
-    
+
     // 버튼 업데이트 (동적 텍스트)
     updateAnalysisButton();
-    
+
     // 언어 전환 버튼
     const languageText = document.getElementById('languageText');
     if (languageText) languageText.textContent = t.languageBtn;
-    
+
     // 사용방법 버튼
     const guideText = document.querySelector('.guide-text');
     if (guideText) guideText.textContent = t.guide;
-    
+
     // 가이드 링크 업데이트
     const guideLink = document.getElementById('guideLink');
     if (guideLink) guideLink.href = `/guide?lang=${currentLanguage}`;
-    
+
     // 진행률 관련
     const progressTitle = document.querySelector('#progressSection h6');
     if (progressTitle) progressTitle.textContent = t.progress;
-    
+
     // 최저가 섹션
     const lowestTitle = document.querySelector('#lowestPriceSection h5');
     if (lowestTitle) lowestTitle.innerHTML = `<i class="fas fa-trophy"></i> ${t.currentLowest}`;
-    
+
     const openBtn = document.getElementById('openLowestPriceBtn');
     if (openBtn) openBtn.innerHTML = `<i class="fas fa-external-link-alt"></i> ${t.openLink}`;
-    
+
     // 카드 비교 섹션
     const cardTitle = document.querySelector('#cardResultsSection h5');
     if (cardTitle) cardTitle.innerHTML = `<i class="fas fa-credit-card"></i> ${t.cardComparison}`;
-    
+
     // 완료 섹션
     const completeTitle = document.querySelector('#completeSection h4');
     if (completeTitle) completeTitle.textContent = t.analysisComplete;
-    
+
     const newSearchBtn = document.getElementById('newSearchBtn');
     if (newSearchBtn) newSearchBtn.innerHTML = `<i class="fas fa-search"></i> ${t.newSearch}`;
-    
+
     // 동적으로 생성되는 카드들 업데이트
     updateDynamicTexts();
 }
@@ -1089,14 +1094,14 @@ function updateLanguage() {
 // 동적 텍스트 업데이트
 function updateDynamicTexts() {
     const t = translations[currentLanguage];
-    
+
     // 진행률 페이즈 업데이트
     const currentPhase = document.getElementById('currentPhase');
     if (currentPhase) {
         const isSearchPhase = currentStep < searchCids.length;
         currentPhase.textContent = isSearchPhase ? t.searchPhase : t.cardPhase;
     }
-    
+
     // 분석 중 텍스트 업데이트
     const analyzingTexts = document.querySelectorAll('.ms-2');
     analyzingTexts.forEach(el => {
@@ -1104,7 +1109,7 @@ function updateDynamicTexts() {
             el.textContent = t.analyzing;
         }
     });
-    
+
     // 로딩 텍스트 업데이트
     const loadingText = document.querySelector('#loadingIndicator p');
     if (loadingText) loadingText.textContent = t.loading;
@@ -1125,7 +1130,7 @@ window.setStepProgress = setStepProgress;
 // 실시간 최저가 카드 하이라이팅 업데이트
 function updateLowestPriceHighlighting() {
     console.log('⚡ 실시간 최저가 하이라이팅 업데이트');
-    
+
     // 기존 하이라이팅 모두 제거
     document.querySelectorAll('.search-result-card.lowest-price').forEach(card => {
         card.classList.remove('lowest-price');
@@ -1133,7 +1138,7 @@ function updateLowestPriceHighlighting() {
     document.querySelectorAll('.card-result-item.lowest-price').forEach(card => {
         card.classList.remove('lowest-price');
     });
-    
+
     // 새로운 최저가 하이라이팅 적용
     highlightLowestPriceCards();
 }
@@ -1143,7 +1148,7 @@ function highlightLowestPriceCards() {
     console.log('=== 최저가 카드 하이라이팅 시작 ===');
     console.log('searchResults:', searchResults);
     console.log('cardResults:', cardResults);
-    
+
     // 검색창리스트에서 최저가 찾기
     const searchLowestPrice = findLowestPriceInGroup(searchResults);
     console.log('검색창리스트 최저가:', searchLowestPrice);
@@ -1151,7 +1156,7 @@ function highlightLowestPriceCards() {
         console.log('검색창리스트 최저가 CID:', searchLowestPrice.cid_name);
         highlightCardByCidName(searchLowestPrice.cid_name, 'search-result-card');
     }
-    
+
     // 카드리스트에서 최저가 찾기
     const cardLowestPrice = findLowestPriceInGroup(cardResults);
     console.log('카드리스트 최저가:', cardLowestPrice);
@@ -1159,17 +1164,17 @@ function highlightLowestPriceCards() {
         console.log('카드리스트 최저가 CID:', cardLowestPrice.cid_name);
         highlightCardByCidName(cardLowestPrice.cid_name, 'card-result-item');
     }
-    
+
     console.log('=== 최저가 카드 하이라이팅 완료 ===');
 }
 
 // 특정 그룹에서 최저가 결과 찾기
 function findLowestPriceInGroup(results) {
     if (!results || results.length === 0) return null;
-    
+
     let lowestResult = null;
     let lowestPrice = null;
-    
+
     for (const result of results) {
         if (result.prices && result.prices.length > 0) {
             const price = extractNumericPrice(result.prices[0].price);
@@ -1180,24 +1185,24 @@ function findLowestPriceInGroup(results) {
             }
         }
     }
-    
+
     return lowestResult;
 }
 
 // CID 이름으로 카드를 찾아서 빛나는 효과 적용
 function highlightCardByCidName(cidName, cardClass) {
     console.log(`카드 하이라이팅 시도: CID="${cidName}", 클래스="${cardClass}"`);
-    
+
     // 모든 해당 클래스의 카드들을 찾기
     const cards = document.querySelectorAll(`.${cardClass}`);
     console.log(`찾은 카드 수: ${cards.length}`);
-    
+
     cards.forEach((card, index) => {
         // 카드 내에서 CID 이름 찾기
         const nameElement = card.querySelector('.search-result-name, h6');
         const foundName = nameElement ? nameElement.textContent.trim() : '이름 없음';
         console.log(`카드 ${index}: 이름="${foundName}"`);
-        
+
         if (nameElement && nameElement.textContent.trim() === cidName) {
             // 최저가 클래스 추가
             card.classList.add('lowest-price');

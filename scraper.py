@@ -40,7 +40,7 @@ def _progress_ticker_loop(logger):
         with _progress_lock:
             if _process_pct < 95:
                 _process_pct += 1
-                
+
                 try:
                     set_progress(_process_pct, " ")
                 except Exception:
@@ -76,26 +76,26 @@ def set_progress(pct, msg=""):
 def get_progress_state():
     """현재 진행률 조회"""
     return _progress_state
-    
+
 
 def _safe_progress(progress_cb, pct, msg=None):
     current_app.logger.info(f"Progress: {pct}% - {msg or ''}")
-    
+
     try:
         if progress_cb:
             progress_cb(pct, " ")
     except Exception:
         pass
-        
+
 def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     """
     단순하고 빠른 가격 스크래핑 - 이미지 처리 없음
     Returns a list of dictionaries containing price and context information
     original_currency_code: 원본 URL의 통화 코드 (예: USD, KRW, THB)
     """
-    
+
     _progress_cb = progress_cb
-    
+
     # 앱 로거 안전하게 확보
     try:
         logger = current_app.logger
@@ -122,7 +122,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         except Exception:
             pass
 
-    
+
     process = 0
     try:
         # Selenium 사용 - 간단한 설정
@@ -155,7 +155,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
 
         # 봇 탐지 우회
         #driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-        
+
         # URL은 app.py에서 이미 올바르게 처리되었으므로 추가 수정하지 않음
         #print(f"스크래핑 사용 URL: {url}")
 
@@ -181,7 +181,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
 
 
         start_time = time.localtime()
-        
+
         try:
             current_app.logger.info(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}")
             #f.flush()
@@ -194,28 +194,28 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             driver.get(url)
             #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
-            
+
             current_app.logger.info(f"driver.get() end")
             process += 5
             report( process, "URL 체크 시작")
-            
+
             # Send a space to the element
-        
+
             # 빠른 로딩 전략 (timeout 방지)
             #time.sleep(3)  # 로딩 대기 시간 단축
-            
+
             # 스크롤로 콘텐츠 로딩
             #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(0.5)
             #driver.execute_script("window.scrollTo(0, 0);")
             time.sleep(0.5)
             #page_source = driver.page_source
-            
+
         except:
             current_app.logger.info(f"driver.get() fail")
             _progress_cb = None
             return []
-            
+
             #f.write(f"driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
 
@@ -234,12 +234,12 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         #current_app.logger.info(f'BeautifulSoup')
         soup = BeautifulSoup("", 'html.parser')
         #current_app.logger.info(f'BeautifulSoup end')
-        
+
         process += 5
         report( process, "")
 
         price = 0
-            
+
 #current_app.logger.info(f'BeautifulSoup end')
         #print("send_keys-------------")
         #actions.send_keys(Keys.END).perform()
@@ -256,7 +256,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     if( process < 95 ):
                         process += 1
                         report( process, "")
-                        
+
                     time.sleep(0.5)
                     #print("2-------------")
                     soup.clear()
@@ -268,27 +268,27 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     if( process < 95 ):
                         process += 2
                         report( process, "")
-                        
+
                     priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
                     if( priceText ):
                         price = priceText["data-element-cheapest-room-price"]
                         if( price ):
                             print( "Price Found : ",  price )
                         break
-                        
+
                     text_len = len(soup.get_text())
                     current_app.logger.info(f'text_len = {text_len}')         
-    
+
                     if text_len > 40000:
                         break
-                        
+
                 except :
                     print("EXCEPTION-------------")
                     _progress_cb = None
 
                     return []
-                
-        
+
+
         #f.write( '---------------------------------------\n')
         #f.write( soup.get_text() )
         #f.flush()
@@ -304,7 +304,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             end_time = time.localtime()
             elapsed = time.mktime(end_time) - time.mktime(start_time)  # 초 단위 차이
             print(f"걸린 시간: {elapsed:.3f}초")
-            
+
             current_app.logger.info(f'time : {time}')
             starting_price = {
                 'price': price,  # 원본 형태 그대로 (₩, THB, $ 등 포함)
@@ -315,10 +315,10 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
 
         current_app.logger.info(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}")
         #f.flush()
-        
+
         prices_found = []
         seen_prices = set()
-        
+
         # 1단계: 특정 가격 요소들부터 우선 찾기 (실제 예약 가격)
         price_selectors = [
             # 일반적인 호텔 예약 사이트 가격 클래스들
@@ -336,34 +336,34 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             '.booking-price',
             '.final-price'
         ]
-        
+
         for selector in price_selectors:
             try:
                 elements = soup.select(selector)
                 for element in elements:
                     text = element.get_text(strip=True)
-                    
+
                     # 가격 패턴 찾기
                     price_patterns = [
                         r'(\$[1-9]\d{2,4}(?:\.\d{2})?)',  # $100-99999.99
                         r'([1-9]\d{2,4}(?:\.\d{2})?\s*USD)',  # 123.45 USD
                         r'(\$[1-9]\d{1,2})',  # $10-999
                     ]
-                    
+
                     for pattern in price_patterns:
                         matches = re.findall(pattern, text, re.IGNORECASE)
                         for price_text in matches:
                             if price_text not in seen_prices:
                                 # 평균가격 제외
                                 parent_text = element.parent.get_text(strip=True).lower() if element.parent else text.lower()
-                                
+
                                 is_average_price = (
                                     'average' in parent_text or
                                     'avg' in parent_text or
                                     'stands at' in parent_text or
                                     'typical' in parent_text
                                 )
-                                
+
                                 if not is_average_price:
                                     seen_prices.add(price_text)
                                     prices_found.append({
@@ -371,30 +371,30 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                                         'context': f"Found in {selector}: {text[:100]}",
                                         'source': 'targeted_element'
                                     })
-                                    
+
                                     if len(prices_found) >= 3:
                                         break
-                        
+
                         if len(prices_found) >= 3:
                             break
-                    
+
                     if len(prices_found) >= 3:
                         break
             except Exception:
                 continue
-            
+
             if len(prices_found) >= 3:
                 break
-        
+
         # 2단계: 특정 요소에서 못 찾으면 전체 텍스트 검색
         if len(prices_found) < 2:
             # script와 style 태그 제거
             for element in soup(["script", "style"]):
                 element.decompose()
-            
+
             # 텍스트 추출
             text_content = soup.get_text()
-            
+
             # 더 적극적인 가격 패턴 검색
             price_patterns = [
                 # 실제 예약 가격이 나올 가능성이 높은 패턴들
@@ -404,22 +404,22 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                 r'(\$[1-9]\d{2,4}(?:\.\d{2})?)',  # 일반 $123
                 r'([1-9]\d{2,4}(?:\.\d{2})?\s*USD)',  # 123 USD
             ]
-            
+
             for pattern in price_patterns:
                 matches = re.finditer(pattern, text_content, re.IGNORECASE)
-                
+
                 for match in matches:
                     price_text = match.group(1).strip()
-                    
+
                     if price_text in seen_prices:
                         continue
-                    
+
                     # 컨텍스트 추출
                     start_pos = max(0, match.start() - 80)
                     end_pos = min(len(text_content), match.end() + 80)
                     context = text_content[start_pos:end_pos].strip()
                     context_lower = context.lower()
-                    
+
                     # 평균가격 및 기타 불필요한 가격 제외
                     skip_keywords = [
                         'with an average room price of',
@@ -429,28 +429,28 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         'generally costs',
                         'usually costs'
                     ]
-                    
+
                     should_skip = any(keyword in context_lower for keyword in skip_keywords)
-                    
+
                     if should_skip:
                         continue
-                    
+
                     context = re.sub(r'\s+', ' ', context)[:150]
-                    
+
                     seen_prices.add(price_text)
                     prices_found.append({
                         'price': price_text,
                         'context': context,
                         'source': 'text_search'
                     })
-                    
+
                     # 최대 5개로 제한
                     if len(prices_found) >= 5:
                         break
-                
+
                 if len(prices_found) >= 5:
                     break
-        
+
         # 디버그: 실제 페이지에 어떤 가격 정보가 있는지 확인
         # (실제 배포시에는 제거)
         debug_patterns = [
@@ -461,36 +461,36 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             r'(total|Total)',  # total 텍스트
             r'(night|Night)',  # night 텍스트
         ]
-        
+
         debug_info = {}
         all_text = soup.get_text()
-        
+
         # 5KB 제한: 텍스트가 5KB를 넘으면 5KB까지만 자르고 즉시 종료
         text_size_bytes = len(all_text.encode('utf-8'))
         current_app.logger.info(f"텍스트 크기: {text_size_bytes} bytes")
         #f.write(f"{all_text}\n")
-        
+
         #if text_size_bytes > 5 * 1024:  # 5KB = 5 * 1024 bytes
             # UTF-8 기준 5KB까지만 자르기 (안전하게)
             #truncated_text = all_text
             #while len(truncated_text.encode('utf-8')) > 5 * 1024:
             #    truncated_text = truncated_text[:-100]  # 100글자씩 줄이기
             #all_text = truncated_text + "... [5KB 제한으로 텍스트 일부만 수집됨]"
-            
+
             # 즉시 파일 저장하고 가격 분석 건너뛰기
             #try:
                 #import os
                 #if not os.path.exists('downloads'):
                 #    os.makedirs('downloads')
-                
+
                 # CID 정보 추출
                 #cid_match = re.search(r'cid=([^&]+)', url)
                 #cid_value = cid_match.group(1) if cid_match else 'unknown'
-                
+
                 # 파일명 생성
                 #filename = f"page_text_cid_{cid_value}.txt"
                 #filepath = os.path.join('downloads', filename)
-                
+
                 # 전체 텍스트 저장
                 #with open(filepath, 'w', encoding='utf-8') as f:
                 #f.write(f"2----------------------------------\n")
@@ -500,12 +500,12 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                 #f.write(f"파일 크기: 5KB 제한 적용\n")
                 #f.write("="*50 + "\n\n")
                 #f.write(all_text)
-                
+
                 #print(f"5KB 제한 - 텍스트 파일 저장됨: {filepath}")
-                
+
             #except Exception as save_error:
                 #print(f"텍스트 파일 저장 오류: {save_error}")
-            
+
             # txt 파일에서 "시작가" 뒤의 가격 찾기
         starting_price = None
         try:
@@ -524,13 +524,13 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                 r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*THB)',      # 46 THB 형태
                 r'시작가[^\d]*([\d,]+(?:\.\d+)?\s*KRW)',      # 46 KRW 형태
             ]
-            
+
             match = None
             for pattern in starting_price_patterns:
                 match = re.search(pattern, all_text, re.IGNORECASE)
                 if match:
                     break
-            
+
             if match:
                 price_text = match.group(1).strip()
                 # 원본 가격 텍스트를 그대로 사용 (통화 단위 포함)
@@ -541,21 +541,21 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         'source': 'starting_price_from_file'
                     }
                     current_app.logger.info(f"시작가 발견: {starting_price['price']}")
-            
+
         except Exception as e:
             current_app.logger.info(f"시작가 검색 오류: {e}")
-        
+
         # 시작가를 찾았으면 반환, 못 찾았으면 빈 결과
         if starting_price:
             return [starting_price]
         else:
             return []
-    
+
         for pattern in debug_patterns:
             matches = re.findall(pattern, all_text, re.IGNORECASE)
             if matches:
                 debug_info[pattern] = matches[:10]  # 처음 10개만
-        
+
         # 더 광범위한 가격 패턴 검색
         all_price_patterns = [
             # 달러 패턴
@@ -569,21 +569,21 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             r'\b([2-9]\d{2})\b',  # 200-999 (3자리)
             r'\b([1-9]\d{3})\b',  # 1000-9999 (4자리)
         ]
-        
+
         all_prices = []
-        
+
         for pattern in all_price_patterns:
             matches = re.finditer(pattern, all_text, re.IGNORECASE)
             for match in matches:
                 price_text = match.group(1).strip()
-                
+
                 if price_text not in seen_prices:
                     context_start = max(0, match.start() - 60)
                     context_end = min(len(all_text), match.end() + 60)
                     context = all_text[context_start:context_end].strip()
                     context_lower = context.lower()
                     context = re.sub(r'\s+', ' ', context)[:150]
-                    
+
                     # 평균가격 강화 필터링 
                     is_average_price = (
                         'with an average room price of' in context_lower or
@@ -594,13 +594,13 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         '평균 객실' in context_lower or
                         '방콕의 평균' in context_lower
                     )
-                    
+
                     # 명백한 ID나 날짜만 제외
                     is_not_price = (
                         any(year in context for year in ['2024', '2025', '2026']) or
                         (price_text.isdigit() and len(price_text) > 4)  # 긴 ID만 제외
                     )
-                    
+
                     if not is_average_price and not is_not_price:
                         seen_prices.add(price_text)
                         all_prices.append({
@@ -608,29 +608,29 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                             'context': context,
                             'source': 'all_price_search'
                         })
-                        
+
                         # 더 많이 수집 (두 번째 가격을 찾기 위해)
                         if len(all_prices) >= 20:
                             break
-            
+
             if len(all_prices) >= 20:
                 current_app.logger.info("20개 이상의 가격 발견 - 수집 중지")
                 break
-        
+
         # 가격 분석 전에 먼저 전체 텍스트를 파일로 저장 (다운로드용)
         #try:
             #import os
             #if not os.path.exists('downloads'):
             #    os.makedirs('downloads')
-            
+
             # CID 정보 추출
             #cid_match = re.search(r'cid=([^&]+)', url)
             #cid_value = cid_match.group(1) if cid_match else 'unknown'
-            
+
             # 파일명 생성
             #filename = f"page_text_cid_{cid_value}.txt"
             #filepath = os.path.join('downloads', filename)
-            
+
             # 전체 텍스트 저장
             #with open(filepath, 'w', encoding='utf-8') as f:
             #f.write(f"3------------------------\n")
@@ -639,12 +639,12 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             #f.write(f"스크래핑 시간: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.write("="*50 + "\n\n")
             #f.write(all_text)
-            
+
             #print(f"텍스트 파일 저장됨: {filepath}")
-            
+
         #except Exception as save_error:
             #print(f"텍스트 파일 저장 오류: {save_error}")
-        
+
         # 두 번째 가격만 반환 (사용자 요구사항)
         if len(all_prices) >= 2:
             prices_found = [all_prices[1]]  # 두 번째 가격만
@@ -652,12 +652,12 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             prices_found = [all_prices[0]]  # 첫 번째라도 반환
         else:
             prices_found = all_prices  # 없으면 빈 리스트
-        
+
         return prices_found
-        
+
     except Exception as e:
         return []
- 
+
 def process_all_cids_sequential(base_url, cid_list):
     """
     모든 CID를 순차적으로 처리하고 각 결과를 즉시 반환
@@ -665,13 +665,13 @@ def process_all_cids_sequential(base_url, cid_list):
     """
     original_cid = extract_cid_from_url(base_url)
     total_cids = len(cid_list)
-    
+
     # 시작 신호
     yield {
         'type': 'start',
         'total_cids': total_cids
     }
-    
+
     # 각 CID를 순차적으로 처리
     for i, new_cid in enumerate(cid_list, 1):
         try:
@@ -685,20 +685,20 @@ def process_all_cids_sequential(base_url, cid_list):
                     'pct': int(pct),
                     'msg': msg
                 }
-                
+
             # URL 생성
             if original_cid:
                 new_url = base_url.replace(f"cid={original_cid}", f"cid={new_cid}")
             else:
                 separator = "&" if "?" in base_url else "?"
                 new_url = f"{base_url}{separator}cid={new_cid}"
-            
+
             # CID 라벨 생성
             if i == 1:
                 cid_label = f"원본({new_cid})"
             else:
                 cid_label = str(new_cid)
-            
+
             # 진행률 정보
             yield {
                 'type': 'progress',
@@ -706,12 +706,12 @@ def process_all_cids_sequential(base_url, cid_list):
                 'total': total_cids,
                 'cid': cid_label
             }
-            
+
             # 스크래핑 실행
             start_time = time.time()
             prices = scrape_prices_simple(new_url,progress_cb=progress_cb)
             process_time = time.time() - start_time
-            
+
             # 즉시 결과 반환
             result = {
                 'type': 'result',
@@ -723,9 +723,9 @@ def process_all_cids_sequential(base_url, cid_list):
                 'found_count': len(prices),
                 'process_time': round(process_time, 1)
             }
-            
+
             yield result
-            
+
         except Exception as e:
             yield {
                 'type': 'error',
@@ -734,7 +734,7 @@ def process_all_cids_sequential(base_url, cid_list):
                 'cid': new_cid,
                 'error': str(e)
             }
-    
+
     # 완료 신호
     yield {
         'type': 'complete',
@@ -781,15 +781,15 @@ def reorder_url_parameters(url):
         'ds',           # ds 파라미터 추가
         'cid'
     ]
-    
+
     try:
         # URL 파싱
         parsed_url = urlparse(url)
         query_string = parsed_url.query
-        
+
         # 정규표현식으로 파라메터 추출 (디코딩 없이)
         params_dict = {}
-        
+
         # 쿼리 스트링을 &로 분리하여 파라메터 추출
         if query_string:
             param_pairs = query_string.split('&')
@@ -797,31 +797,31 @@ def reorder_url_parameters(url):
                 if '=' in pair:
                     key, value = pair.split('=', 1)
                     params_dict[key] = value
-        
+
         # 체크인 관련 파라미터 확인 (간소화)
         checkin_found = [f"{k}={v}" for k, v in params_dict.items() if 'checkin' in k.lower()]
         if checkin_found:
             print(f"체크인 관련 파라미터 발견: {', '.join(checkin_found)}")
-        
+
         # currency 파라미터가 없으면 기본값 KRW 추가
         if 'currency' not in params_dict:
             params_dict['currency'] = 'KRW'
             print("currency 파라미터가 없어서 currency=KRW로 기본값 추가")
-        
+
         # 새로운 파라메터 딕셔너리 (지정된 순서대로)
         reordered_params = {}
-        
+
         # 지정된 순서대로 파라메터 추가 (존재하는 경우만)
         for param in desired_order:
             if param in params_dict:
                 reordered_params[param] = params_dict[param]
-        
+
         # 새로운 쿼리 스트링 생성
         query_parts = []
         for key, value in reordered_params.items():
             query_parts.append(f"{key}={value}")
         new_query = "&".join(query_parts)
-        
+
         # 새로운 URL 구성
         new_url = urlunparse((
             parsed_url.scheme,
@@ -831,9 +831,9 @@ def reorder_url_parameters(url):
             new_query,
             parsed_url.fragment
         ))
-        
+
         return new_url
-        
+
     except Exception as e:
         print(f"URL 파라메터 재정렬 오류: {e}")
         return url  # 오류 시 원본 URL 반환

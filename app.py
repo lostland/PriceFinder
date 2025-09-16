@@ -35,33 +35,30 @@ def scrape():
     try:
         # 중단 플래그 확인
         global is_cancelled
-        
+
         app.logger.info(f"is_cancelled: {is_cancelled}")
-        
-        if is_cancelled:
-            # 분석이 중단된 경우
-            is_cancelled = False  # 플래그 초기화
-            return jsonify({
-                'status': 'cancelled',
-                'message': '분석이 중단되었습니다.'
-            }), 200
-        
+
         data = request.get_json()
         url = data.get('url', '').strip()
-        step = data.get('step', 0)  # 현재 단계 (0부터 시작)
-        
-        # 새로운 분석 시작시 중단 플래그 초기화
+        step = data.get('step', 0)
+
+        # 새 시작은 언제나 취소 플래그 무시하고 초기화
         if step == 0:
             is_cancelled = False
             app.logger.info("새로운 분석 시작 - 중단 플래그 초기화")
-        
+        else:
+            # 진행 중 단계에서만 취소 반영
+            if is_cancelled:
+                is_cancelled = False
+                return jsonify({'status': 'cancelled', 'message': '분석이 중단되었습니다.'}), 200
+
         if not url:
             return jsonify({'error': 'URL을 입력해주세요'}), 400
-        
+
         # Add protocol if missing
         if not url.startswith(('http://', 'https://')):
             url = 'https://' + url
-        
+
         # [검색창리스트] CID 값들
         search_cids = [
             ('-1', '시크릿창'),
@@ -74,7 +71,7 @@ def scrape():
             ('1729890', '네이버 검색'),
             ('1587497', 'TripAdvisor')
         ]
-        
+
         # [카드리스트] CID 값들
         card_cids = [
             ('1942636', '카카오페이'),
@@ -86,33 +83,33 @@ def scrape():
             ('1729471', '하나카드'),
             ('1917334', '토스')
         ]
-        
+
         # 모든 CID를 합친 리스트
         all_cids = search_cids + card_cids
-        
+
         # 유효한 단계인지 확인 (step 0는 기준가격만 설정)
         if step >= len(all_cids) + 1:
             return jsonify({'error': '모든 CID 처리가 완료되었습니다'}), 400
-        
+
         # step이 0이면 기준가격만 설정, 1 이상이면 실제 CID 처리
         if step == 0:
             current_cid, current_name = None, "기준가격 설정"
         else:
             current_cid, current_name = all_cids[step - 1]  # step 1: all_cids[0], step 2: all_cids[1] ...
-        
+
         # URL에서 CID 교체하고 currencyCode 유지
         from scraper import extract_cid_from_url, scrape_prices_simple, reorder_url_parameters, set_progress, get_progress_state
         from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
         import re
-        
+
         # 원본 URL에서 currencyCode 추출
         original_currency = None
         currency_match = re.search(r'currencyCode=([^&]+)', url)
         if currency_match:
             original_currency = currency_match.group(1)
-        
+
         original_cid = extract_cid_from_url(url)
-        
+
         # step이 0이면 원본 URL 사용, 1 이상이면 CID 교체
         if step == 0:
             new_url = url  # 원본 URL 그대로 사용
@@ -122,7 +119,7 @@ def scrape():
             else:
                 separator = "&" if "?" in url else "?"
                 new_url = f"{url}{separator}cid={current_cid}"
-        
+
         # currencyCode가 바뀌었다면 원본으로 복원
         if original_currency:
             # 현재 URL의 currencyCode 찾아서 교체
@@ -137,12 +134,12 @@ def scrape():
                 separator = "&" if "?" in new_url else "?"
                 new_url = f"{new_url}{separator}currencyCode={original_currency}"
                 app.logger.info(f"CurrencyCode 추가: {original_currency}")
-        
+
         # URL 파라메터를 지정된 순서로 재정렬
         #app.logger.info(f"재정렬 전 URL: {new_url}")
         new_url = reorder_url_parameters(new_url)
         #app.logger.info(f"재정렬 후 URL: {new_url}")
-        
+
         # 진행 단계 정보
         if step == 0:
             is_search_phase = False  # 기준가격은 검색창 리스트에 표시하지 않음
@@ -150,12 +147,12 @@ def scrape():
         else:
             is_search_phase = step <= len(search_cids)  # step 1부터 search_cids 처리
             phase_name = "검색창리스트" if is_search_phase else "카드리스트"
-        
+
         app.logger.info(f"Processing 스텝 {step+1}/{len(all_cids) + 1}: CID {current_name}({current_cid})")
-        
+
         # 기준 가격 계산 (첫 번째 스텝에서 원본 URL의 CID 가격을 기준으로 설정)
         global global_base_price, global_base_price_cid_name
-        
+
         if step == 0:
             # 첫 번째 스텝에서는 전역 변수 초기화
             global_base_price = None
@@ -180,7 +177,7 @@ def scrape():
 
             from scraper import set_progress
             set_progress(0, f"{current_name} 시작")
-            
+
             # 기준 가격 스크래핑
             import time
             start_time = time.time()
@@ -198,7 +195,7 @@ def scrape():
                 if base_price_match:
                     global_base_price = int(base_price_match.group().replace(',', ''))
                     app.logger.info(f"기준 가격 설정: {base_price_str} ({global_base_price}) - {global_base_price_cid_name}")
-        
+
         # step이 0이면 기준가격만 설정하고 바로 리턴
         if step == 0:
             progress = get_progress_state()
@@ -226,7 +223,7 @@ def scrape():
                 'subprogress_msg': progress.get('msg', '기준가격 설정 완료')
             }
             return jsonify(result)
-        
+
         # 현재 CID 스크래핑 실행 (step 1 이상에서만)
         import time
         start_time = time.time()
@@ -244,11 +241,11 @@ def scrape():
             )
 
         process_time = time.time() - start_time
-        
+
         # 텍스트 파일 다운로드 링크 생성
         download_filename = f"page_text_cid_{current_cid}.txt"
         download_link = f"/download/{download_filename}"
-        
+
         # 할인율 계산
         discount_percentage = None
         current_price = None
@@ -301,9 +298,9 @@ def scrape():
             'subprogress_pct': progress.get('pct', 0),
             'subprogress_msg': progress.get('msg', '')
         }
-        
+
         return jsonify(result)
-        
+
     except Exception as e:
         app.logger.error(f"Error in scraping: {str(e)}")
         return jsonify({
@@ -322,17 +319,17 @@ def download_file(filename):
     try:
         import os
         file_path = os.path.join('downloads', filename)
-        
+
         if not os.path.exists(file_path):
             return jsonify({'error': '파일을 찾을 수 없습니다'}), 404
-        
+
         return send_file(
             file_path,
             as_attachment=True,
             download_name=filename,
             mimetype='text/plain; charset=utf-8'
         )
-        
+
     except Exception as e:
         app.logger.error(f"Error downloading file: {str(e)}")
         return jsonify({'error': f'다운로드 실패: {str(e)}'}), 500
@@ -363,7 +360,7 @@ def status_page():
     import platform
     import sys
     import os
-    
+
     status_info = {
         'app_status': 'Running',
         'python_version': sys.version,
@@ -380,7 +377,7 @@ def status_page():
             '/static/pages/split_view.html - 직접 접근'
         ]
     }
-    
+
     # 간단한 HTML 응답
     html = f"""
     <!DOCTYPE html>
