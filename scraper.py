@@ -155,7 +155,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         #chrome_options.add_argument('--disable-extensions')
         # 실제 브라우저처럼 보이게 하는 옵션들
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
-        #chrome_options.add_argument('--accept-language=en-US,en;q=0.9')
+        chrome_options.add_argument('--accept-language=en-US,en;q=0.9')
         chrome_options.add_argument('--accept-encoding=gzip, deflate, br')
         chrome_options.add_argument('--accept=text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8')
         chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
@@ -273,45 +273,44 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         report( process, "")
 
                     time.sleep(0.5)
-                    #time.sleep(0.5)
-                    #print("2-------------")
-                    #soup.clear()
+                    print("2-------------")
+                    soup.clear()
                     print("3-------------")
                     #src = driver.page_source
-                    #print("5-------------")
-                    #soup = BeautifulSoup(src, 'html.parser' )
-                    #print("6-------------")
+                    print("5-------------" )
+                    soup = BeautifulSoup(driver.page_source, 'html.parser' )
+                    print("6-------------")
 
-                    container = driver.find_element(By.XPATH, "//div[@class='StickyNavPrice']")
-                    if( container ):
-                        price = container.get_attribute("data-element-cheapest-room-price")
-                        #print( "#########container Found : ",  container )
-                        if( price ):
-                            print( "############Price Found : ",  price )
-                            break
+                    #container = driver.find_element(By.XPATH, "//div[@class='StickyNavPrice']")
+                    #if( container ):
+                    #    price = container.get_attribute("data-element-cheapest-room-price")
+                    #    #print( "#########container Found : ",  container )
+                    #    if( price ):
+                    #        print( "############Price Found : ",  price )
+                    #        break
                         
                     if( process < 95 ):
                         process += 2
                         report( process, "")
 
-                    #if( len(titleText) <= 1 ):
-                    #    soupTitle = soup.find('h1', attrs={"data-selenium": "hotel-header-name"})
-                    #    if( soupTitle ):
-                    #        titleText = soupTitle.get_text()
-                    #        print( "Title Found : ",  titleText )
+                    if( len(titleText) <= 1 ):
+                        soupTitle = soup.find('h1', attrs={"data-selenium": "hotel-header-name"})
+                        if( soupTitle ):
+                            titleText = soupTitle.get_text()
+                            print( "Title Found : ",  titleText )
 
-                    #priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
-                    #if( priceText ):
-                    #    price = priceText["data-element-cheapest-room-price"]
-                    #    if( price ):
-                    #        print( "Price Found : ",  price )
-                    #    break
+                    priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
+                    if( priceText ):
+                        price = priceText["data-element-cheapest-room-price"]
+                        if( price ):
+                            print( "Price Found : ",  price )
+                        break
 
-                    #text_len = len(soup.get_text())
-                    #current_app.logger.info(f'text_len = {text_len}')         
+                    text_len = len(soup.get_text())
+                    current_app.logger.info(f'text_len = {text_len}')         
 
-                    #if text_len > 40000:
-                    #    break
+                    if text_len > 40000:
+                        break
 
                 except :
                     print("EXCEPTION-------------")
