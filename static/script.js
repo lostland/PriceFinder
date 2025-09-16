@@ -11,6 +11,7 @@ let basePrice = null; // 기준 가격 (첫 번째 결과에서 설정)
 const totalSteps = 18; // 기준가격설정(1) + 검색창리스트(9) + 카드리스트(8)
 let currentLanguage = 'ko'; // 기본값: 한국어
 let isAnalyzing = false; // 분석 중인 상태 추적
+let abortController = null; // 중단용 AbortController
 
 // 부드러운 진행률 애니메이션을 위한 변수들
 let currentProgressPercentage = 0;
@@ -185,6 +186,7 @@ function handleFormSubmit(e) {
 function startAnalysis(url) {
     // 초기화
     currentUrl = url;
+    abortController = new AbortController(); // 새 AbortController 생성
     currentStep = 0;
     allResults = [];
     searchResults = [];
@@ -218,6 +220,12 @@ function startAnalysis(url) {
 
 // 분석 중단
 function stopAnalysis() {
+    // 진행 중인 요청 중단
+    if (abortController) {
+        abortController.abort();
+        abortController = null;
+    }
+    
     // 서버에 중단 신호 전송
     fetch('/cancel', {
         method: 'POST',
@@ -283,6 +291,12 @@ function analyzeCid() {
     setStepProgress(100,' ');
     startStepProgressPolling();
     
+    // 분석이 중단되었는지 확인
+    if (!isAnalyzing) {
+        stopStepProgressPolling(); // 폴링도 중지
+        return;
+    }
+    
     // API 호출
     fetch('/scrape', {
         method: 'POST',
@@ -292,7 +306,8 @@ function analyzeCid() {
         body: JSON.stringify({
             url: currentUrl,
             step: currentStep
-        })
+        }),
+        signal: abortController ? abortController.signal : undefined
     })
     .then(response => {
         // 응답이 JSON인지 확인
@@ -303,6 +318,13 @@ function analyzeCid() {
         return response.json();
     })
     .then(data => {
+        // 중단 응답 확인
+        if (data.status === 'cancelled') {
+            console.log('분석이 서버에서 중단되었습니다:', data.message);
+            stopAnalysis(); // 클라이언트 상태도 정리
+            return;
+        }
+        
         // hideLoading(); // 고정 디스플레이를 위해 주석 처리
                 
         if (data.error) {
@@ -327,7 +349,10 @@ function analyzeCid() {
         if (data.has_next) {
             // 짧은 지연 후 자동으로 다음 단계 실행
             setTimeout(() => {
-                continueAnalysis();
+                // 분석이 중단되지 않았을 때만 계속 진행
+                if (isAnalyzing) {
+                    continueAnalysis();
+                }
             }, 100); // 0.1초 지연
         } else {
             showComplete();
@@ -336,6 +361,13 @@ function analyzeCid() {
     .catch(error => {
         stopStepProgressPolling();
         // hideLoading(); // 고정 디스플레이를 위해 주석 처리
+        
+        // AbortError는 사용자 중단이므로 오류로 표시하지 않음
+        if (error.name === 'AbortError') {
+            console.log('분석이 사용자에 의해 중단되었습니다');
+            return;
+        }
+        
         showError('분석 중 오류가 발생했습니다: ' + error.message);
     });
 }
@@ -610,6 +642,11 @@ function displayDebugResult(data) {
 
 // 계속 분석 버튼 처리
 function continueAnalysis() {
+    // 분석이 중단되었는지 확인
+    if (!isAnalyzing) {
+        return;
+    }
+    
     currentStep++;
     hideContinueButton();
     analyzeCid();
