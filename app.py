@@ -35,6 +35,9 @@ def scrape():
     try:
         # 중단 플래그 확인
         global is_cancelled
+        
+        app.logger.info(f"is_cancelled: {is_cancelled}")
+        
         if is_cancelled:
             # 분석이 중단된 경우
             is_cancelled = False  # 플래그 초기화
@@ -46,6 +49,11 @@ def scrape():
         data = request.get_json()
         url = data.get('url', '').strip()
         step = data.get('step', 0)  # 현재 단계 (0부터 시작)
+        
+        # 새로운 분석 시작시 중단 플래그 초기화
+        if step == 0:
+            is_cancelled = False
+            app.logger.info("새로운 분석 시작 - 중단 플래그 초기화")
         
         if not url:
             return jsonify({'error': 'URL을 입력해주세요'}), 400

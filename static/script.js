@@ -167,7 +167,8 @@ function stopStepProgressPolling() {
 // 폼 제출 처리 (분석 시작/중단 토글)
 function handleFormSubmit(e) {
     e.preventDefault();
-    
+
+    console.log('분석 버튼 클릭됨 isAnalyzing = ', isAnalyzing)
     if (isAnalyzing) {
         // 분석 중단
         stopAnalysis();
@@ -184,6 +185,8 @@ function handleFormSubmit(e) {
 
 // 분석 시작
 function startAnalysis(url) {
+
+    console.log('startAnalysis() 호출됨')
     // 초기화
     currentUrl = url;
     abortController = new AbortController(); // 새 AbortController 생성
@@ -220,6 +223,8 @@ function startAnalysis(url) {
 
 // 분석 중단
 function stopAnalysis() {
+
+    console.log('stopAnalysis() 호출됨')
     // 진행 중인 요청 중단
     if (abortController) {
         abortController.abort();
@@ -321,7 +326,10 @@ function analyzeCid() {
         // 중단 응답 확인
         if (data.status === 'cancelled') {
             console.log('분석이 서버에서 중단되었습니다:', data.message);
-            stopAnalysis(); // 클라이언트 상태도 정리
+            // stopAnalysis() 호출하지 않음 - 이미 중단 상태이므로 UI만 정리
+            isAnalyzing = false;
+            hideProgressCard();
+            updateAnalysisButton();
             return;
         }
         
