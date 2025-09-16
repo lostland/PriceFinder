@@ -322,6 +322,7 @@ function analyzeCid() {
         if (!contentType || !contentType.includes('application/json')) {
             throw new Error('서버에서 JSON이 아닌 응답을 반환했습니다 (HTML 에러 페이지 가능성)');
         }
+
         return response.json();
     })
     .then(data => {
@@ -339,6 +340,11 @@ function analyzeCid() {
         }
 
         hideLoading(); 
+
+        const titleEl = document.getElementById('progressTitleText') || document.querySelector('#progressSection h6');
+        if (titleEl && data.page_title && data.page_title.trim().length > 0) {
+          titleEl.textContent = data.page_title;  // ✅ “진행 상황” → 호텔명
+        }
 
         if (data.error) {
             // 첫번째 CID에서 가격을 찾지 못한 경우 - 잘못된 링크로 판단

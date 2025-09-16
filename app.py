@@ -11,6 +11,7 @@ logging.basicConfig(level=logging.INFO)
 # 기준 가격을 저장하기 위한 전역 변수
 global_base_price = None
 global_base_price_cid_name = ''
+global_page_title = ''
 is_cancelled = False  # 분석 중단 플래그
 
 # create the app
@@ -151,7 +152,7 @@ def scrape():
         app.logger.info(f"Processing 스텝 {step+1}/{len(all_cids) + 1}: CID {current_name}({current_cid})")
 
         # 기준 가격 계산 (첫 번째 스텝에서 원본 URL의 CID 가격을 기준으로 설정)
-        global global_base_price, global_base_price_cid_name
+        global global_base_price, global_base_price_cid_name, global_page_title
 
         if step == 0:
             # 첫 번째 스텝에서는 전역 변수 초기화
@@ -182,11 +183,15 @@ def scrape():
             import time
             start_time = time.time()
             #time.sleep(1)
-            base_prices = scrape_prices_simple(
+            base_resp = scrape_prices_simple(
                 base_url_new,
                 original_currency_code=original_currency,
                 progress_cb=lambda pct, msg=None: set_progress(pct, f"기준가 {msg or ''}".strip())
             )
+
+            global_page_title = base_resp.get('page_title', '')
+            base_prices = base_resp.get('prices', [])
+            
             if base_prices:
                 base_price_str = base_prices[0]['price']
                 # 숫자만 추출하여 기준 가격 설정
@@ -220,7 +225,8 @@ def scrape():
                 'current_price': None,
                 'discount_percentage': None,
                 'subprogress_pct': progress.get('pct', 100),
-                'subprogress_msg': progress.get('msg', '기준가격 설정 완료')
+                'subprogress_msg': progress.get('msg', '기준가격 설정 완료'),
+                'page_title': global_page_title
             }
             return jsonify(result)
 
@@ -228,17 +234,21 @@ def scrape():
         import time
         start_time = time.time()
         #time.sleep(1)
-        prices = scrape_prices_simple(
+        resp = scrape_prices_simple(
             new_url,
             original_currency_code=original_currency,
             progress_cb=lambda pct, msg=None: set_progress(pct, f"{current_name} {msg or ''}".strip())
         )
-        if len(prices) == 0:
-            prices = scrape_prices_simple(
+        # 실패 시 1회 재시도 그대로 유지
+        if len(resp.get('prices', [])) == 0:
+            resp = scrape_prices_simple(
                 new_url,
                 original_currency_code=original_currency,
                 progress_cb=lambda pct, msg=None: set_progress(pct, f"{current_name} {msg or ''}".strip())
             )
+
+        prices = resp.get('prices', [])
+        global_page_title = resp.get('page_title', '')
 
         process_time = time.time() - start_time
 
@@ -296,7 +306,8 @@ def scrape():
             'current_price': current_price,
             'discount_percentage': discount_percentage,
             'subprogress_pct': progress.get('pct', 0),
-            'subprogress_msg': progress.get('msg', '')
+            'subprogress_msg': progress.get('msg', ''),
+            'page_title': global_page_title
         }
 
         return jsonify(result)

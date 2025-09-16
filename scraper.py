@@ -317,8 +317,11 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                 'context': f"시작가 {price}",
                 'source': 'starting_price_from_file'
             }
-            return [starting_price]
-
+            if starting_price:
+                return {'prices': [starting_price], 'page_title': titleText }
+            else:
+                return {'prices': [], 'page_title': ''}
+                
         current_app.logger.info(f"start parsing: {time.strftime('%Y-%m-%d %H:%M:%S')}")
         #f.flush()
 
@@ -553,9 +556,9 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
 
         # 시작가를 찾았으면 반환, 못 찾았으면 빈 결과
         if starting_price:
-            return [starting_price]
+            return {'prices': [starting_price], 'page_title': titleText }
         else:
-            return []
+            return {'prices': [], 'page_title': ''}
 
         for pattern in debug_patterns:
             matches = re.findall(pattern, all_text, re.IGNORECASE)
@@ -662,7 +665,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         return prices_found
 
     except Exception as e:
-        return []
+        return {'prices': [], 'page_title': ''}
 
 def process_all_cids_sequential(base_url, cid_list):
     """
