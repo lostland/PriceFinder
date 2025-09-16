@@ -46,7 +46,7 @@ def _progress_ticker_loop(logger):
                 except Exception:
                     pass
         # 1초마다 +1
-        if _ticker_stop.wait(0.3):
+        if _ticker_stop.wait(0.5):
             break
 
 def start_progress_ticker(logger=None):
@@ -204,7 +204,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             driver.set_page_load_timeout(20)
             driver.implicitly_wait(20)
             driver.set_script_timeout(20)
-            time.sleep(0.5)
+            #time.sleep(0.5)
             driver.get(url)
             #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()
