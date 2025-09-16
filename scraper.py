@@ -87,6 +87,20 @@ def _safe_progress(progress_cb, pct, msg=None):
     except Exception:
         pass
 
+def _to_plain_text(x):
+    try:
+        if isinstance(x, Tag):
+            return x.get_text(strip=True)
+    except Exception:
+        pass
+    # Selenium WebElement나 기타 객체 대응
+    if hasattr(x, 'text'):
+        try:
+            return x.text.strip()
+        except Exception:
+            pass
+    return (str(x) if x is not None else '').strip()
+    
 def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     """
     단순하고 빠른 가격 스크래핑 - 이미지 처리 없음
@@ -271,9 +285,10 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         report( process, "")
 
                     if( len(titleText) <= 1 ):
-                        titleText = soup.find('title')
-                        if( titleText ):
-                            print( "Title Found : ",  titleText.get_text() )
+                        soupTitle = soup.find('h1', attrs={"data-selenium": "hotel-header-name"})
+                        if( soupTitle ):
+                            titleText = soupTitle.get_text()
+                            print( "Title Found : ",  titleText )
 
                     priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
                     if( priceText ):
@@ -292,7 +307,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     print("EXCEPTION-------------")
                     _progress_cb = None
 
-                    return []
+                    return {'prices': [], 'page_title': ''}
 
 
         #f.write( '---------------------------------------\n')
@@ -300,6 +315,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         #f.flush()
 
         driver.quit()
+
+        _to_plain_text( titleText )
 
         _progress_cb = None
 

@@ -190,6 +190,8 @@ def scrape():
             )
 
             global_page_title = base_resp.get('page_title', '')
+            app.logger.info(f"page title : {global_page_title}")
+            
             base_prices = base_resp.get('prices', [])
             
             if base_prices:

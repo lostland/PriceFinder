@@ -341,7 +341,7 @@ function analyzeCid() {
 
         hideLoading(); 
 
-        const titleEl = document.getElementById('progressTitleText') || document.querySelector('#progressSection h6');
+        const titleEl = document.getElementById('progressTitle');
         if (titleEl && data.page_title && data.page_title.trim().length > 0) {
           titleEl.textContent = data.page_title;  // ✅ “진행 상황” → 호텔명
         }
