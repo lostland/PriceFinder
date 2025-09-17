@@ -25,6 +25,38 @@ _progress_lock = threading.Lock()
 _ticker_thread = None
 _ticker_stop = threading.Event()
 
+# debug_utils.py
+import os
+import sys
+from datetime import datetime
+
+DEBUG_FILE = "debug.log"   # 디버그 로그 파일 이름
+
+def print_file(*args, sep=" ", end="\n", file=None, flush=False):
+    """
+    print()와 같은 인터페이스로 디버그 로그를 파일에 출력합니다.
+    - 파일이 없으면 새로 만들고, 있으면 이어쓰기 합니다.
+    - 기본 파일명은 debug.log
+    """
+
+    # 메시지 합치기 (print 기본 동작과 동일)
+    message = sep.join(str(a) for a in args) + end
+
+    # 타임스탬프를 앞에 붙이면 추적이 쉬움
+    timestamp = datetime.now().strftime("[%Y-%m-%d %H:%M:%S] ")
+    out_msg = timestamp + message
+
+    # 파일이 지정되면 그 파일로, 아니면 기본 debug.log 로
+    filename = file if isinstance(file, str) else DEBUG_FILE
+
+    # 파일 열고 append
+    with open(filename, "a", encoding="utf-8") as f:
+        f.write(out_msg)
+
+    # flush 옵션이 True면 강제로 디스크에 기록
+    if flush:
+        os.fsync(f.fileno())
+
 
 def get_global_process():
     with _progress_lock:
@@ -202,6 +234,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         #process += 5
         #report( process, "준비")
         report( 11, "" )
+        print_file( "-------------------------------------")
 
         # 봇 탐지 우회
         #driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
@@ -267,7 +300,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             )
 
         except:
-            report( 91, "" )
+            
+            print_file("driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
             current_app.logger.info(f"driver.get() fail")
             _progress_cb = None
@@ -280,6 +314,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         #f.flush()
 
         current_app.logger.info(f'get page_source')
+        print_file("get page_source")
         #driver.execute_script("window.scrollTo(0, 0);")
         #page_source = driver.page_source
         # BeautifulSoup으로 파싱
@@ -308,9 +343,11 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
 
         if( price == 0 ):
             print("start check-------------")
+            print_file("start check-------------")
             for tt in range(20):
                 try:      
                     print(tt, "-------------")
+                    print_file(tt, "-------------")
                     #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     #actions.send_keys(Keys.DOWN).perform()
                     #if( process < 95 ):
@@ -340,9 +377,9 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         
                     #soup = BeautifulSoup(src, 'html.parser' )
                     
-                    soup = BeautifulSoup(driver.page_source, 'html.parser' )
+                    #soup = BeautifulSoup(driver.page_source, 'html.parser' )
 
-                    #soup = BeautifulSoupTimeout( driver, 20 )
+                    soup = BeautifulSoupTimeout( driver, 20 )
 
                     report( 13, "" )
 
@@ -364,11 +401,14 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                             report( 14, "" )
 
                             print( "Price Found : ",  price )
+                            print_file( "Price Found : ",  price )
+                            
                             if( len(titleText) <= 1 ):
                                 soupTitle = soup.find('h1', attrs={"data-selenium": "hotel-header-name"})
                                 if( soupTitle ):
                                     titleText = soupTitle.get_text()
                                     print( "Title Found : ",  titleText )
+                                    print_file( "Title Found : ",  titleText )
                             break
 
                     text_len = len(soup.get_text())
@@ -380,6 +420,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         driver.quit()
                         _progress_cb = None
                         print("driver time out -------------")
+                        print_file("driver time out -------------")
                         return {'prices': [], 'page_title': ''}
 
                     if text_len > 40000:
@@ -389,6 +430,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     report( 93, "" )
 
                     print("EXCEPTION-------------")
+                    print_file("EXCEPTION-------------")
                     _progress_cb = None
 
                     return {'prices': [], 'page_title': ''}
@@ -411,6 +453,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             end_time = time.localtime()
             elapsed = time.mktime(end_time) - time.mktime(start_time)  # 초 단위 차이
             print(f"걸린 시간: {elapsed:.3f}초")
+            print_file(f"걸린 시간: {elapsed:.3f}초")
 
             current_app.logger.info(f'time : {time}')
             starting_price = {
