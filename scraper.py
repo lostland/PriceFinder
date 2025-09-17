@@ -200,7 +200,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
 
         #process += 5
         #report( process, "준비")
-        report( 0, "" )
+        report( 11, "" )
 
         # 봇 탐지 우회
         #driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
