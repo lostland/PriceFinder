@@ -233,9 +233,9 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             current_app.logger.info(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}")
             #f.flush()
 
-            driver.set_page_load_timeout(15)
-            driver.implicitly_wait(15)
-            driver.set_script_timeout(15)
+            driver.set_page_load_timeout(20)
+            driver.implicitly_wait(20)
+            driver.set_script_timeout(20)
             #time.sleep(0.5)
             driver.get(url)
             #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
@@ -308,7 +308,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         process += 1
                         report( process, "")
 
-                    time.sleep(0.1)
+                    time.sleep(1)
                     #print("2-------------")
                     soup.clear()
                     #print("3-------------")
@@ -353,7 +353,14 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                             break
 
                     text_len = len(soup.get_text())
-                    current_app.logger.info(f'text_len = {text_len}')         
+                    current_app.logger.info(f'text_len = {text_len}')    
+
+                    if( textLen == 0 && tt > 5 ):
+                        driver.quit()
+                        _progress_cb = None
+                        print("driver time out -------------")
+                        return {'prices': [], 'page_title': ''}
+                        
 
                     if text_len > 40000:
                         break
