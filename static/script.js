@@ -306,7 +306,8 @@ function analyzeCid() {
     hideError();
 
      // ← 추가: 스텝 시작 시 0%로 초기화하고 폴링 시작
-    setStepProgress(100,' ');
+    //setStepProgress(100,' ');
+    setStepProgress(0,' ');
     startStepProgressPolling();
 
     // 분석이 중단되었는지 확인

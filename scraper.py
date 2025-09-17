@@ -25,6 +25,7 @@ _progress_lock = threading.Lock()
 _ticker_thread = None
 _ticker_stop = threading.Event()
 
+
 def get_global_process():
     with _progress_lock:
         return _process_pct
@@ -149,7 +150,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         logger = logging.getLogger(__name__)
 
     # 전역 틱커가 이미 돌고 있어야 함. (안 돌면 시작)
-    start_progress_ticker(logger=logger)
+    #start_progress_ticker(logger=logger)
 
     # 필요 시 시작 시점 보정
     set_global_process(0)  # 혹은 유지하고 싶으면 제거
@@ -197,8 +198,9 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         driver = webdriver.Chrome(options=chrome_options)
         actions = ActionChains(driver)
 
-        process += 5
-        report( process, "준비")
+        #process += 5
+        #report( process, "준비")
+        report( 0, "" )
 
         # 봇 탐지 우회
         #driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
@@ -242,8 +244,10 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             #f.flush()
 
             current_app.logger.info(f"driver.get() end")
-            process += 5
-            report( process, "URL 체크 시작")
+            #process += 5
+            #report( process, "URL 체크 시작")
+            report( 5, "" )
+
 
             # Send a space to the element
 
@@ -262,6 +266,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             )
 
         except:
+            report( 91, "" )
+
             current_app.logger.info(f"driver.get() fail")
             _progress_cb = None
             return {'prices': [], 'page_title': ''}
@@ -278,15 +284,17 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         # BeautifulSoup으로 파싱
         #f.write( page_source )
 
-        process += 5
-        report( process, "")
+        #process += 5
+        #report( process, "")
+        report( 10, "" )
 
         #current_app.logger.info(f'BeautifulSoup')
         soup = BeautifulSoup("", 'html.parser')
         #current_app.logger.info(f'BeautifulSoup end')
 
-        process += 5
-        report( process, "")
+        #process += 5
+        #report( process, "")
+        report( 11, "" )
 
         price = 0
         titleText = ""
@@ -304,9 +312,12 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     print(tt, "-------------")
                     #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     #actions.send_keys(Keys.DOWN).perform()
-                    if( process < 95 ):
-                        process += 1
-                        report( process, "")
+                    #if( process < 95 ):
+                    #    process += 1
+                    #    report( process, "")
+
+                    report( 12, "" )
+
 
                     time.sleep(0.5)
                     #print("2-------------")
@@ -330,6 +341,9 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
 
                     soup = BeautifulSoupTimeout( driver, 20 )
 
+                    report( 13, "" )
+
+
                     #print("6-------------")
 
                     #container = driver.find_element(By.XPATH, "//div[@class='StickyNavPrice']")
@@ -344,6 +358,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     if( priceText ):
                         price = priceText["data-element-cheapest-room-price"]
                         if( price ):
+                            report( 14, "" )
+
                             print( "Price Found : ",  price )
                             if( len(titleText) <= 1 ):
                                 soupTitle = soup.find('h1', attrs={"data-selenium": "hotel-header-name"})
@@ -356,6 +372,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     current_app.logger.info(f'text_len = {text_len}')    
 
                     if( text_len == 0 and tt > 5 ):
+                        report( 92, "" )
+
                         driver.quit()
                         _progress_cb = None
                         print("driver time out -------------")
@@ -365,6 +383,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         break
 
                 except :
+                    report( 93, "" )
+
                     print("EXCEPTION-------------")
                     _progress_cb = None
 
@@ -382,8 +402,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         _progress_cb = None
 
         if( price != 0 ):
-            process = 100
-            report( process, "")
+            #process = 100
+            #report( process, "")
 
             end_time = time.localtime()
             elapsed = time.mktime(end_time) - time.mktime(start_time)  # 초 단위 차이
@@ -928,3 +948,4 @@ def reorder_url_parameters(url):
 def replace_cid_and_scrape(base_url, cid_list):
     """기존 함수명 호환성을 위한 래퍼"""
     return process_all_cids_sequential(base_url, cid_list)
+
