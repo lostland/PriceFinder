@@ -108,7 +108,6 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     original_currency_code: 원본 URL의 통화 코드 (예: USD, KRW, THB)
     """
 
-    #진행 테스트용
     #return {'prices': [], 'page_title': ''}
 
 
@@ -282,7 +281,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     #print("3-------------")
                     #src = driver.page_source
                     #print("5-------------" )
-                    soup = BeautifulSoup(driver.page_source[150000:200000], 'html.parser' )
+                    soup = BeautifulSoup(driver.page_source, 'html.parser' )
                     #print("6-------------")
 
                     #container = driver.find_element(By.XPATH, "//div[@class='StickyNavPrice']")
