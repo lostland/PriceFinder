@@ -108,9 +108,6 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     original_currency_code: 원본 URL의 통화 코드 (예: USD, KRW, THB)
     """
 
-    #return {'prices': [], 'page_title': ''}
-
-
     _progress_cb = progress_cb
 
     # 앱 로거 안전하게 확보
@@ -295,19 +292,18 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     if( process < 95 ):
                         process += 2
                         report( process, "")
-
-                    if( len(titleText) <= 1 ):
-                        soupTitle = soup.find('h1', attrs={"data-selenium": "hotel-header-name"})
-                        if( soupTitle ):
-                            titleText = soupTitle.get_text()
-                            print( "Title Found : ",  titleText )
-
+            
                     priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
                     if( priceText ):
                         price = priceText["data-element-cheapest-room-price"]
                         if( price ):
                             print( "Price Found : ",  price )
-                        break
+                            if( len(titleText) <= 1 ):
+                                soupTitle = soup.find('h1', attrs={"data-selenium": "hotel-header-name"})
+                                if( soupTitle ):
+                                    titleText = soupTitle.get_text()
+                                    print( "Title Found : ",  titleText )
+                            break
 
                     text_len = len(soup.get_text())
                     current_app.logger.info(f'text_len = {text_len}')         
