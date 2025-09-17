@@ -100,6 +100,21 @@ def _to_plain_text(x):
         except Exception:
             pass
     return (str(x) if x is not None else '').strip()
+
+
+def get_outer_html_with_hard_timeout(driver, timeout=15):
+    result = {"html": ""}
+    def _run():
+        try:
+            #result["html"] = driver.execute_script("return document.documentElement.outerHTML")
+            result["html"] = driver.page_source
+        except Exception:
+            result["html"] = ""
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    t.join(timeout)
+    return result["html"]  # 시간 초과 시 빈 문자열
+
     
 def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     """
@@ -225,6 +240,10 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             #time.sleep(0.5)
             #page_source = driver.page_source
 
+            WebDriverWait(driver, 2).until(
+                lambda d: d.execute_script("return document.readyState") in ("interactive", "complete")
+            )
+
         except:
             current_app.logger.info(f"driver.get() fail")
             _progress_cb = None
@@ -281,11 +300,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     
                     #src = driver.page_source
 
-                    try:
-                        src = driver.execute_script("return document.documentElement.outerHTML")
-                    except TimeoutException:
-                        print("TimeoutException" )
-                        src = ""  # 그래도 안 되면 빈 문자열로 넘어가고, 필요 시 재시도
+                    src = get_outer_html_with_hard_timeout(driver, 3)
                     
                     soup = BeautifulSoup(src, 'html.parser' )
                     #print("6-------------")
