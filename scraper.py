@@ -106,8 +106,8 @@ def get_outer_html_with_hard_timeout(driver, timeout=15):
     result = {"html": ""}
     def _run():
         try:
-            #result["html"] = driver.execute_script("return document.documentElement.outerHTML")
-            result["html"] = driver.page_source
+            result["html"] = driver.execute_script("return document.documentElement.outerHTML")
+            #result["html"] = driver.page_source
         except Exception:
             result["html"] = ""
     t = threading.Thread(target=_run, daemon=True)
