@@ -113,7 +113,6 @@ def get_outer_html_with_hard_timeout(driver, timeout=15):
     t = threading.Thread(target=_run, daemon=True)
     t.start()
     t.join(timeout)
-    print("id result = ", id(result["html"]) )
 
     return result["html"]  # 시간 초과 시 빈 문자열
 
@@ -301,8 +300,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     #print("5-------------" )
                     
                     #src = driver.page_source
-                    src = get_outer_html_with_hard_timeout(driver, 12 )
-                    print("id(src) = ", id(src) )
+                    src = get_outer_html_with_hard_timeout(driver, 20 )
+                    
                     if( len(src) <= 1 ):
                         driver.quit()
                         _progress_cb = None
