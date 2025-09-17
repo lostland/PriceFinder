@@ -269,7 +269,6 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             print("start check-------------")
             for tt in range(15):
                 try:      
-                    print("1-------------")
                     #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     #actions.send_keys(Keys.DOWN).perform()
                     if( process < 95 ):
@@ -281,9 +280,11 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     soup.clear()
                     #print("3-------------")
                     #src = driver.page_source
-                    #print("5-------------" )
-                    soup = BeautifulSoup(driver.page_source, 'html.parser' )
-                    #print("6-------------")
+                    print("1-------------" )
+                    src = driver.page_source
+                    print("2-------------" )
+                    soup = BeautifulSoup(src, 'html.parser' )
+                    print("3-------------")
 
                     #container = driver.find_element(By.XPATH, "//div[@class='StickyNavPrice']")
                     #if( container ):
