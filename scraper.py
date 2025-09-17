@@ -166,8 +166,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
         #chrome_options.add_argument('--blink-setting=imagesEnable=false')
-        #chrome_options.page_load_strategy = 'eager' # 또는 'none'으로 변경 가능
-        chrome_options.page_load_strategy = 'none' # 또는 'none'으로 변경 가능
+        chrome_options.page_load_strategy = 'eager' # 또는 'none'으로 변경 가능
+        #chrome_options.page_load_strategy = 'none' # 또는 'none'으로 변경 가능
         chrome_options.add_argument('--disable-extensions')
         # 실제 브라우저처럼 보이게 하는 옵션들
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
