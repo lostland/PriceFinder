@@ -355,7 +355,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     text_len = len(soup.get_text())
                     current_app.logger.info(f'text_len = {text_len}')    
 
-                    if( textLen == 0 && tt > 5 ):
+                    if( textLen == 0 and tt > 5 ):
                         driver.quit()
                         _progress_cb = None
                         print("driver time out -------------")
