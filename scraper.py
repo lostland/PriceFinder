@@ -300,9 +300,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     
                     #src = driver.page_source
 
-                    src = get_outer_html_with_hard_timeout(driver, 3)
-                    
-                    soup = BeautifulSoup(src, 'html.parser' )
+                    soup = BeautifulSoup(get_outer_html_with_hard_timeout(driver, 15), 'html.parser' )
                     #print("6-------------")
 
                     #container = driver.find_element(By.XPATH, "//div[@class='StickyNavPrice']")
