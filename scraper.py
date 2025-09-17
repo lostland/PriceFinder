@@ -116,6 +116,24 @@ def get_outer_html_with_hard_timeout(driver, timeout=15):
 
     return result["html"]  # 시간 초과 시 빈 문자열
 
+def BeautifulSoupTimeout(driver, timeout=15):
+    soup = BeautifulSoup("", 'html.parser')
+    
+    def _run():
+        nonlocal soup   # 바깥 soup을 쓰겠다 선언
+
+        try:
+            print("try-------------")
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            print("try end-------------")
+         except:
+            print("except-------------")
+            
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    t.join(timeout)
+
+    return soup
     
 def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     """
@@ -300,15 +318,20 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     #print("5-------------" )
                     
                     #src = driver.page_source
-                    src = get_outer_html_with_hard_timeout(driver, 20 )
                     
-                    if( len(src) <= 1 ):
-                        driver.quit()
-                        _progress_cb = None
-                        print("TIME OUT-------------")
-                        return {'prices': [], 'page_title': ''}
+                    
+                    #src = get_outer_html_with_hard_timeout(driver, 20 )
+                    #
+                    #if( len(src) <= 1 ):
+                    #    driver.quit()
+                    #    _progress_cb = None
+                    #    print("TIME OUT-------------")
+                    #    return {'prices': [], 'page_title': ''}
                         
-                    soup = BeautifulSoup(src, 'html.parser' )
+                    #soup = BeautifulSoup(src, 'html.parser' )
+
+                    soup = BeautifulSoupTimeout( driver )
+
                     #print("6-------------")
 
                     #container = driver.find_element(By.XPATH, "//div[@class='StickyNavPrice']")
