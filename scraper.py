@@ -125,6 +125,7 @@ def BeautifulSoupTimeout(driver, timeout=15):
         try:
             soup = BeautifulSoup(driver.page_source, 'html.parser')
         except:
+            pass
             
     t = threading.Thread(target=_run, daemon=True)
     t.start()
