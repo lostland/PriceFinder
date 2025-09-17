@@ -123,11 +123,8 @@ def BeautifulSoupTimeout(driver, timeout=15):
         nonlocal soup   # 바깥 soup을 쓰겠다 선언
 
         try:
-            print("try-------------")
             soup = BeautifulSoup(driver.page_source, 'html.parser')
-            print("try end-------------")
         except:
-            print("except-------------")
             
     t = threading.Thread(target=_run, daemon=True)
     t.start()
@@ -301,16 +298,16 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
 
         if( price == 0 ):
             print("start check-------------")
-            for tt in range(15):
+            for tt in range(150):
                 try:      
-                    print("1-------------")
+                    print(tt, "-------------")
                     #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     #actions.send_keys(Keys.DOWN).perform()
                     if( process < 95 ):
                         process += 1
                         report( process, "")
 
-                    time.sleep(0.5)
+                    time.sleep(0.1)
                     #print("2-------------")
                     soup.clear()
                     #print("3-------------")
@@ -342,10 +339,6 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     #        print( "############Price Found : ",  price )
                     #        break
                         
-                    if( process < 95 ):
-                        process += 2
-                        report( process, "")
-            
                     priceText = soup.find('div', attrs={"class": "StickyNavPrice"})
                     if( priceText ):
                         price = priceText["data-element-cheapest-room-price"]
