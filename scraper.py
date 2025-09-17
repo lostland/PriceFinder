@@ -291,7 +291,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         process += 1
                         report( process, "")
 
-                    time.sleep(1.0)
+                    time.sleep(0.5)
                     #print("2-------------")
                     soup.clear()
                     #print("3-------------")
