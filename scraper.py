@@ -123,7 +123,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     start_progress_ticker(logger=logger)
 
     # 필요 시 시작 시점 보정
-    set_global_process(0)  # 혹은 유지하고 싶으면 제거
+    set_global_process(0)  
 
     # 진행 상황 수동 가산
     def report(pct, msg=""):
@@ -149,19 +149,20 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         #chrome_options.add_argument('--disable-javascript')
-        chrome_options.add_argument('--disable-gpu')
-        chrome_options.add_argument('--window-size=640,360')  
+        #chrome_options.add_argument('--disable-gpu')
+        #chrome_options.add_argument('--window-size=640,360')  
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
         #chrome_options.add_argument('--blink-setting=imagesEnable=false')
-        chrome_options.page_load_strategy = 'eager' # 또는 'none'으로 변경 가능
-        #chrome_options.add_argument('--disable-extensions')
+        #chrome_options.page_load_strategy = 'eager' # 또는 'none'으로 변경 가능
+        chrome_options.page_load_strategy = 'none' # 또는 'eager'으로 변경 가능
+#chrome_options.add_argument('--disable-extensions')
         # 실제 브라우저처럼 보이게 하는 옵션들
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
         chrome_options.add_argument('--accept-language=en-US,en;q=0.9')
         chrome_options.add_argument('--accept-encoding=gzip, deflate, br')
         chrome_options.add_argument('--accept=text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8')
-        chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        #chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
         #chrome_options.add_experimental_option('useAutomationExtension', False)
 
         driver = webdriver.Chrome(options=chrome_options)
