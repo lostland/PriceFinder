@@ -111,6 +111,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     #진행 테스트용
     #return {'prices': [], 'page_title': ''}
 
+
     _progress_cb = progress_cb
 
     # 앱 로거 안전하게 확보
@@ -123,7 +124,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     start_progress_ticker(logger=logger)
 
     # 필요 시 시작 시점 보정
-    set_global_process(0)  
+    set_global_process(0)  # 혹은 유지하고 싶으면 제거
 
     # 진행 상황 수동 가산
     def report(pct, msg=""):
@@ -150,19 +151,18 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         chrome_options.add_argument('--disable-dev-shm-usage')
         #chrome_options.add_argument('--disable-javascript')
         chrome_options.add_argument('--disable-gpu')
-        chrome_options.add_argument('--window-size=1024,768')  
+        chrome_options.add_argument('--window-size=640,360')  
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
-        chrome_options.add_argument('--blink-setting=imagesEnable=false')
+        #chrome_options.add_argument('--blink-setting=imagesEnable=false')
         chrome_options.page_load_strategy = 'eager' # 또는 'none'으로 변경 가능
-        #chrome_options.page_load_strategy = 'none' # 또는 'eager'으로 변경 가능
         #chrome_options.add_argument('--disable-extensions')
         # 실제 브라우저처럼 보이게 하는 옵션들
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
         chrome_options.add_argument('--accept-language=en-US,en;q=0.9')
         chrome_options.add_argument('--accept-encoding=gzip, deflate, br')
         chrome_options.add_argument('--accept=text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8')
-        #chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
+        chrome_options.add_experimental_option('excludeSwitches', ['enable-automation'])
         #chrome_options.add_experimental_option('useAutomationExtension', False)
 
         driver = webdriver.Chrome(options=chrome_options)
@@ -269,6 +269,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             print("start check-------------")
             for tt in range(15):
                 try:      
+                    print("1-------------")
                     #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     #actions.send_keys(Keys.DOWN).perform()
                     if( process < 95 ):
@@ -280,11 +281,9 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     soup.clear()
                     #print("3-------------")
                     #src = driver.page_source
-                    print("1-------------" )
-                    src = driver.page_source
-                    print("2-------------" )
-                    soup = BeautifulSoup(src, 'html.parser' )
-                    print("3-------------")
+                    #print("5-------------" )
+                    soup = BeautifulSoup(driver.page_source[150000:200000], 'html.parser' )
+                    #print("6-------------")
 
                     #container = driver.find_element(By.XPATH, "//div[@class='StickyNavPrice']")
                     #if( container ):
