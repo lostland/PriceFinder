@@ -5,6 +5,7 @@ from flask import Flask, render_template, request, jsonify, Response, send_file
 from werkzeug.middleware.proxy_fix import ProxyFix
 from scraper import process_all_cids_sequential, start_progress_ticker
 from flask import Flask
+from scraper import print_file
 
 logging.basicConfig(level=logging.INFO)
 
@@ -164,6 +165,8 @@ def scrape():
         # 기준 가격 계산 (첫 번째 스텝에서 원본 URL의 CID 가격을 기준으로 설정)
         global global_base_price, global_base_price_cid_name, global_page_title
 
+        print_file(f"Processing 스텝 {step+1}/{len(all_cids) + 1}: CID {current_name}({current_cid})")
+
         if step == 0:
             # 첫 번째 스텝에서는 전역 변수 초기화
             global_base_price = None
@@ -193,6 +196,9 @@ def scrape():
             import time
             start_time = time.time()
             #time.sleep(1)
+
+            print_file(f"기준 가격 스크래핑 시작: {base_url_new}")
+            
             base_resp = scrape_prices_simple(
                 base_url_new,
                 original_currency_code=original_currency,
@@ -201,6 +207,8 @@ def scrape():
 
             global_page_title = base_resp.get('page_title', '')
             app.logger.info(f"page title : {global_page_title}")
+            print_file(f"page title : {global_page_title}")
+
             
             base_prices = base_resp.get('prices', [])
             
@@ -212,6 +220,7 @@ def scrape():
                 if base_price_match:
                     global_base_price = int(base_price_match.group().replace(',', ''))
                     app.logger.info(f"기준 가격 설정: {base_price_str} ({global_base_price}) - {global_base_price_cid_name}")
+                    print_file(f"기준 가격 설정: {base_price_str} ({global_base_price}) - {global_base_price_cid_name}")
 
         # step이 0이면 기준가격만 설정하고 바로 리턴
         if step == 0:
@@ -246,6 +255,7 @@ def scrape():
         import time
         start_time = time.time()
         #time.sleep(1)
+        print_file(f"현재 CID 스크래핑 시작: {new_url}")
         resp = scrape_prices_simple(
             new_url,
             original_currency_code=original_currency,

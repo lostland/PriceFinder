@@ -176,6 +176,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
 
     _progress_cb = progress_cb
 
+    print_file("scrape_prices_simple start", url )
+
     # 앱 로거 안전하게 확보
     try:
         logger = current_app.logger
