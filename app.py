@@ -296,6 +296,10 @@ def scrape():
 
         progress = get_progress_state()
 
+        print(f"progress: {progress}")
+        print(f"step: {step}")
+        print(f"len(all_cids): {len(all_cids)}")
+                
         # 결과 반환
         result = {
             'step': step + 1,

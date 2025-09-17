@@ -108,6 +108,9 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
     original_currency_code: 원본 URL의 통화 코드 (예: USD, KRW, THB)
     """
 
+    #진행 테스트용
+    #return {'prices': [], 'page_title': ''}
+
     _progress_cb = progress_cb
 
     # 앱 로거 안전하게 확보
@@ -228,7 +231,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         except:
             current_app.logger.info(f"driver.get() fail")
             _progress_cb = None
-            return []
+            return {'prices': [], 'page_title': ''}
 
             #f.write(f"driver.get fail: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
             #f.flush()

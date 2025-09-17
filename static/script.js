@@ -8,7 +8,7 @@ let lowestPrice = null;
 let lowestPriceUrl = '';
 let lowestPriceCidName = '';
 let basePrice = null; // 기준 가격 (첫 번째 결과에서 설정)
-const totalSteps = 18; // 기준가격설정(1) + 검색창리스트(9) + 카드리스트(8)
+let totalSteps = 18; // 기준가격설정(1) + 검색창리스트(9) + 카드리스트(8)
 let currentLanguage = 'ko'; // 기본값: 한국어
 let isAnalyzing = false; // 분석 중인 상태 추적
 let abortController = null; // 중단용 AbortController
@@ -209,6 +209,7 @@ function startAnalysis(url) {
     lowestPriceCidName = '';
     basePrice = null;
     isAnalyzing = true;
+    totalSteps = allCids.length + 1;
 
     // 진행률 애니메이션 초기화 및 시작
     currentProgressPercentage = 0;
