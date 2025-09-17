@@ -299,7 +299,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
 
         if( price == 0 ):
             print("start check-------------")
-            for tt in range(150):
+            for tt in range(20):
                 try:      
                     print(tt, "-------------")
                     #driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -308,7 +308,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         process += 1
                         report( process, "")
 
-                    time.sleep(1)
+                    time.sleep(0.5)
                     #print("2-------------")
                     soup.clear()
                     #print("3-------------")
@@ -328,7 +328,7 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                         
                     #soup = BeautifulSoup(src, 'html.parser' )
 
-                    soup = BeautifulSoupTimeout( driver )
+                    soup = BeautifulSoupTimeout( driver, 20 )
 
                     #print("6-------------")
 
