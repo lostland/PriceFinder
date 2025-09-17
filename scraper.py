@@ -106,13 +106,15 @@ def get_outer_html_with_hard_timeout(driver, timeout=15):
     result = {"html": ""}
     def _run():
         try:
-            #result["html"] = driver.execute_script("return document.documentElement.outerHTML")
-            result["html"] = driver.page_source
+            result["html"] = driver.execute_script("return document.documentElement.innerHTML")
+            #result["html"] = driver.page_source
         except Exception:
             result["html"] = ""
     t = threading.Thread(target=_run, daemon=True)
     t.start()
     t.join(timeout)
+    print("id result = ", id(result["html"]) )
+
     return result["html"]  # 시간 초과 시 빈 문자열
 
     
@@ -166,8 +168,8 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
         chrome_options.add_argument('--disable-logging')
         chrome_options.add_argument('--log-level=3')
         #chrome_options.add_argument('--blink-setting=imagesEnable=false')
-        chrome_options.page_load_strategy = 'eager' # 또는 'none'으로 변경 가능
-        #chrome_options.page_load_strategy = 'none' # 또는 'none'으로 변경 가능
+        #chrome_options.page_load_strategy = 'eager' # 또는 'none'으로 변경 가능
+        chrome_options.page_load_strategy = 'none' # 또는 'none'으로 변경 가능
         chrome_options.add_argument('--disable-extensions')
         # 실제 브라우저처럼 보이게 하는 옵션들
         chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
@@ -299,15 +301,15 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     #print("5-------------" )
                     
                     #src = driver.page_source
-                    #src = get_outer_html_with_hard_timeout(driver, 12 )
-                    #if( len(src) <= 1 ):
-                    #    driver.quit()
-                    #    _progress_cb = None
-                    #    print("TIME OUT-------------")
-                    #    return {'prices': [], 'page_title': ''}
+                    src = get_outer_html_with_hard_timeout(driver, 12 )
+                    print("id(src) = ", id(src) )
+                    if( len(src) <= 1 ):
+                        driver.quit()
+                        _progress_cb = None
+                        print("TIME OUT-------------")
+                        return {'prices': [], 'page_title': ''}
                         
-                    soup = BeautifulSoup(driver.page_source, 'html.parser' )
-                    #soup = BeautifulSoup(src, 'html.parser' )
+                    soup = BeautifulSoup(src, 'html.parser' )
                     #print("6-------------")
 
                     #container = driver.find_element(By.XPATH, "//div[@class='StickyNavPrice']")
