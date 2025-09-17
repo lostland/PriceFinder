@@ -299,15 +299,15 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     #print("5-------------" )
                     
                     #src = driver.page_source
-
-                    src = get_outer_html_with_hard_timeout(driver, 12 )
-                    if( len(src) <= 1 ):
-                        driver.quit()
-                        _progress_cb = None
-                        print("TIME OUT-------------")
-                        return {'prices': [], 'page_title': ''}
+                    #src = get_outer_html_with_hard_timeout(driver, 12 )
+                    #if( len(src) <= 1 ):
+                    #    driver.quit()
+                    #    _progress_cb = None
+                    #    print("TIME OUT-------------")
+                    #    return {'prices': [], 'page_title': ''}
                         
-                    soup = BeautifulSoup(src, 'html.parser' )
+                    soup = BeautifulSoup(driver.page_source, 'html.parser' )
+                    #soup = BeautifulSoup(src, 'html.parser' )
                     #print("6-------------")
 
                     #container = driver.find_element(By.XPATH, "//div[@class='StickyNavPrice']")
