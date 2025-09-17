@@ -126,6 +126,7 @@ def BeautifulSoupTimeout(driver, timeout=15):
         try:
             soup = BeautifulSoup(driver.page_source, 'html.parser')
         except:
+            soup = BeautifulSoup("", 'html.parser')
             pass
             
     t = threading.Thread(target=_run, daemon=True)
@@ -338,8 +339,10 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     #    return {'prices': [], 'page_title': ''}
                         
                     #soup = BeautifulSoup(src, 'html.parser' )
+                    
+                    soup = BeautifulSoup(driver.page_source, 'html.parser' )
 
-                    soup = BeautifulSoupTimeout( driver, 20 )
+                    #soup = BeautifulSoupTimeout( driver, 20 )
 
                     report( 13, "" )
 
