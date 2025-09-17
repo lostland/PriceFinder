@@ -201,10 +201,9 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
             current_app.logger.info(f"start driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}")
             #f.flush()
 
-            #driver.set_script_timeout(5)
-            driver.set_page_load_timeout(20)
-            driver.implicitly_wait(20)
-            driver.set_script_timeout(20)
+            driver.set_page_load_timeout(15)
+            driver.implicitly_wait(15)
+            driver.set_script_timeout(15)
             #time.sleep(0.5)
             driver.get(url)
             #f.write(f"finish driver.get(): {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
@@ -279,7 +278,16 @@ def scrape_prices_simple(url, original_currency_code=None, progress_cb=None):
                     #print("3-------------")
                     #src = driver.page_source
                     #print("5-------------" )
-                    soup = BeautifulSoup(driver.page_source, 'html.parser' )
+                    
+                    #src = driver.page_source
+
+                    try:
+                        src = driver.execute_script("return document.documentElement.outerHTML")
+                    except TimeoutException:
+                        print("TimeoutException" )
+                        src = ""  # 그래도 안 되면 빈 문자열로 넘어가고, 필요 시 재시도
+                    
+                    soup = BeautifulSoup(src, 'html.parser' )
                     #print("6-------------")
 
                     #container = driver.find_element(By.XPATH, "//div[@class='StickyNavPrice']")
