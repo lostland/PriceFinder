@@ -126,7 +126,7 @@ def BeautifulSoupTimeout(driver, timeout=15):
             print("try-------------")
             soup = BeautifulSoup(driver.page_source, 'html.parser')
             print("try end-------------")
-         except:
+        except:
             print("except-------------")
             
     t = threading.Thread(target=_run, daemon=True)
