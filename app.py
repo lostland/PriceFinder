@@ -197,7 +197,7 @@ def scrape():
             start_time = time.time()
             #time.sleep(1)
 
-            print_file(f"기준 가격 스크래핑 시작: {base_url_new}")
+            print_file(f"기준 가격 스크래핑 시작")
             
             base_resp = scrape_prices_simple(
                 base_url_new,
@@ -255,7 +255,7 @@ def scrape():
         import time
         start_time = time.time()
         #time.sleep(1)
-        print_file(f"현재 CID 스크래핑 시작: {new_url}")
+        print_file(f"현재 CID 스크래핑 시작: {current_cid}")
         resp = scrape_prices_simple(
             new_url,
             original_currency_code=original_currency,
@@ -283,7 +283,10 @@ def scrape():
         current_price = None
 
         print(f"global_base_price: {global_base_price}")
+        print_file(f"global_base_price: {global_base_price}")
         print(f"prices: {prices}")
+        print_file(f"prices: {prices}")
+        
         if prices and global_base_price:
             current_price_str = prices[0]['price']
             # 숫자만 추출
@@ -292,6 +295,10 @@ def scrape():
             print(f"current_price_match: {current_price_match}")
             if current_price_match:
                 current_price = int(current_price_match.group().replace(',', ''))
+
+                print(f"current_price: {current_price}")
+                print_file(f"current_price: {current_price}")
+                
                 if current_price < global_base_price:
                     discount_percentage = round(((global_base_price - current_price) / global_base_price) * 100, 1)
                     app.logger.info(f"할인율: {discount_percentage}% (기준: {global_base_price}, 현재: {current_price})")
@@ -303,6 +310,7 @@ def scrape():
                     discount_percentage = 0
 
                 print(f"discount_percentage: {discount_percentage}")
+                print_file(f"discount_percentage: {discount_percentage}")
 
         progress = get_progress_state()
 
