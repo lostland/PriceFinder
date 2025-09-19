@@ -6,6 +6,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from scraper import process_all_cids_sequential, start_progress_ticker
 from flask import Flask
 from scraper import print_file
+from flask import session
 
 logging.basicConfig(level=logging.INFO)
 
@@ -221,6 +222,9 @@ def scrape():
                     global_base_price = int(base_price_match.group().replace(',', ''))
                     app.logger.info(f"기준 가격 설정: {base_price_str} ({global_base_price}) - {global_base_price_cid_name}")
                     print_file(f"기준 가격 설정: {base_price_str} ({global_base_price}) - {global_base_price_cid_name}")
+                    session['base_price'] = global_base_price
+                    session['base_price_cid_name'] = global_base_price_cid_name
+                    session['base_page_title'] = global_page_title
 
         # step이 0이면 기준가격만 설정하고 바로 리턴
         if step == 0:
@@ -268,6 +272,10 @@ def scrape():
                 original_currency_code=original_currency,
                 progress_cb=lambda pct, msg=None: set_progress(pct, f"{current_name} {msg or ''}".strip())
             )
+
+        global_base_price = session.get('base_price')
+        global_base_price_cid_name = session.get('base_price_cid_name', '')
+        global_page_title = session.get('base_page_title', '')
 
         prices = resp.get('prices', [])
         global_page_title = resp.get('page_title', '')
